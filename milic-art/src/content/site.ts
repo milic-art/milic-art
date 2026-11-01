@@ -233,30 +233,26 @@ export const site = {
   about: {
     heading: "About Me",
     kicker: "Little cottage",
-    name: "Mili",
+    name: "milic",
     intro:
-      "I draw small worlds. Cozy rooms, chibi travelers, sticker sheets and the occasional polite dragon. If a drawing can make someone want to crawl inside it and take a nap, I consider it finished.",
+      "Hi, I'm milic! I draw anime and game fanart, original characters, animals and Pokémon, with a soft spot for chibis. I'm still finding my own style, one piece at a time: the eyes, the hair, the lines and the colors.",
     paragraphs: [
-      "I have been posting art online since school, mostly on X and Instagram, and the best part has always been the people who collect a character and come back to see what they do next.",
-      "Right now I am building a proper portfolio, which is why the quest board is resting. When it opens again I will take a small number of pieces at a time so every one gets the attention it needs.",
+      "I'm just getting started online. I share my art on X first, then on Instagram and other platforms, in English and Spanish.",
+      "Right now I'm building this portfolio, which is why the quest board is closed. Commissions will open once it's ready, and the rules and prices will be posted here first.",
     ],
     draws: [
-      "Cozy scenes and tiny rooms",
-      "Chibi characters and mascots",
-      "Sticker sets and emotes",
-      "Storybook spreads",
-      "Simple creature design",
+      "A little bit of everything. The Gallery shows more!",
     ],
     tools: [
-      { name: "Procreate", note: "almost everything starts here" },
-      { name: "Photoshop", note: "colour and last pass fixes" },
-      { name: "Clip Studio Paint", note: "line art and perspective" },
-      { name: "A very old pencil", note: "thumbnails, always on paper" },
+      { name: "Krita", note: "where most drawings come to life" },
+      { name: "Photopea", note: "quick edits and fixes" },
+      { name: "Canva", note: "layouts and graphics" },
+      { name: "Figma", note: "learning it to design my own world" },
     ],
     facts: [
-      "Draws at night, with tea, always the same mug.",
-      "Keeps a folder of unused moss textures.",
-      "Names every cat in every drawing.",
+      "Still learning Figma, and this map is part of the practice.",
+      "Keeps a huge list of drawing ideas, from Pokémon to Dungeon Meshi, and it only keeps growing.",
+      "Wants every original character to have a little signature detail.",
     ],
     /** Optional: "/art/me.png" */
     portrait: "",
