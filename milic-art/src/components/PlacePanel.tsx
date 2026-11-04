@@ -23,7 +23,7 @@ function SpiralBinding() {
 
 function Kicker({ children }: { children: string }) {
   return (
-    <p className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-orange">
+    <p className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-orange-deep">
       {children}
     </p>
   );
@@ -167,7 +167,7 @@ function GalleryBody() {
                 <span className="block font-display text-[13.5px] font-bold leading-tight text-ink">
                   {item.title}
                 </span>
-                <span className="mt-0.5 block text-[10.5px] font-semibold uppercase tracking-wide text-ink-soft">
+                <span className="mt-0.5 block text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
                   {item.medium} · {item.year}
                 </span>
               </span>
@@ -194,7 +194,7 @@ function CommissionsBody({ onNavigate }: { onNavigate: (id: PlaceId) => void }) 
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border-2 border-orange bg-orange/10 px-4 py-3.5">
-        <span className="inline-flex items-center gap-2 rounded-full border-2 border-ink bg-orange px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wide text-chalk">
+        <span className="inline-flex items-center gap-2 rounded-full border-2 border-ink bg-orange-deep px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wide text-chalk">
           {site.commissions.statusTag}
         </span>
         <p className="mt-2 font-display text-[17px] font-bold leading-snug text-ink">
@@ -216,7 +216,7 @@ function CommissionsBody({ onNavigate }: { onNavigate: (id: PlaceId) => void }) 
                 <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">{tier.detail}</p>
               </div>
               <div className="text-right">
-                <p className="font-display text-[16px] font-bold leading-none text-orange">{tier.price}</p>
+                <p className="font-display text-[16px] font-bold leading-none text-orange-deep">{tier.price}</p>
                 <p className="mt-1 text-[11px] font-semibold text-ink-soft">{itemTime(tier.time)}</p>
               </div>
             </li>
@@ -265,7 +265,7 @@ function CommissionsBody({ onNavigate }: { onNavigate: (id: PlaceId) => void }) 
         <button
           type="button"
           onClick={() => onNavigate("contact")}
-          className="stamp-btn mt-2.5 inline-flex items-center gap-2 rounded-full border-2 border-ink bg-orange px-5 py-2.5 font-display text-[15px] font-bold text-chalk shadow-[0_3px_0_rgba(75,58,42,0.85)]"
+          className="stamp-btn mt-2.5 inline-flex items-center gap-2 rounded-full border-2 border-ink bg-orange-deep px-5 py-2.5 font-display text-[15px] font-bold text-chalk shadow-[0_3px_0_rgba(75,58,42,0.85)]"
         >
           {site.commissions.ctaLabel}
           <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
@@ -415,7 +415,7 @@ function ContactBody() {
               <span className="flex min-w-0 flex-col">
                 <span className="font-display text-[15px] font-bold leading-tight text-ink">
                   {link.label}
-                  <span className="ml-2 font-body text-[12.5px] font-semibold text-orange">
+                  <span className="ml-2 font-body text-[12.5px] font-semibold text-orange-deep">
                     {link.handle}
                   </span>
                 </span>
@@ -524,7 +524,7 @@ export function PlacePanel({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            <span className="hidden text-[10px] font-bold uppercase tracking-wide text-ink-soft/70 sm:inline">
+            <span className="hidden text-[11px] font-bold uppercase tracking-wide text-ink-soft sm:inline">
               {site.labels.closeHint}
             </span>
             <button
@@ -547,7 +547,7 @@ export function PlacePanel({
           {placeId === "about" && <AboutBody />}
           {placeId === "contact" && <ContactBody />}
 
-          <p className="mt-7 border-t border-dashed border-ink/20 pt-3 text-[11.5px] leading-relaxed text-ink-soft/80">
+          <p className="mt-7 border-t border-dashed border-ink/20 pt-3 text-[11.5px] leading-relaxed text-ink-soft">
             {site.brand.footerNote}
           </p>
         </div>

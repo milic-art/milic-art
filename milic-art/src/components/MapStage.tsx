@@ -355,7 +355,7 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
                 }}
                 style={{ transformOrigin: "top center", willChange: "transform" }}
                 className={`relative z-10 mt-1 inline-flex items-center gap-1 rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
-                  isActive ? "bg-orange text-chalk" : "bg-chalk text-ink"
+                  isActive ? "bg-orange-deep text-chalk" : "bg-chalk text-ink"
                 }`}
               >
                 {place.name}

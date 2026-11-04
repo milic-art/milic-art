@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { site, type PlaceId } from "./content";
+import { hints, site, type PlaceId } from "./content";
 import { GuideCompanion, MobileDock, SiteHeader } from "./components/SiteChrome";
 import { MapStage } from "./components/MapStage";
 import { PlacePanel } from "./components/PlacePanel";
@@ -19,6 +19,15 @@ export default function App() {
   const [activeId, setActiveId] = useState<PlaceId | null>(null);
   const [hoverId, setHoverId] = useState<PlaceId | null>(null);
   const [idleIndex, setIdleIndex] = useState(0);
+  const [visited, setVisited] = useState<PlaceId[]>([]);
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  useEffect(() => {
+    if (activeId) {
+      setShowWelcome(false);
+      setVisited((list) => (list.includes(activeId) ? list : [...list, activeId]));
+    }
+  }, [activeId]);
 
   const places = site.map.places;
   const idleLines = useMemo(() => [site.mascot.greeting, ...site.mascot.idle], []);
@@ -64,6 +73,28 @@ export default function App() {
       <SiteHeader activeId={activeId} onOpen={(id) => setActiveId(id)} />
 
       <GuideCompanion line={line} dimmed={activeId !== null} />
+
+      {showWelcome && activeId === null && (
+        <div className="bubble-in absolute left-1/2 top-[76px] z-30 flex w-[min(92vw,380px)] -translate-x-1/2 items-center gap-3 rounded-2xl border-2 border-ink bg-chalk px-4 py-2.5 shadow-[0_3px_0_rgba(75,58,42,0.7)] sm:top-20">
+          <p className="flex-1 text-[14px] font-semibold leading-snug text-ink">{hints.welcome}</p>
+          <button
+            type="button"
+            onClick={() => setShowWelcome(false)}
+            className="stamp-btn min-h-[44px] shrink-0 rounded-full border-2 border-ink bg-orange-soft px-3.5 font-display text-[13px] font-bold text-ink"
+          >
+            {hints.welcomeDismiss}
+          </button>
+        </div>
+      )}
+
+      <p
+        className="pointer-events-none absolute right-3 top-[76px] z-20 hidden rounded-full border-2 border-ink/20 bg-chalk/90 px-3 py-1 font-display text-[12px] font-bold text-ink-soft sm:block"
+        aria-live="polite"
+      >
+        {visited.length === places.length
+          ? hints.allDiscovered
+          : hints.discovered(visited.length, places.length)}
+      </p>
 
       <MobileDock activeId={activeId} onOpen={(id) => setActiveId(id)} />
 

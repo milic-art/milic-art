@@ -56,7 +56,7 @@ function Wordmark() {
         <span className="block font-display text-[19px] font-extrabold leading-none tracking-tight text-ink">
           {site.brand.wordmark}
         </span>
-        <span className="mt-0.5 block text-[10.5px] font-semibold leading-none text-ink-soft">
+        <span className="mt-0.5 block text-[11px] font-semibold leading-none text-ink-soft">
           {site.brand.mapName} · {site.brand.mapNote}
         </span>
       </span>
@@ -91,13 +91,13 @@ export function SiteHeader({
               aria-label={`${place.name}, ${place.blurb}`}
               className={`menu-tab flex items-center gap-1.5 rounded-xl border-2 px-3 py-1.5 font-display text-[13.5px] font-bold leading-none shadow-[0_2px_0_rgba(75,58,42,0.6)] ${
                 active
-                  ? "border-ink bg-orange text-chalk"
+                  ? "border-ink bg-orange-deep text-chalk"
                   : "border-transparent bg-chalk text-ink hover:bg-paper-deep"
               }`}
             >
               <PlaceGlyph id={place.id} className="h-4 w-4" />
               <span>{place.name}</span>
-              <span className="hidden text-[10px] font-bold text-ink-soft/70 lg:inline">
+              <span className="hidden text-[11px] font-bold text-ink-soft lg:inline">
                 {index + 1}
               </span>
             </button>
@@ -132,11 +132,11 @@ export function MobileDock({
                 aria-current={active ? "true" : undefined}
                 aria-label={`${place.name}, ${place.blurb}`}
                 className={`flex w-full flex-col items-center gap-1 rounded-xl px-1 py-1.5 transition-colors ${
-                  active ? "bg-orange text-chalk" : "text-ink"
+                  active ? "bg-orange-deep text-chalk" : "text-ink"
                 }`}
               >
                 <PlaceGlyph id={place.id} className="h-5 w-5" />
-                <span className="font-display text-[10.5px] font-bold leading-none">
+                <span className="font-display text-[11px] font-bold leading-none">
                   {place.name}
                 </span>
               </button>
