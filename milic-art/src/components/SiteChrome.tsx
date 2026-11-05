@@ -1,5 +1,5 @@
 import { site, type PlaceId } from "../content";
-import { MascotArt } from "./WorldArt";
+import { ClockyArt, type ClockyState } from "./ClockyArt";
 
 function PlaceGlyph({ id, className = "h-4 w-4" }: { id: PlaceId; className?: string }) {
   const common = {
@@ -148,17 +148,32 @@ export function MobileDock({
   );
 }
 
-/** Pip, the chibi guide, with a short speech bubble. */
-export function GuideCompanion({ line, dimmed }: { line: string; dimmed: boolean }) {
+/** Clocky, the map guide, with a short speech bubble. Poke him! */
+export function GuideCompanion({
+  line,
+  dimmed,
+  state,
+  onPoke,
+}: {
+  line: string;
+  dimmed: boolean;
+  state: ClockyState;
+  onPoke: () => void;
+}) {
   return (
     <div
       className={`pointer-events-none absolute bottom-[78px] left-2 z-30 items-end transition-opacity duration-300 sm:bottom-5 sm:left-5 ${
         dimmed ? "hidden sm:flex" : "flex"
       }`}
     >
-      <div className="guide-bob aspect-[180/220] w-[84px] shrink-0 sm:w-[108px]">
-        <MascotArt />
-      </div>
+      <button
+        type="button"
+        onClick={onPoke}
+        aria-label="Poke Clocky"
+        className="pointer-events-auto aspect-[220/200] w-[110px] shrink-0 cursor-pointer sm:w-[150px]"
+      >
+        <ClockyArt state={state} />
+      </button>
       <div className="bubble-in relative mb-7 max-w-[190px] rounded-2xl rounded-bl-[6px] border-2 border-ink bg-chalk px-3 py-2 shadow-[0_3px_0_rgba(75,58,42,0.7)] sm:mb-10 sm:max-w-[250px] sm:px-3.5 sm:py-2.5">
         <p className="text-[12px] font-semibold leading-snug text-ink sm:text-[13px]" aria-live="polite">
           {line}

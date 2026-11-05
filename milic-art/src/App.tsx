@@ -3,6 +3,7 @@ import { hints, site, type PlaceId } from "./content";
 import { GuideCompanion, MobileDock, SiteHeader } from "./components/SiteChrome";
 import { MapStage } from "./components/MapStage";
 import { PlacePanel } from "./components/PlacePanel";
+import { useClocky } from "./components/useClocky";
 
 const structuredData = JSON.stringify({
   "@context": "https://schema.org",
@@ -19,6 +20,7 @@ export default function App() {
   const [activeId, setActiveId] = useState<PlaceId | null>(null);
   const [hoverId, setHoverId] = useState<PlaceId | null>(null);
   const [idleIndex, setIdleIndex] = useState(0);
+  const clocky = useClocky();
   const [visited, setVisited] = useState<PlaceId[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
 
@@ -55,9 +57,19 @@ export default function App() {
   }, [places]);
 
   const speakingPlace = hoverId ?? activeId;
-  const line = speakingPlace
+  const placeOrIdle = speakingPlace
     ? site.mascot.lines[speakingPlace]
     : idleLines[idleIndex % idleLines.length];
+  // Clocky's own moments win over the usual lines.
+  const clockyLine: Partial<Record<typeof clocky.state, string>> = {
+    asleep: site.mascot.asleep,
+    eye1: site.mascot.asleep,
+    eye2: site.mascot.asleep,
+    hide: site.mascot.asleep,
+    stretch: hints.yawn,
+    sneeze: site.mascot.sneeze,
+  };
+  const line = clockyLine[clocky.state] ?? placeOrIdle;
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-paper">
@@ -72,7 +84,7 @@ export default function App() {
 
       <SiteHeader activeId={activeId} onOpen={(id) => setActiveId(id)} />
 
-      <GuideCompanion line={line} dimmed={activeId !== null} />
+      <GuideCompanion line={line} dimmed={activeId !== null} state={clocky.state} onPoke={clocky.poke} />
 
       {showWelcome && activeId === null && (
         <div className="bubble-in absolute left-1/2 top-[76px] z-30 flex w-[min(92vw,380px)] -translate-x-1/2 items-center gap-3 rounded-2xl border-2 border-ink bg-chalk px-4 py-2.5 shadow-[0_3px_0_rgba(75,58,42,0.7)] sm:top-20">

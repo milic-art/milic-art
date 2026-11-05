@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { site, type PlaceId } from "../content";
-import { ArtPlaceholder, MascotArt } from "./WorldArt";
+import { ArtPlaceholder } from "./WorldArt";
+import { ClockyArt } from "./ClockyArt";
 
 /* ------------------------------------------------------------ shell bits */
 
@@ -301,7 +302,7 @@ function AboutBody() {
               />
             ) : (
               <div className="aspect-square w-full">
-                <MascotArt />
+                <ClockyArt state="wave" />
               </div>
             )}
           </div>
