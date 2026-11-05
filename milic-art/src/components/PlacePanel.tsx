@@ -386,6 +386,7 @@ function ContactBody() {
     <div className="space-y-5">
       <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink-soft">{site.contact.intro}</p>
 
+      {site.contact.email && (
       <div className="rounded-2xl border-2 border-ink/80 bg-chalk px-4 py-4">
         <Kicker>Email</Kicker>
         <a
@@ -407,6 +408,7 @@ function ContactBody() {
           {copied ? site.contact.copiedLabel : site.contact.copyLabel}
         </button>
       </div>
+      )}
 
       <ul className="space-y-2">
         {site.contact.links.map((link) => {

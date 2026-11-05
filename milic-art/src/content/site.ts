@@ -23,50 +23,50 @@ export const site = {
   brand: {
     wordmark: "milic_art",
     owner: "Mili",
-    role: "digital artist and illustrator",
-    mapName: "The Artlands",
+    role: "illustrator, designer, developer, writer and community manager",
+    mapName: "Milicenda",
     mapNote: "A map of everything I make",
     footerNote: "All artwork belongs to milic_art. Please do not repost without credit.",
-    builtNote: "Placeholder art is drawn in code so you can swap in your own drawings anytime.",
+    builtNote: "Drawn and built little by little.",
   },
 
   /** Browser tab + link preview text. */
   meta: {
-    title: "milic_art | an illustrated little world",
+    title: "milic_art | Milicenda",
     description:
-      "The portfolio of milic_art: cozy illustrations, chibi characters and sticker sets. Explore a drawn map with a gallery, commission info, an about page and contact links.",
+      "The portfolio of milic_art: illustration, design, code and writing, inside a drawn map you can explore.",
   },
 
   /* ------------------------------------------------------------- mascot */
   mascot: {
-    name: "Pip",
+    name: "Clocky",
     role: "map guide",
-    greeting: "Welcome, traveler! Pick a place to explore.",
+    /** Clocky is a croc, not a person: these are sounds and little actions. */
+    greeting: "*yawn* ...oh! Hi! Pick a place to explore.",
     /** Shown one at a time, gently rotating while nothing else is happening. */
     idle: [
       "Drag the map if you want a closer look.",
-      "Every landmark opens a little page. Go on, poke one.",
-      "I painted the river twice. Do not tell anyone.",
-      "Snacks are not on the map. A design mistake, honestly.",
+      "Every building opens a little page. Go on, poke one.",
+      "*sniffs a sunflower*",
+      "*chases a petal and misses*",
     ],
     /** Said when a visitor hovers or opens a place. */
     lines: {
-      gallery:
-        "The gallery tent holds my finished drawings. Mind the wet paint.",
-      commissions:
-        "The quest board is quiet right now. I still dust it every morning.",
-      about:
-        "That round cottage is where I draw. Mostly at night, always with tea.",
-      contact:
-        "The mailbox is my favourite spot. Letters always find their way.",
+      gallery: "*bounces* Finished drawings in here! Mind the paint.",
+      commissions: "*sits next to the board* Closed for now, but I guard it.",
+      about: "*points a paw* That's where milic lives. And naps.",
+      contact: "*wags tail* Letters! I love letters.",
     },
     hint: "Shortcuts: press 1 to 4 for places, Esc closes a page.",
+    /** Idea bank for later: sneeze when poked, hide face in paws when idle. */
+    sneeze: "*achoo!*",
+    asleep: "*zzz*",
   },
 
   /* ------------------------------------------------------------ the map */
   map: {
     /** Small scene-setting line under the wordmark. */
-    intro: "Four places, one paper world. Wander as much as you like.",
+    intro: "Four places, one little world. Wander as much as you like.",
     dragHint: "Drag to wander",
     zoomHint: "Scroll or pinch to zoom",
     /** Dotted trail colours come from the palette in styles.css. */
@@ -111,75 +111,28 @@ export const site = {
   gallery: {
     heading: "The Gallery",
     kicker: "Finished drawings",
-    intro:
-      "Cozy scenes, chibi characters and sticker sheets. These six are placeholders so the walls are never empty, and every one can be replaced with your own piece.",
+    intro: "My first finished pieces. More coming soon, and later this will be split by type of work.",
     /** Image paths live here. Empty string shows the drawn placeholder. */
     items: [
       {
-        id: "windowsill",
-        title: "Rainy Windowsill",
-        year: "2025",
-        medium: "Digital, Procreate",
-        blurb: "A cat, three plants and one very slow afternoon.",
-        description:
-          "Study of soft window light, warm dust and a cat who refuses to move. Painted with a single textured brush and a lot of erasing.",
-        image: "",
-        variant: "windowsill" as const,
-      },
-      {
-        id: "dragon-tea",
-        title: "Tea With A Dragon",
-        year: "2025",
-        medium: "Digital, Photoshop",
-        blurb: "A very polite dragon and a very small friend.",
-        description:
-          "Part of a storybook pitch about a forest that hands out tea to anyone who asks nicely.",
-        image: "",
-        variant: "dragonTea" as const,
-      },
-      {
-        id: "lantern-path",
-        title: "The Lantern Path",
-        year: "2024",
-        medium: "Digital, Clip Studio Paint",
-        blurb: "Mushrooms taller than houses, one brave lantern.",
-        description:
-          "Night scene experiment: everything lit by one small orange light, nothing else allowed to glow.",
+        id: "halloween-oc",
+        title: "Halloween OC",
+        year: "2026",
+        medium: "Digital, Krita",
+        blurb: "An original character for a gachapon contest on Discord.",
+        description: "Made for a Halloween gachapon contest in a Discord server.",
         image: "",
         variant: "lantern" as const,
       },
       {
-        id: "owl-shop",
-        title: "The Owl's Bookshop",
-        year: "2025",
-        medium: "Digital, Procreate",
-        blurb: "Second hand books, first rate naps.",
-        description:
-          "A shop interior built from three shapes: arch, shelf, owl. The whole piece is about finding the coziest possible silhouette.",
-        image: "",
-        variant: "owlShop" as const,
-      },
-      {
-        id: "campfire",
-        title: "Pack Light, Dream Big",
-        year: "2024",
-        medium: "Digital, Photoshop",
-        blurb: "Everything a small traveler needs, plus tea.",
-        description:
-          "Campfire piece from a sticker set about adventurers who always remember the kettle first.",
-        image: "",
-        variant: "campfire" as const,
-      },
-      {
-        id: "frog-rain",
-        title: "Frog Weather",
+        id: "minccino",
+        title: "Minccino",
         year: "2026",
-        medium: "Digital, Procreate",
-        blurb: "A frog in a raincoat, entirely unbothered.",
-        description:
-          "Character warm up that turned into a postcard. The rain is drawn as tiny dashes, one layer, no blur.",
+        medium: "Digital, Krita",
+        blurb: "A Pokémon fanart.",
+        description: "Fanart of Minccino.",
         image: "",
-        variant: "frog" as const,
+        variant: "windowsill" as const,
       },
     ],
   },
@@ -188,45 +141,31 @@ export const site = {
   commissions: {
     heading: "Commissions",
     kicker: "Quest board",
-    /** The status message visitors must see. */
-    status: "No active quests right now. I'm working on my portfolio. Come back soon!",
-    statusTag: "Quests closed",
+    status: "Commissions are closed right now.",
+    statusTag: "Closed",
     intro:
-      "Here is how commissions usually work when the board is open. Read the rules first, then send a letter with your idea, your references and roughly when you need it.",
-    payments: "Payment is half up front, half on delivery. Paypal or Ko-fi, invoiced in USD.",
-    turnaround: "Small pieces: 3 to 5 days. Full illustrations: 1 to 2 weeks. Bigger packs: up to 3 weeks.",
+      "This is how commissions will work when I open them. Prices are a starting point and the exact numbers will be posted here soon.",
+    payments: "No upfront payment. Payment details will be shared when the board opens.",
+    turnaround: "It depends on the drawing. A sketch takes about 1 to 4 days.",
     rules: [
-      "One or two characters per piece, pets count as characters.",
-      "Bring references or a clear written description. Both is best.",
-      "Two rounds of small changes are included. Big re-draws start a new quote.",
-      "Personal use, gifts and small streams are always fine.",
-      "Commercial use, merch or book covers: tell me first and we adjust the price.",
-      "I keep the right to post the finished piece in my portfolio unless you ask me not to.",
+      "Big changes are not accepted once the lineart is done.",
+      "I always ask you after the sketch, before going further.",
+      "The finished drawing is delivered without a signature.",
+      "From the finished sketch on, you can ask for a timelapse.",
+      "You can also ask for the Krita file.",
+      "Observations and notes are welcome at every step.",
+      "Commissions are arranged through Discord.",
     ],
     prices: [
-      {
-        name: "Sketch portrait",
-        price: "from $40",
-        detail: "One character, waist up, clean lines, simple colour wash.",
-        time: "3 to 5 days",
-      },
-      {
-        name: "Full illustration",
-        price: "from $120",
-        detail: "One or two characters, painted background, one scene.",
-        time: "1 to 2 weeks",
-      },
-      {
-        name: "Character pack",
-        price: "from $180",
-        detail: "Reference sheet, three expressions and one sticker pose.",
-        time: "2 to 3 weeks",
-      },
+      { name: "Icon", price: "Soon", detail: "A small portrait for your profile.", time: "Depends on the drawing" },
+      { name: "Bust", price: "Soon", detail: "Head and shoulders.", time: "Depends on the drawing" },
+      { name: "Waist up", price: "Soon", detail: "From the waist up.", time: "Depends on the drawing" },
+      { name: "Emotes and simple GIFs", price: "Soon", detail: "Small and expressive.", time: "Depends on the drawing" },
     ],
-    notDrawing: ["Heavy gore", "Realistic mecha", "Fetish art", "Anything hateful"],
-    availability: "Books are closed. Next opening is planned for early next year.",
-    ctaLabel: "Send a letter",
-    ctaNote: "The mailbox is always open, even when the quest board is not.",
+    notDrawing: ["Not sure? Ask me first and I'll tell you what I can do."],
+    availability: "Closed for now. They open once the portfolio is ready.",
+    ctaLabel: "Say hi on Discord",
+    ctaNote: "You can write to me anytime, even when the board is closed.",
   },
 
   /* -------------------------------------------------------------- about */
@@ -235,7 +174,7 @@ export const site = {
     kicker: "Little cottage",
     name: "milic",
     intro:
-      "Hi, I'm milic! I draw anime and game fanart, original characters, animals and Pokémon, with a soft spot for chibis. I'm still finding my own style, one piece at a time: the eyes, the hair, the lines and the colors.",
+      "Hi, I'm milic! I illustrate, design, code, write, research and edit videos. I'm a community manager and a bit of a journalist: a little bit of everything. Here I share my art, with a soft spot for chibis.",
     paragraphs: [
       "I'm just getting started online. I share my art on X first, then on Instagram and other platforms, in English and Spanish.",
       "Right now I'm building this portfolio, which is why the quest board is closed. Commissions will open once it's ready, and the rules and prices will be posted here first.",
@@ -248,15 +187,16 @@ export const site = {
       { name: "Photopea", note: "quick edits and fixes" },
       { name: "Canva", note: "layouts and graphics" },
       { name: "Figma", note: "learning it to design my own world" },
+      { name: "CapCut", note: "video editing" },
     ],
     facts: [
+      "Loves dogs and penguins.",
+      "Loves playing games.",
       "Still learning Figma, and this map is part of the practice.",
-      "Keeps a huge list of drawing ideas, from Pokémon to Dungeon Meshi, and it only keeps growing.",
-      "Wants every original character to have a little signature detail.",
     ],
     /** Optional: "/art/me.png" */
     portrait: "",
-    signOff: "Thanks for wandering through. Pip will see you out.",
+    signOff: "Thanks for visiting! Clocky will walk you out.",
   },
 
   /* ------------------------------------------------------------ contact */
@@ -264,33 +204,34 @@ export const site = {
     heading: "Contact",
     kicker: "The mailbox",
     intro:
-      "For commissions, collaboration or a friendly hello. I answer messages a few times a week, usually slower during deadlines.",
-    email: "hello@milic.art",
-    emailNote: "Best for commissions and anything with files attached.",
+      "For commissions, collaboration or a friendly hello. I speak English and Spanish, and my hours are Argentina time.",
+    /** Empty on purpose: the email block is hidden until you add one. */
+    email: "",
+    emailNote: "",
     links: [
+      {
+        id: "discord",
+        label: "Discord",
+        handle: "oshagang",
+        url: "",
+        note: "Fastest replies. Commissions are arranged here.",
+      },
+      {
+        id: "instagram",
+        label: "Instagram",
+        handle: "@milic_art",
+        url: "https://instagram.com/milic_art",
+        note: "Finished pieces.",
+      },
       {
         id: "x",
         label: "X",
         handle: "@milic_art",
         url: "https://x.com/milic_art",
-        note: "Sketch dumps and work in progress.",
-      },
-      {
-        id: "discord",
-        label: "Discord",
-        handle: "milic_art",
-        url: "",
-        note: "Fastest for quick questions. Ask for the studio invite.",
-      },
-      {
-        id: "instagram",
-        label: "Instagram",
-        handle: "@milic.art",
-        url: "https://instagram.com/milic.art",
-        note: "Finished pieces, once they are done.",
+        note: "Drawings and updates.",
       },
     ],
-    responseTime: "Usually replies in 2 to 4 days.",
+    responseTime: "I reply within 3 to 4 days at most, much faster on Discord.",
     copyLabel: "Copy email",
     copiedLabel: "Copied",
   },
