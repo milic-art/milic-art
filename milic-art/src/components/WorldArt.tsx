@@ -33,9 +33,11 @@ type Dot = { x: number; y: number };
 function Pine({ x, y, s = 1, tone = MOSS }: { x: number; y: number; s?: number; tone?: string }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <rect x="-5" y="-6" width="10" height="20" rx="4" fill="#8a6a4b" stroke={CHALK} strokeWidth="6" />
-      <path d="M0 -46 L26 -8 L-26 -8 Z" fill={tone} stroke={CHALK} strokeWidth="8" strokeLinejoin="round" />
-      <path d="M0 -34 L20 -2 L-20 -2 Z" fill={tone} stroke={CHALK} strokeWidth="0" opacity="0" />
+      <g className="tree-sway" style={{ animationDelay: `${(x % 7) * 0.4}s` }}>
+        <rect x="-5" y="-6" width="10" height="20" rx="4" fill="#8a6a4b" stroke={CHALK} strokeWidth="6" />
+        <path d="M0 -46 L26 -8 L-26 -8 Z" fill={tone} stroke={CHALK} strokeWidth="8" strokeLinejoin="round" />
+        <path d="M0 -34 L20 -2 L-20 -2 Z" fill={tone} stroke={CHALK} strokeWidth="0" opacity="0" />
+      </g>
     </g>
   );
 }
@@ -88,8 +90,9 @@ function Flower({ x, y, tone = ORANGE_SOFT }: { x: number; y: number; tone?: str
   );
 }
 
-function Cloud({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
+function Cloud({ x, y, s = 1, d = 40 }: { x: number; y: number; s?: number; d?: number }) {
   return (
+    <g className="cloud-drift" style={{ ["--d" as string]: `${d}s` }}>
     <g transform={`translate(${x} ${y}) scale(${s})`} opacity="0.9">
       <path
         d="M-40 10 C-52 -8 -30 -22 -14 -14 C-8 -30 22 -30 28 -12 C46 -14 48 10 32 10 Z"
@@ -99,6 +102,25 @@ function Cloud({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
         strokeLinejoin="round"
       />
     </g>
+    </g>
+  );
+}
+
+function Sunflower({ x, y, s = 1, delay = 0 }: { x: number; y: number; s?: number; delay?: number }) {
+  const petals = Array.from({ length: 10 }, (_, i) => i * 36);
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <g className="sunflower-sway" style={{ animationDelay: `${delay}s` }}>
+        <path d="M0 0 L0 -34" stroke="#4f6b3d" strokeWidth="4" strokeLinecap="round" />
+        <path d="M0 -14 Q-12 -20 -14 -12 Q-6 -8 0 -14 Z" fill="#6e8b5a" />
+        <g transform="translate(0 -40)">
+          {petals.map((a) => (
+            <ellipse key={a} cx="0" cy="-10" rx="4.2" ry="7.5" fill="#f2c230" stroke="#c99a12" strokeWidth="1" transform={`rotate(${a})`} />
+          ))}
+          <circle r="7" fill="#7a4a2a" stroke="#4b3a2a" strokeWidth="1.5" />
+        </g>
+      </g>
+    </g>
   );
 }
 
@@ -106,8 +128,9 @@ function Sparkle({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
   return (
     <path
       d={`M${x} ${y - 7 * s} L${x + 2.2 * s} ${y - 2.2 * s} L${x + 7 * s} ${y} L${x + 2.2 * s} ${y + 2.2 * s} L${x} ${y + 7 * s} L${x - 2.2 * s} ${y + 2.2 * s} L${x - 7 * s} ${y} L${x - 2.2 * s} ${y - 2.2 * s} Z`}
-      fill={ORANGE}
+      fill="#f2c230"
       opacity="0.75"
+      className="twinkle"
     />
   );
 }
@@ -187,7 +210,7 @@ export function WorldBackdrop({ places }: { places: { id: PlaceId; x: number; y:
         </filter>
       </defs>
 
-      <rect width="1600" height="1000" fill={PAPER} />
+      <rect width="1600" height="1000" fill="#e6edc6" />
 
       {/* broad land masses */}
       <path
@@ -222,16 +245,25 @@ export function WorldBackdrop({ places }: { places: { id: PlaceId; x: number; y:
         strokeWidth="48"
         strokeLinecap="round"
       />
+      <path
+        className="river-flow"
+        d="M760 -30 C800 120 700 210 740 320 C780 430 900 470 930 560 C960 660 880 760 900 860 C915 940 960 990 990 1030"
+        fill="none"
+        stroke={CHALK}
+        strokeWidth="6"
+        strokeLinecap="round"
+        opacity="0.8"
+      />
       <g stroke={CHALK} strokeWidth="5" strokeLinecap="round" opacity="0.9" fill="none">
-        <path d="M700 150 C715 160 730 160 745 152" />
-        <path d="M840 400 C856 412 872 412 888 404" />
-        <path d="M905 700 C918 712 934 712 948 704" />
+        <path className="water-glint" d="M700 150 C715 160 730 160 745 152" />
+        <path className="water-glint" d="M840 400 C856 412 872 412 888 404" />
+        <path className="water-glint" d="M905 700 C918 712 934 712 948 704" />
       </g>
 
-      <Cloud x={230} y={120} s={1.15} />
-      <Cloud x={880} y={70} s={0.85} />
-      <Cloud x={1300} y={150} s={1} />
-      <Cloud x={520} y={520} s={0.7} />
+      <Cloud x={230} y={120} s={1.15} d={46} />
+      <Cloud x={880} y={70} s={0.85} d={38} />
+      <Cloud x={1300} y={150} s={1} d={52} />
+      <Cloud x={520} y={520} s={0.7} d={34} />
 
       <Trails places={places} />
 
@@ -286,6 +318,17 @@ export function WorldBackdrop({ places }: { places: { id: PlaceId; x: number; y:
       <Flower x={780} y={700} tone={ORANGE} />
       <Flower x={560} y={340} tone={ORANGE_SOFT} />
       <Flower x={1050} y={640} tone={CHALK} />
+
+      {/* sunflowers around the About cottage and scattered on the map */}
+      <Sunflower x={395} y={800} s={1.2} delay={0} />
+      <Sunflower x={440} y={840} s={1} delay={0.6} />
+      <Sunflower x={580} y={810} s={1.15} delay={1.2} />
+      <Sunflower x={625} y={770} s={0.9} delay={0.3} />
+      <Sunflower x={370} y={740} s={0.95} delay={1.8} />
+      <Sunflower x={1150} y={770} s={1} delay={0.9} />
+      <Sunflower x={1290} y={790} s={0.9} delay={1.5} />
+      <Sunflower x={660} y={480} s={0.85} delay={2.1} />
+      <Sunflower x={1010} y={330} s={0.8} delay={0.4} />
 
       <Sparkle x={520} y={330} s={1.1} />
       <Sparkle x={1010} y={480} s={0.9} />

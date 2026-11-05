@@ -341,7 +341,8 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
                   />
                 ) : (
                   <span
-                    className={`sticker block h-[156px] w-full transition-[filter] duration-200 ${
+                    style={{ animationDelay: `${index * 0.9}s` }}
+                    className={`landmark-idle sticker block h-[156px] w-full transition-[filter] duration-200 ${
                       isActive ? "sticker-glow" : "group-hover:sticker-glow group-focus-visible:sticker-glow"
                     }`}
                   >
