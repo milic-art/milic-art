@@ -140,16 +140,8 @@ export default function App() {
     (hoverId || walking || activeId) && speakingPlace
       ? site.mascot.lines[speakingPlace]
       : idleLines[idleIndex % idleLines.length];
-  // Clocky's own moments win over the usual lines.
-  const clockyLine: Partial<Record<typeof clocky.state, string>> = {
-    asleep: site.mascot.asleep,
-    eye1: site.mascot.asleep,
-    eye2: site.mascot.asleep,
-    hide: site.mascot.asleep,
-    stretch: hints.yawn,
-    sneeze: site.mascot.sneeze,
-  };
-  const line = walking ? placeOrIdle : (clockyLine[clocky.state] ?? placeOrIdle);
+  // Las animaciones de Clocky no se narran: el globo solo dice cosas, nunca describe acciones.
+  const line = placeOrIdle;
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-paper">
