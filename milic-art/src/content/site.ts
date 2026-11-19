@@ -11,13 +11,7 @@
  *  image: "/art/mi-dibujo.png". Si queda "" se ve el dibujo de relleno.
  */
 
-export type PlaceId =
-  | "periodismo"
-  | "diseno"
-  | "dibujo"
-  | "programacion"
-  | "about"
-  | "contact";
+export type PlaceId = "periodismo" | "diseno" | "dibujo" | "programacion" | "casita";
 
 /** Un proyecto o caso de una disciplina. Todo entre [corchetes] se completa después. */
 export type Project = {
@@ -38,11 +32,33 @@ export type Discipline = {
   tools: string[];
   extraLabel: string;
   extra: string[];
+  pricesLabel: string;
+  prices: { name: string; price: string; detail: string }[];
+  testimonialsLabel: string;
+  testimonials: { quote: string; author: string }[];
+  /** Solo para Redacción: diario o newsletter. */
+  journal?: {
+    label: string;
+    intro: string;
+    items: { title: string; date: string; summary: string }[];
+    subscribe: string;
+  };
   ctaLabel: string;
   ctaNote: string;
   /** Mensaje listo para copiar desde Contacto. */
   messageStarter: string;
 };
+
+const samplePrices = (a: string, b: string, c: string) => [
+  { name: a, price: "[Precio base]", detail: "[Qué incluye]" },
+  { name: b, price: "[Precio base]", detail: "[Qué incluye]" },
+  { name: c, price: "[Precio base]", detail: "[Qué incluye]" },
+];
+
+const sampleTestimonials = [
+  { quote: "[Frase de ejemplo de una persona o marca con la que trabajaste.]", author: "[Nombre, cargo o cuenta]" },
+  { quote: "[Otra frase de ejemplo.]", author: "[Nombre, cargo o cuenta]" },
+];
 
 const pendingProject = (kind: string, fields: string[]): Project => ({
   title: "[Título]",
@@ -71,7 +87,7 @@ export const site = {
   mascot: {
     name: "Clocky",
     role: "guía del mapa",
-    greeting: "*bostezo* ...¡ah! ¡Hola! Elegí un lugar para explorar.",
+    greeting: "*bostezo* ...¡ah! ¡Hola! Tocá un edificio y te llevo.",
     idle: [
       "Arrastrá el mapa para mirar más de cerca.",
       "Cada edificio es un trabajo distinto. Tocá el que te interese.",
@@ -83,74 +99,25 @@ export const site = {
       diseno: "*mira las paletas de colores* Acá se diseñan piezas y se cuidan las redes.",
       dibujo: "*rebota* ¡Dibujos terminados y encargos! Cuidado con la pintura.",
       programacion: "*mueve la cola* Acá se arman webs, juegos y pantallas. A veces explotan, pero poquito.",
-      about: "*señala con la patita* Ahí vive milic. Y duerme siestas.",
-      contact: "*mueve la cola* ¡Cartas! ¡Me encantan las cartas!",
+      casita: "*señala con la patita* Ahí vive milic. Y ahí está el buzón: ¡me encantan las cartas!",
     },
-    hint: "Atajos: tocá del 1 al 6 para abrir lugares, Esc cierra la página.",
+    hint: "Atajos: tocá del 1 al 5 para abrir lugares, Esc cierra la página.",
     sneeze: "*¡achís!*",
     asleep: "*zzz*",
     poke: "Tocar a Clocky",
   },
 
   map: {
-    intro: "Seis lugares, un mundito. Recorrelo como quieras.",
+    intro: "Cinco lugares, un mundito. Recorrelo como quieras.",
     dragHint: "Arrastrá para recorrer",
     zoomHint: "Scroll o pellizco para acercar",
+    /** x, y: lugar en pantallas anchas. px, py: lugar en pantallas altas (celular). */
     places: [
-      {
-        id: "periodismo" as PlaceId,
-        name: "Redacción",
-        short: "Redacción",
-        blurb: "Periodismo e investigación",
-        x: 20,
-        y: 30,
-        image: "",
-      },
-      {
-        id: "diseno" as PlaceId,
-        name: "Estudio",
-        short: "Estudio",
-        blurb: "Diseño y redes sociales",
-        x: 50,
-        y: 22,
-        image: "",
-      },
-      {
-        id: "dibujo" as PlaceId,
-        name: "Taller de dibujo",
-        short: "Dibujo",
-        blurb: "Galería y encargos",
-        x: 80,
-        y: 30,
-        image: "",
-      },
-      {
-        id: "programacion" as PlaceId,
-        name: "Laboratorio",
-        short: "Lab",
-        blurb: "Webs, juegos y UI/UX",
-        x: 20,
-        y: 72,
-        image: "",
-      },
-      {
-        id: "about" as PlaceId,
-        name: "Sobre mí",
-        short: "Yo",
-        blurb: "Quién soy y qué herramientas uso",
-        x: 50,
-        y: 76,
-        image: "",
-      },
-      {
-        id: "contact" as PlaceId,
-        name: "Contacto",
-        short: "Contacto",
-        blurb: "Redes, Discord y mail",
-        x: 80,
-        y: 72,
-        image: "",
-      },
+      { id: "periodismo" as PlaceId, name: "Redacción", short: "Redacción", blurb: "Periodismo e investigación", x: 20, y: 30, px: 57, py: 22, image: "" },
+      { id: "diseno" as PlaceId, name: "Estudio", short: "Estudio", blurb: "Diseño y redes sociales", x: 50, y: 24, px: 43, py: 36, image: "" },
+      { id: "dibujo" as PlaceId, name: "Taller de dibujo", short: "Dibujo", blurb: "Galería y encargos", x: 80, y: 30, px: 57, py: 50, image: "" },
+      { id: "programacion" as PlaceId, name: "Laboratorio", short: "Lab", blurb: "Webs, juegos y UI/UX", x: 28, y: 74, px: 43, py: 64, image: "" },
+      { id: "casita" as PlaceId, name: "Casita", short: "Casita", blurb: "Sobre mí y contacto", x: 72, y: 74, px: 57, py: 78, image: "" },
     ],
   },
 
@@ -175,6 +142,19 @@ export const site = {
     tools: ["[Herramientas de investigación]", "[Herramientas de edición]"],
     extraLabel: "Formación y reconocimientos",
     extra: ["[Estudios]", "[Premios, becas o menciones]", "[Medios donde publiqué]"],
+    pricesLabel: "Colaboraciones y precios base",
+    prices: samplePrices("[Nota o artículo]", "[Investigación a pedido]", "[Asesoría de comunicación]"),
+    testimonialsLabel: "Qué dicen",
+    testimonials: sampleTestimonials,
+    journal: {
+      label: "Diario",
+      intro: "[Una frase sobre qué vas a contar acá: novedades, procesos, lo que estás investigando.]",
+      items: [
+        { title: "[Título de la entrada]", date: "[Fecha]", summary: "[Resumen de una línea]" },
+        { title: "[Título de la entrada]", date: "[Fecha]", summary: "[Resumen de una línea]" },
+      ],
+      subscribe: "[Enlace para suscribirte al newsletter]",
+    },
     ctaLabel: "Escribime por una nota o investigación",
     ctaNote: "Contame de qué se trata y te respondo.",
     messageStarter: "Hola Mili, te escribo por una nota o investigación periodística: [contame de qué se trata].",
@@ -200,8 +180,12 @@ export const site = {
       pendingProject("caso", ["Cliente o cuenta", "Objetivo", "Qué hice", "Resultado"]),
     ] as Project[],
     tools: ["Canva", "Figma", "Photopea", "CapCut"],
-    extraLabel: "Servicios y precios base",
-    extra: ["[Servicio 1: precio]", "[Servicio 2: precio]", "[Servicio 3: precio]"],
+    extraLabel: "Cómo trabajo",
+    extra: ["[Paso 1: diagnóstico de la cuenta]", "[Paso 2: propuesta]", "[Paso 3: producción y seguimiento]"],
+    pricesLabel: "Servicios y precios base",
+    prices: samplePrices("[Pack de piezas para redes]", "[Gestión mensual de redes]", "[Identidad visual]"),
+    testimonialsLabel: "Qué dicen",
+    testimonials: sampleTestimonials,
     ctaLabel: "Escribime por diseño o redes",
     ctaNote: "Contame qué cuenta o marca tenés y qué necesitás.",
     messageStarter: "Hola Mili, te escribo por diseño o redes sociales: [contame qué cuenta o marca tenés y qué necesitás].",
@@ -238,6 +222,10 @@ export const site = {
     tools: ["Figma", "React", "TypeScript", "[Motor de juegos]"],
     extraLabel: "Cómo trabajo un proyecto",
     extra: ["[Paso 1: idea y alcance]", "[Paso 2: prototipo]", "[Paso 3: prueba con gente real]"],
+    pricesLabel: "Servicios y precios base",
+    prices: samplePrices("[Web simple]", "[Prototipo de UI/UX]", "[Webjuego o prototipo]"),
+    testimonialsLabel: "Qué dicen",
+    testimonials: sampleTestimonials,
     ctaLabel: "Escribime por una web o un juego",
     ctaNote: "Contame la idea, aunque todavía esté verde.",
     messageStarter: "Hola Mili, te escribo por una web, un juego o una interfaz: [contame la idea].",
@@ -300,6 +288,8 @@ export const site = {
     availability: "Cerrado por ahora. Abre cuando el portfolio esté listo.",
     ctaLabel: "Saludame por Discord",
     ctaNote: "Podés escribirme cuando quieras, aunque el tablón esté cerrado.",
+    testimonialsLabel: "Qué dicen",
+    testimonials: sampleTestimonials,
     tabGallery: "Galería",
     tabCommissions: "Encargos",
   },
@@ -402,6 +392,12 @@ export const site = {
     forWhom: "Para quién",
     pending: "Falta completar",
     visit: "Ver",
+    basePrices: "Precio base",
+    list: "Ver como lista",
+    map: "Ver mapa",
+    write: "Escribime",
+    tabAbout: "Sobre mí",
+    tabContact: "Contacto",
     prevPlace: "Lugar anterior",
     nextPlace: "Lugar siguiente",
   },

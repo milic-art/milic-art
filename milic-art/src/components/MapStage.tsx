@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { site, type PlaceId } from "../content";
 import { LandmarkArt, WorldBackdrop } from "./WorldArt";
+import { ClockyArt, type ClockyState } from "./ClockyArt";
 
 const WORLD_W = 1600;
 const WORLD_H = 1000;
@@ -12,13 +13,19 @@ type MapStageProps = {
   activeId: PlaceId | null;
   onOpen: (id: PlaceId) => void;
   onHover: (id: PlaceId | null) => void;
+  portrait: boolean;
+  /** Dónde está Clocky en el mapa (null: en el centro). */
+  clockyAt: PlaceId | null;
+  clockyState: ClockyState;
+  walking: boolean;
+  onPokeClocky: () => void;
 };
 
 /**
  * The illustrated map. Custom pan and zoom: pointer drag, wheel, two finger
  * pinch, and the round zoom pegs for people who would rather not drag.
  */
-export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
+export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, onPokeClocky }: MapStageProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const layerRef = useRef<HTMLDivElement | null>(null);
   const labelRefs = useRef<Array<HTMLSpanElement | null>>([]);
@@ -66,12 +73,9 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
     const h = stage.clientHeight;
     const worldW = WORLD_W * next.s;
     const worldH = WORLD_H * next.s;
-    const edge = 96;
-
-    next.x =
-      worldW <= w ? (w - worldW) / 2 : Math.min(w - edge, Math.max(-(worldW - edge), next.x));
-    next.y =
-      worldH <= h ? (h - worldH) / 2 : Math.min(h - edge, Math.max(-(worldH - edge), next.y));
+    // El mapa siempre cubre la pantalla: no se puede arrastrar fuera de los bordes.
+    next.x = worldW <= w ? (w - worldW) / 2 : Math.min(0, Math.max(w - worldW, next.x));
+    next.y = worldH <= h ? (h - worldH) / 2 : Math.min(0, Math.max(h - worldH, next.y));
     return next;
   }, []);
 
@@ -117,10 +121,10 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
       const w = stage.clientWidth;
       const h = stage.clientHeight;
       const { fitAll, cover } = limits();
-      minScale.current = Math.max(0.18, fitAll * 0.94);
-      maxScale.current = Math.max(cover * 2.6, 1.4);
-      const start = Math.min(cover * 1.02, fitAll * 2.1);
-      const s = Math.min(maxScale.current, Math.max(minScale.current, start));
+      void fitAll;
+      minScale.current = cover;
+      maxScale.current = Math.max(cover * 3, 1.4);
+      const s = Math.min(maxScale.current, Math.max(minScale.current, cover * 1.02));
 
       const next = clamp({
         s,
@@ -144,9 +148,9 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
   useEffect(() => {
     welcomeView(false);
     const onResize = () => {
-      const { fitAll, cover } = limits();
-      minScale.current = Math.max(0.18, fitAll * 0.94);
-      maxScale.current = Math.max(cover * 2.6, 1.4);
+      const { cover } = limits();
+      minScale.current = cover;
+      maxScale.current = Math.max(cover * 3, 1.4);
       if (interacted.current) {
         setView(view.current);
       } else {
@@ -155,7 +159,7 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [limits, setView, welcomeView]);
+  }, [limits, setView, welcomeView, portrait]);
 
   // Wheel zoom, registered by hand so the page never scrolls behind the map.
   useEffect(() => {
@@ -274,7 +278,7 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
         if (event.pointerType === "mouse") onHover(null);
       }}
       role="group"
-      aria-label={`${site.brand.mapName}. Un mapa ilustrado con seis lugares: ${places
+      aria-label={`${site.brand.mapName}. Un mapa ilustrado con ${places.length} lugares: ${places
         .map((place) => place.name)
         .join(", ")}. Arrastrá para moverte, pellizcá o usá scroll para acercar, o abrí un lugar desde el menú.`}
     >
@@ -283,7 +287,7 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
         className="absolute left-0 top-0 origin-top-left overflow-hidden rounded-[22px] shadow-[0_18px_44px_rgba(75,58,42,0.16)]"
         style={{ width: WORLD_W, height: WORLD_H, willChange: "transform", opacity: 0 }}
       >
-        <WorldBackdrop places={places} />
+        <WorldBackdrop places={places} portrait={portrait} />
 
         {places.map((place, index) => {
           const isActive = activeId === place.id;
@@ -364,6 +368,30 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
             </button>
           );
         })}
+
+        {/* Clocky camina por el mapa hasta el lugar que abrís */}
+        {(() => {
+          const spot = places.find((place) => place.id === clockyAt) ?? { x: 50, y: 54 };
+          const near = clockyAt !== null;
+          return (
+            <button
+              type="button"
+              onClick={onPokeClocky}
+              aria-label={site.mascot.poke}
+              className="clocky-walker absolute z-20 block w-[132px] cursor-pointer"
+              data-walking={walking}
+              style={{
+                left: `calc(${spot.x}% + ${near ? 104 : 0}px)`,
+                top: `calc(${spot.y}% + ${near ? 46 : 0}px)`,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              <span className="clocky-walk-inner block aspect-[220/200] w-full">
+                <ClockyArt state={walking ? "stand" : clockyState} />
+              </span>
+            </button>
+          );
+        })()}
       </div>
 
       {/* Zoom pegs */}

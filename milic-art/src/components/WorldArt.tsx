@@ -157,21 +157,94 @@ function Compass({ x, y }: { x: number; y: number }) {
   );
 }
 
+
+/** Cada lugar tiene su zona con su propio ambiente. */
+function Zones({ places }: { places: { id: PlaceId; x: number; y: number }[] }) {
+  const at = (id: PlaceId) => {
+    const place = places.find((item) => item.id === id) ?? { x: 50, y: 50 };
+    return { x: place.x * 16, y: place.y * 10 };
+  };
+  const blob = (c: { x: number; y: number }, tone: string) => (
+    <ellipse cx={c.x} cy={c.y + 30} rx="215" ry="165" fill={tone} opacity="0.55" />
+  );
+  const news = at("periodismo");
+  const studio = at("diseno");
+  const draw = at("dibujo");
+  const lab = at("programacion");
+  const home = at("casita");
+  return (
+    <g>
+      {blob(news, "#f3e8cf")}
+      <g fill={CHALK} stroke={INK} strokeOpacity="0.25" strokeWidth="2">
+        <rect x={news.x - 170} y={news.y + 70} width="44" height="56" rx="4" transform={`rotate(-12 ${news.x - 148} ${news.y + 98})`} />
+        <rect x={news.x + 120} y={news.y + 100} width="44" height="56" rx="4" transform={`rotate(10 ${news.x + 142} ${news.y + 128})`} />
+        <rect x={news.x + 110} y={news.y - 70} width="40" height="50" rx="4" transform={`rotate(18 ${news.x + 130} ${news.y - 45})`} />
+      </g>
+      <g stroke={INK} strokeOpacity="0.3" strokeWidth="3" strokeLinecap="round">
+        <path d={`M${news.x - 160} ${news.y + 84} h24 M${news.x - 160} ${news.y + 96} h18`} />
+        <path d={`M${news.x + 130} ${news.y + 114} h24 M${news.x + 130} ${news.y + 126} h18`} />
+      </g>
+
+      {blob(studio, "#f9dcc7")}
+      <g>
+        <circle cx={studio.x - 150} cy={studio.y + 90} r="16" fill={ORANGE} opacity="0.7" />
+        <circle cx={studio.x - 118} cy={studio.y + 112} r="11" fill={ORANGE_SOFT} opacity="0.9" />
+        <circle cx={studio.x + 140} cy={studio.y + 96} r="14" fill={SAGE} opacity="0.9" />
+        <circle cx={studio.x + 168} cy={studio.y + 70} r="9" fill={ORANGE} opacity="0.6" />
+        <circle cx={studio.x + 20} cy={studio.y + 150} r="10" fill={MOSS} opacity="0.5" />
+      </g>
+
+      {blob(draw, "#e5efcf")}
+      <g fill="none" stroke={ORANGE} strokeOpacity="0.55" strokeWidth="5" strokeLinecap="round">
+        <path d={`M${draw.x - 160} ${draw.y + 110} q16 -26 32 0 t32 0`} />
+        <path d={`M${draw.x + 90} ${draw.y + 120} q14 -22 28 0 t28 0`} />
+      </g>
+      <Sparkle x={draw.x - 120} y={draw.y - 40} s={0.9} />
+      <Sparkle x={draw.x + 140} y={draw.y - 20} s={0.7} />
+
+      {blob(lab, "#d9e8e6")}
+      <g fill={INK} opacity="0.22">
+        {[0, 1, 2, 3].map((row) =>
+          [0, 1, 2, 3, 4].map((col) => (
+            <circle key={`${row}-${col}`} cx={lab.x - 140 + col * 34} cy={lab.y + 100 + row * 22} r="2.6" />
+          )),
+        )}
+      </g>
+      <g stroke={MOSS} strokeOpacity="0.55" strokeWidth="5" strokeLinecap="round" fill="none">
+        <path d={`M${lab.x + 120} ${lab.y + 90} l10 10 l-10 10`} />
+        <path d={`M${lab.x + 170} ${lab.y + 90} l-10 10 l10 10`} />
+      </g>
+
+      {blob(home, "#f7e6ac")}
+      <Sunflower x={home.x - 150} y={home.y + 120} s={0.9} delay={0.2} />
+      <Sunflower x={home.x + 150} y={home.y + 110} s={0.8} delay={0.6} />
+      <Sunflower x={home.x + 110} y={home.y + 150} s={0.7} delay={1} />
+    </g>
+  );
+}
+
 /** Dotted trails joining the four places. */
-function Trails({ places }: { places: { id: PlaceId; x: number; y: number }[] }) {
+function Trails({ places, portrait = false }: { places: { id: PlaceId; x: number; y: number }[]; portrait?: boolean }) {
   const p = (id: PlaceId): Dot => {
     const place = places.find((item) => item.id === id) ?? { x: 50, y: 50 };
     return { x: place.x * 16, y: place.y * 10 };
   };
-  const pairs: [PlaceId, PlaceId][] = [
-    ["periodismo", "diseno"],
-    ["diseno", "dibujo"],
-    ["periodismo", "programacion"],
-    ["diseno", "about"],
-    ["dibujo", "contact"],
-    ["programacion", "about"],
-    ["about", "contact"],
-  ];
+  const pairs: [PlaceId, PlaceId][] = portrait
+    ? [
+        ["periodismo", "diseno"],
+        ["diseno", "dibujo"],
+        ["dibujo", "programacion"],
+        ["programacion", "casita"],
+      ]
+    : [
+        ["periodismo", "diseno"],
+        ["diseno", "dibujo"],
+        ["periodismo", "programacion"],
+        ["dibujo", "casita"],
+        ["programacion", "casita"],
+        ["diseno", "casita"],
+      ];
+
 
   return (
     <g fill="none" strokeLinecap="round">
@@ -193,7 +266,7 @@ function Trails({ places }: { places: { id: PlaceId; x: number; y: number }[] })
 }
 
 /** The illustrated landscape behind the four landmarks. */
-export function WorldBackdrop({ places }: { places: { id: PlaceId; x: number; y: number }[] }) {
+export function WorldBackdrop({ places, portrait = false }: { places: { id: PlaceId; x: number; y: number }[]; portrait?: boolean }) {
   return (
     <svg
       viewBox="0 0 1600 1000"
@@ -268,7 +341,8 @@ export function WorldBackdrop({ places }: { places: { id: PlaceId; x: number; y:
       <Cloud x={1300} y={150} s={1} d={52} />
       <Cloud x={520} y={520} s={0.7} d={34} />
 
-      <Trails places={places} />
+      <Zones places={places} />
+      <Trails places={places} portrait={portrait} />
 
       {/* pine forest clusters, kept clear of the landmarks */}
       <Pine x={140} y={220} s={1.15} />
@@ -559,9 +633,12 @@ function AboutLandmark() {
         <rect x="0" y="-12" width="22" height="14" rx="4" fill={ORANGE} stroke={CHALK} strokeWidth="4" />
         <path d="M22 -10 q8 0 8 5 q-1 5 -8 4" fill="none" stroke={CHALK} strokeWidth="4" />
       </g>
-      <g transform="translate(160 168)">
-        <rect x="0" y="-8" width="20" height="8" rx="2" fill={MOSS} />
-        <rect x="2" y="-16" width="16" height="8" rx="2" fill={ORANGE} />
+      {/* buzón */}
+      <g transform="translate(168 176)">
+        <path d="M0 0 V-30" stroke={CHALK} strokeWidth="9" strokeLinecap="round" />
+        <path d="M0 0 V-30" stroke="#8a6a4b" strokeWidth="4" strokeLinecap="round" />
+        <path d="M-14 -30 Q-14 -50 4 -50 Q22 -50 22 -30 Z" fill={ORANGE} stroke={CHALK} strokeWidth="5" strokeLinejoin="round" />
+        <path d="M-4 -40 h14" stroke={CHALK} strokeWidth="3" strokeLinecap="round" />
       </g>
       <Bush x={58} y={182} s={0.6} />
       <Mushroom x={150} y={186} s={0.7} />
@@ -569,37 +646,6 @@ function AboutLandmark() {
   );
 }
 
-/** Contact: the mailbox. */
-function ContactLandmark() {
-  return (
-    <svg viewBox="0 0 200 200" style={landmarkFrame} aria-hidden="true" focusable="false">
-      <ellipse cx="100" cy="184" rx="56" ry="8" fill={INK} opacity="0.12" />
-      {/* post */}
-      <path d="M96 186 L96 128" stroke={CHALK} strokeWidth="15" strokeLinecap="round" />
-      <path d="M96 186 L96 128" stroke="#8a6a4b" strokeWidth="7" strokeLinecap="round" />
-      {/* box */}
-      <path d="M52 132 L52 106 Q52 76 96 76 Q140 76 140 106 L140 132 Z" fill={ORANGE} stroke={CHALK} strokeWidth="11" strokeLinejoin="round" />
-      <path d="M52 132 L140 132" stroke={CHALK} strokeWidth="11" />
-      <rect x="66" y="98" width="44" height="6" rx="3" fill={PAPER} opacity="0.9" />
-      {/* flag */}
-      <path d="M144 92 L164 92 L164 116 L144 116" fill={MOSS} stroke={CHALK} strokeWidth="6" strokeLinejoin="round" />
-      {/* letters flying out */}
-      <g transform="translate(150 62) rotate(-14)">
-        <rect x="-16" y="-11" width="32" height="22" rx="3" fill={PAPER} stroke={CHALK} strokeWidth="5" />
-        <path d="M-14 -8 L0 4 L14 -8" stroke={INK} strokeWidth="2.4" fill="none" opacity="0.5" />
-        <circle cx="0" cy="8" r="3" fill={ORANGE} />
-      </g>
-      <g transform="translate(122 40) rotate(10)">
-        <rect x="-13" y="-9" width="26" height="18" rx="3" fill={ORANGE_SOFT} stroke={CHALK} strokeWidth="5" />
-        <path d="M-11 -6 L0 3 L11 -6" stroke={INK} strokeWidth="2.2" fill="none" opacity="0.45" />
-      </g>
-      <path d="M34 96 L56 88 L54 96 Z" fill={PAPER} stroke={CHALK} strokeWidth="4" strokeLinejoin="round" />
-      {/* bush */}
-      <Bush x={44} y={176} s={0.7} />
-      <path d="M132 186 q6 -14 14 -3" stroke={MOSS} strokeWidth="5" fill="none" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 /** Fallback art for a place that has no illustration of its own. */
 function GenericLandmark() {
@@ -624,10 +670,8 @@ export function LandmarkArt({ id }: { id: PlaceId }) {
       return <GalleryLandmark />;
     case "programacion":
       return <LabLandmark />;
-    case "about":
+    case "casita":
       return <AboutLandmark />;
-    case "contact":
-      return <ContactLandmark />;
     default:
       return <GenericLandmark />;
   }

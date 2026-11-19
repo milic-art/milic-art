@@ -51,6 +51,26 @@ function Txt({ children }: { children: string }) {
   );
 }
 
+function Testimonials({ label, items }: { label: string; items: { quote: string; author: string }[] }) {
+  return (
+    <section>
+      <h3 className="font-display text-lg">{label}</h3>
+      <ul className="mt-2 grid gap-3 sm:grid-cols-2">
+        {items.map((item, index) => (
+          <li key={index} className="rounded-xl border-2 border-ink/20 bg-paper-deep/60 px-3.5 py-3">
+            <p className="text-[13.5px] italic leading-relaxed text-ink">
+              <Txt>{item.quote}</Txt>
+            </p>
+            <p className="mt-1.5 text-[12px] font-bold text-ink-soft">
+              <Txt>{item.author}</Txt>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /* ------------------------------------------------------------------ gallery */
 
 function Lightbox({
@@ -281,6 +301,8 @@ function CommissionsBody({ onContact }: { onContact: (preset: string) => void })
           <p className="mt-2 text-[12px] leading-relaxed text-ink-soft">{site.commissions.payments}</p>
         </div>
       </div>
+
+      <Testimonials label={site.commissions.testimonialsLabel} items={site.commissions.testimonials} />
 
       <div className="rounded-2xl border-2 border-dashed border-ink/35 px-4 py-4 text-center">
         <p className="text-[13px] text-ink-soft">{site.commissions.ctaNote}</p>
@@ -624,6 +646,56 @@ function DisciplineBody({
         </section>
       </div>
 
+      <section>
+        <h3 className="font-display text-lg">{data.pricesLabel}</h3>
+        <ul className="mt-2 divide-y divide-ink/15 rounded-xl border-2 border-ink/25 bg-chalk/70">
+          {data.prices.map((tier, index) => (
+            <li key={index} className="flex flex-wrap items-start justify-between gap-2 px-3.5 py-3">
+              <div className="max-w-[36ch]">
+                <p className="font-display text-[15px] font-bold leading-tight text-ink">
+                  <Txt>{tier.name}</Txt>
+                </p>
+                <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">
+                  <Txt>{tier.detail}</Txt>
+                </p>
+              </div>
+              <p className="font-display text-[15px] font-bold leading-none text-orange-deep">
+                <Txt>{tier.price}</Txt>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <Testimonials label={data.testimonialsLabel} items={data.testimonials} />
+
+      {data.journal && (
+        <section className="rounded-2xl border-2 border-ink/25 bg-chalk/70 px-4 py-4">
+          <h3 className="font-display text-lg">{data.journal.label}</h3>
+          <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
+            <Txt>{data.journal.intro}</Txt>
+          </p>
+          <ul className="mt-3 space-y-2">
+            {data.journal.items.map((entry, index) => (
+              <li key={index} className="rounded-xl border border-ink/20 bg-paper px-3 py-2">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+                  <Txt>{entry.date}</Txt>
+                </p>
+                <p className="font-display text-[14.5px] font-bold leading-tight text-ink">
+                  <Txt>{entry.title}</Txt>
+                </p>
+                <p className="text-[12.5px] leading-snug text-ink-soft">
+                  <Txt>{entry.summary}</Txt>
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-[13px] font-semibold text-ink">
+            <Txt>{data.journal.subscribe}</Txt>
+          </p>
+        </section>
+      )}
+
       <div className="rounded-2xl border-2 border-dashed border-ink/35 px-4 py-4 text-center">
         <p className="text-[13px] text-ink-soft">{data.ctaNote}</p>
         <button
@@ -674,6 +746,38 @@ function DibujoBody({ onContact }: { onContact: (preset: string) => void }) {
   );
 }
 
+function CasitaBody({ tab, onTab, preset }: { tab: "sobre" | "contacto"; onTab: (t: "sobre" | "contacto") => void; preset: string | null }) {
+  const tabs = [
+    { id: "sobre" as const, label: site.labels.tabAbout },
+    { id: "contacto" as const, label: site.labels.tabContact },
+  ];
+  return (
+    <div>
+      <div role="tablist" aria-label="Casita" className="mb-4 flex gap-1.5">
+        {tabs.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            id={`casita-tab-${item.id}`}
+            aria-selected={tab === item.id}
+            aria-controls={`casita-panel-${item.id}`}
+            onClick={() => onTab(item.id)}
+            className={`min-h-[44px] rounded-full border-2 px-4 font-display text-[14px] font-bold ${
+              tab === item.id ? "border-ink bg-orange-deep text-chalk" : "border-ink/30 bg-chalk text-ink hover:bg-paper-deep"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id={`casita-panel-${tab}`} aria-labelledby={`casita-tab-${tab}`}>
+        {tab === "sobre" ? <AboutBody /> : <ContactBody key={preset ?? "none"} preset={preset} />}
+      </div>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------- panel */
 
 const titles: Record<PlaceId, { title: string; kicker: string }> = {
@@ -681,22 +785,30 @@ const titles: Record<PlaceId, { title: string; kicker: string }> = {
   diseno: { title: site.diseno.heading, kicker: site.diseno.kicker },
   dibujo: { title: "Taller de dibujo", kicker: "Galería y encargos" },
   programacion: { title: site.programacion.heading, kicker: site.programacion.kicker },
-  about: { title: site.about.heading, kicker: site.about.kicker },
-  contact: { title: site.contact.heading, kicker: site.contact.kicker },
+  casita: { title: "Casita", kicker: "Sobre mí y contacto" },
 };
 
 export function PlacePanel({
   placeId,
   onClose,
   onNavigate,
+  casitaTab,
+  onCasitaTab,
+  preset,
+  onContact,
 }: {
   placeId: PlaceId;
   onClose: () => void;
   onNavigate: (id: PlaceId) => void;
+  casitaTab: "sobre" | "contacto";
+  onCasitaTab: (tab: "sobre" | "contacto") => void;
+  preset: string | null;
+  onContact: (preset?: string) => void;
 }) {
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const restoreRef = useRef<Element | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const headingId = `panel-title-${placeId}`;
 
   useEffect(() => {
@@ -716,12 +828,12 @@ export function PlacePanel({
     };
   }, [onClose]);
 
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [placeId, casitaTab, preset]);
+
   const meta = titles[placeId];
-  const [preset, setPreset] = useState<string | null>(null);
-  const goContact = (id: string) => {
-    setPreset(id);
-    onNavigate("contact");
-  };
+  const goContact = (id: string) => onContact(id);
   const order = site.map.places.map((place) => place.id);
   const at = order.indexOf(placeId);
   const prevPlace = site.map.places[(at - 1 + order.length) % order.length];
@@ -773,13 +885,12 @@ export function PlacePanel({
           </div>
         </div>
 
-        <div className="panel-scroll overflow-y-auto px-4 pb-8 pt-4 sm:px-7">
+        <div ref={scrollRef} className="panel-scroll overflow-y-auto px-4 pb-8 pt-4 sm:px-7">
           {placeId === "periodismo" && <DisciplineBody key="p" data={site.periodismo} onContact={goContact} presetId="periodismo" />}
           {placeId === "diseno" && <DisciplineBody key="d" data={site.diseno} onContact={goContact} presetId="diseno" />}
           {placeId === "dibujo" && <DibujoBody onContact={goContact} />}
           {placeId === "programacion" && <DisciplineBody key="g" data={site.programacion} onContact={goContact} presetId="programacion" />}
-          {placeId === "about" && <AboutBody />}
-          {placeId === "contact" && <ContactBody key={preset ?? "none"} preset={preset} />}
+          {placeId === "casita" && <CasitaBody tab={casitaTab} onTab={onCasitaTab} preset={preset} />}
 
           <nav aria-label="Otros lugares" className="mt-7 flex items-stretch justify-between gap-2">
             <button
