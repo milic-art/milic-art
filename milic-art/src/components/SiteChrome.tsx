@@ -11,17 +11,30 @@ function PlaceGlyph({ id, className = "h-4 w-4" }: { id: PlaceId; className?: st
   };
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true" focusable="false">
-      {id === "gallery" && (
+      {id === "periodismo" && (
         <g {...common}>
-          <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
-          <path d="M6 15.5 9.5 11l3 4 2.5-3 3 4.5" />
-          <circle cx="9" cy="8.6" r="1.2" />
+          <circle cx="10.5" cy="10.5" r="5.5" />
+          <path d="m15 15 5 5" />
+          <path d="M8.5 9.5h4M8.5 12h3" />
         </g>
       )}
-      {id === "commissions" && (
+      {id === "diseno" && (
         <g {...common}>
-          <rect x="5" y="4" width="14" height="16" rx="2.5" />
-          <path d="M9 9h6M9 13h6M9 17h3" />
+          <path d="M12 4c-5 0-8 3.4-8 7.2 0 3.6 2.8 6 5.8 6 1.4 0 1.7-.9 1.2-1.8-.6-1 .1-2.2 1.4-2.2H17c2 0 3-1.2 3-3C20 6.2 16.6 4 12 4Z" />
+          <circle cx="8.2" cy="10" r=".9" />
+          <circle cx="12" cy="7.8" r=".9" />
+          <circle cx="15.6" cy="9.4" r=".9" />
+        </g>
+      )}
+      {id === "dibujo" && (
+        <g {...common}>
+          <path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19l-4 1Z" />
+          <path d="m14.5 6.5 3 3" />
+        </g>
+      )}
+      {id === "programacion" && (
+        <g {...common}>
+          <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 6l-3 12" />
         </g>
       )}
       {id === "about" && (
@@ -96,8 +109,9 @@ export function SiteHeader({
               }`}
             >
               <PlaceGlyph id={place.id} className="h-4 w-4" />
-              <span>{place.name}</span>
-              <span className="hidden text-[11px] font-bold text-ink-soft lg:inline">
+              <span className="hidden lg:inline xl:hidden">{place.short}</span>
+              <span className="hidden xl:inline">{place.name}</span>
+              <span className="hidden text-[11px] font-bold text-ink-soft xl:inline">
                 {index + 1}
               </span>
             </button>
@@ -121,7 +135,7 @@ export function MobileDock({
       aria-label={site.labels.menu}
       className="pointer-events-auto fixed inset-x-2.5 bottom-2.5 z-40 sm:hidden"
     >
-      <ul className="flex items-stretch justify-between gap-1 rounded-2xl border-2 border-ink bg-paper/97 px-1.5 py-1.5 shadow-[0_4px_0_rgba(75,58,42,0.55)]">
+      <ul className="flex items-stretch justify-between gap-0.5 rounded-2xl border-2 border-ink bg-paper/97 px-1 py-1.5 shadow-[0_4px_0_rgba(75,58,42,0.55)]">
         {site.map.places.map((place) => {
           const active = activeId === place.id;
           return (
@@ -131,13 +145,13 @@ export function MobileDock({
                 onClick={() => onOpen(place.id)}
                 aria-current={active ? "true" : undefined}
                 aria-label={`${place.name}, ${place.blurb}`}
-                className={`flex w-full flex-col items-center gap-1 rounded-xl px-1 py-1.5 transition-colors ${
+                className={`flex w-full flex-col items-center gap-1 rounded-xl px-0.5 py-1.5 transition-colors ${
                   active ? "bg-orange-deep text-chalk" : "text-ink"
                 }`}
               >
                 <PlaceGlyph id={place.id} className="h-5 w-5" />
-                <span className="font-display text-[11px] font-bold leading-none">
-                  {place.name}
+                <span className="font-display text-[10px] font-bold leading-none">
+                  {place.short}
                 </span>
               </button>
             </li>
@@ -169,7 +183,7 @@ export function GuideCompanion({
       <button
         type="button"
         onClick={onPoke}
-        aria-label="Poke Clocky"
+        aria-label={site.mascot.poke}
         className="pointer-events-auto aspect-[220/200] w-[110px] shrink-0 cursor-pointer sm:w-[150px]"
       >
         <ClockyArt state={state} />

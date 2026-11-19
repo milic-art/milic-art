@@ -164,9 +164,12 @@ function Trails({ places }: { places: { id: PlaceId; x: number; y: number }[] })
     return { x: place.x * 16, y: place.y * 10 };
   };
   const pairs: [PlaceId, PlaceId][] = [
-    ["gallery", "commissions"],
-    ["gallery", "about"],
-    ["commissions", "contact"],
+    ["periodismo", "diseno"],
+    ["diseno", "dibujo"],
+    ["periodismo", "programacion"],
+    ["diseno", "about"],
+    ["dibujo", "contact"],
+    ["programacion", "about"],
     ["about", "contact"],
   ];
 
@@ -406,6 +409,97 @@ function GalleryLandmark() {
   );
 }
 
+
+/** Redacción: casita con cartel de noticias, lupa y antena. */
+function NewsroomLandmark() {
+  return (
+    <svg viewBox="0 0 200 200" style={landmarkFrame} aria-hidden="true" focusable="false">
+      <ellipse cx="100" cy="184" rx="62" ry="9" fill={INK} opacity="0.12" />
+      <path d="M52 176 L52 96 Q52 86 62 86 L138 86 Q148 86 148 96 L148 176 Z" fill={PAPER} stroke={CHALK} strokeWidth="10" strokeLinejoin="round" />
+      <path d="M40 96 L100 56 L160 96 Z" fill={ORANGE} stroke={CHALK} strokeWidth="10" strokeLinejoin="round" />
+      {/* antenna */}
+      <path d="M100 56 L100 30" stroke={CHALK} strokeWidth="9" strokeLinecap="round" />
+      <path d="M100 56 L100 30" stroke={INK} strokeWidth="3" strokeLinecap="round" opacity="0.5" />
+      <circle cx="100" cy="26" r="6" fill={ORANGE_SOFT} stroke={CHALK} strokeWidth="4" />
+      <path d="M86 20 q-8 6 0 12 M114 20 q8 6 0 12" stroke={INK} strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.45" />
+      {/* newspaper sign */}
+      <rect x="72" y="104" width="56" height="30" rx="5" fill={CHALK} stroke={CHALK} strokeWidth="5" />
+      <rect x="78" y="110" width="20" height="10" rx="2" fill={SAGE} />
+      <path d="M104 112 h18 M104 118 h18 M78 126 h44" stroke={INK} strokeWidth="3" strokeLinecap="round" opacity="0.55" />
+      {/* door */}
+      <path d="M86 176 L86 150 Q100 142 114 150 L114 176 Z" fill={MOSS} stroke={CHALK} strokeWidth="7" />
+      <circle cx="108" cy="164" r="2.6" fill={CHALK} />
+      {/* magnifier */}
+      <circle cx="40" cy="148" r="14" fill={PAPER} stroke={CHALK} strokeWidth="8" opacity="0.95" />
+      <circle cx="40" cy="148" r="14" fill="none" stroke={ORANGE} strokeWidth="3.5" />
+      <path d="M50 158 L62 172" stroke={CHALK} strokeWidth="10" strokeLinecap="round" />
+      <path d="M50 158 L62 172" stroke="#8a6a4b" strokeWidth="5" strokeLinecap="round" />
+      <Bush x={156} y={184} s={0.6} />
+    </svg>
+  );
+}
+
+/** Estudio: casita con paleta de colores, pantalla y corazón de redes. */
+function StudioLandmark() {
+  return (
+    <svg viewBox="0 0 200 200" style={landmarkFrame} aria-hidden="true" focusable="false">
+      <ellipse cx="100" cy="184" rx="62" ry="9" fill={INK} opacity="0.12" />
+      <path d="M50 176 L50 100 Q50 88 62 88 L138 88 Q150 88 150 100 L150 176 Z" fill={PAPER} stroke={CHALK} strokeWidth="10" strokeLinejoin="round" />
+      <path d="M42 98 Q100 52 158 98 Z" fill={SAGE} stroke={CHALK} strokeWidth="10" strokeLinejoin="round" />
+      {/* big window with a phone screen */}
+      <rect x="66" y="106" width="68" height="44" rx="9" fill={ORANGE_SOFT} stroke={CHALK} strokeWidth="7" />
+      <rect x="92" y="111" width="24" height="34" rx="5" fill={CHALK} />
+      <path d="M104 134 c-7 -5 -9 -9 -6 -12 c2 -2 5 -1 6 1 c1 -2 4 -3 6 -1 c3 3 1 7 -6 12 Z" fill={ORANGE} />
+      <circle cx="78" cy="118" r="4" fill={ORANGE} />
+      <circle cx="78" cy="132" r="4" fill={MOSS} />
+      <circle cx="126" cy="128" r="4" fill={CHALK} />
+      {/* door */}
+      <path d="M88 176 L88 158 Q100 152 112 158 L112 176 Z" fill={ORANGE} stroke={CHALK} strokeWidth="6" />
+      {/* palette */}
+      <g transform="translate(160 150) rotate(12)">
+        <path d="M0 0 q-18 -6 -22 10 q-3 16 14 18 q8 0 6 -7 q-1 -6 6 -5 q9 1 10 -9 q0 -10 -14 -7 Z" fill={CHALK} stroke={CHALK} strokeWidth="5" strokeLinejoin="round" />
+        <circle cx="-14" cy="8" r="3" fill={ORANGE} />
+        <circle cx="-6" cy="3" r="3" fill={MOSS} />
+        <circle cx="4" cy="6" r="3" fill={SAGE} />
+      </g>
+      <Flower x={40} y={178} />
+    </svg>
+  );
+}
+
+/** Laboratorio: casita con pantalla de código, engranaje y control de juego. */
+function LabLandmark() {
+  return (
+    <svg viewBox="0 0 200 200" style={landmarkFrame} aria-hidden="true" focusable="false">
+      <ellipse cx="100" cy="184" rx="62" ry="9" fill={INK} opacity="0.12" />
+      <path d="M52 176 L52 96 Q52 86 62 86 L138 86 Q148 86 148 96 L148 176 Z" fill={PAPER} stroke={CHALK} strokeWidth="10" strokeLinejoin="round" />
+      <path d="M44 96 L56 64 L144 64 L156 96 Z" fill={MOSS} stroke={CHALK} strokeWidth="10" strokeLinejoin="round" />
+      {/* monitor */}
+      <rect x="68" y="104" width="64" height="40" rx="7" fill={INK} stroke={CHALK} strokeWidth="7" />
+      <path d="M80 116 l-8 8 8 8 M120 116 l8 8 -8 8" stroke={SAGE} strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M106 114 l-12 20" stroke={ORANGE_SOFT} strokeWidth="4" strokeLinecap="round" />
+      {/* door */}
+      <path d="M88 176 L88 156 Q100 150 112 156 L112 176 Z" fill={ORANGE} stroke={CHALK} strokeWidth="6" />
+      {/* gear */}
+      <g transform="translate(40 150)">
+        <circle r="14" fill={ORANGE_SOFT} stroke={CHALK} strokeWidth="6" />
+        <circle r="5" fill={PAPER} />
+        <g stroke={CHALK} strokeWidth="6" strokeLinecap="round">
+          <path d="M0 -19 V-24 M0 19 V24 M-19 0 H-24 M19 0 H24" />
+        </g>
+      </g>
+      {/* game pad */}
+      <g transform="translate(160 164)">
+        <rect x="-18" y="-10" width="36" height="20" rx="9" fill={CHALK} stroke={CHALK} strokeWidth="4" />
+        <path d="M-10 0 h8 M-6 -4 v8" stroke={INK} strokeWidth="3" strokeLinecap="round" />
+        <circle cx="8" cy="-2" r="2.6" fill={ORANGE} />
+        <circle cx="13" cy="3" r="2.6" fill={MOSS} />
+      </g>
+      <Mushroom x={30} y={184} s={0.6} />
+    </svg>
+  );
+}
+
 /** Commissions: the quest board. */
 function CommissionsLandmark() {
   return (
@@ -522,10 +616,14 @@ function GenericLandmark() {
 
 export function LandmarkArt({ id }: { id: PlaceId }) {
   switch (id) {
-    case "gallery":
+    case "periodismo":
+      return <NewsroomLandmark />;
+    case "diseno":
+      return <StudioLandmark />;
+    case "dibujo":
       return <GalleryLandmark />;
-    case "commissions":
-      return <CommissionsLandmark />;
+    case "programacion":
+      return <LabLandmark />;
     case "about":
       return <AboutLandmark />;
     case "contact":

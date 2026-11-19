@@ -1,8 +1,15 @@
-/** New small texts added from the UI/UX research. Edit freely. */
+/** Textos chicos de ayuda. Editalos cuando quieras. */
 export const hints = {
-  welcome: "Tap any glowing place to open it. Drag the map to look around.",
-  welcomeDismiss: "Got it",
-  discovered: (n: number, total: number) => `${n} of ${total} places visited`,
-  yawn: "*yaaawn*",
-  allDiscovered: "You visited every place. Thanks for wandering!",
+  welcomeTitle: "¿Qué estás buscando?",
+  welcomeSub: "Elegí un camino o recorré el mapa.",
+  welcomeDismiss: "Explorar solo",
+  discovered: (n: number, total: number) => `${n} de ${total} lugares visitados`,
+  yawn: "*aaaah*",
+  allDiscovered: "¡Visitaste todos los lugares! Gracias por recorrer.",
+  paths: [
+    { label: "Quiero leer investigaciones", id: "periodismo" as const },
+    { label: "Necesito diseño o redes", id: "diseno" as const },
+    { label: "Quiero un dibujo", id: "dibujo" as const },
+    { label: "Quiero una web o un juego", id: "programacion" as const },
+  ],
 };

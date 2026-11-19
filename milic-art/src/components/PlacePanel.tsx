@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { site, type PlaceId } from "../content";
+import { site, type Discipline, type PlaceId } from "../content";
 import { ArtPlaceholder } from "./WorldArt";
 import { ClockyArt } from "./ClockyArt";
 
@@ -27,6 +27,27 @@ function Kicker({ children }: { children: string }) {
     <p className="font-display text-[11px] font-bold uppercase tracking-[0.16em] text-orange-deep">
       {children}
     </p>
+  );
+}
+
+/** Muestra los [corchetes] como espacios para completar. */
+function Txt({ children }: { children: string }) {
+  const parts = children.split(/(\[[^\]]*\])/);
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.startsWith("[") ? (
+          <span
+            key={index}
+            className="rounded-md border border-dashed border-orange-deep/60 bg-orange/10 px-1 text-orange-deep"
+          >
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
+    </>
   );
 }
 
@@ -191,7 +212,7 @@ function GalleryBody() {
 
 /* -------------------------------------------------------------- commissions */
 
-function CommissionsBody({ onNavigate }: { onNavigate: (id: PlaceId) => void }) {
+function CommissionsBody({ onContact }: { onContact: (preset: string) => void }) {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border-2 border-orange bg-orange/10 px-4 py-3.5">
@@ -217,8 +238,8 @@ function CommissionsBody({ onNavigate }: { onNavigate: (id: PlaceId) => void }) 
                 <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">{tier.detail}</p>
               </div>
               <div className="text-right">
-                <p className="font-display text-[16px] font-bold leading-none text-orange-deep">{tier.price}</p>
-                <p className="mt-1 text-[11px] font-semibold text-ink-soft">{itemTime(tier.time)}</p>
+                <p className="font-display text-[16px] font-bold leading-none text-orange-deep"><Txt>{tier.price}</Txt></p>
+                <p className="mt-1 text-[11px] font-semibold text-ink-soft"><Txt>{itemTime(tier.time)}</Txt></p>
               </div>
             </li>
           ))}
@@ -253,7 +274,7 @@ function CommissionsBody({ onNavigate }: { onNavigate: (id: PlaceId) => void }) 
                 key={thing}
                 className="rounded-full border border-ink/30 bg-chalk px-2.5 py-1 text-[11.5px] font-semibold text-ink-soft"
               >
-                {thing}
+                <Txt>{thing}</Txt>
               </li>
             ))}
           </ul>
@@ -265,7 +286,7 @@ function CommissionsBody({ onNavigate }: { onNavigate: (id: PlaceId) => void }) 
         <p className="text-[13px] text-ink-soft">{site.commissions.ctaNote}</p>
         <button
           type="button"
-          onClick={() => onNavigate("contact")}
+          onClick={() => onContact("encargo")}
           className="stamp-btn mt-2.5 inline-flex items-center gap-2 rounded-full border-2 border-ink bg-orange-deep px-5 py-2.5 font-display text-[15px] font-bold text-chalk shadow-[0_3px_0_rgba(75,58,42,0.85)]"
         >
           {site.commissions.ctaLabel}
@@ -297,7 +318,7 @@ function AboutBody() {
             {site.about.portrait ? (
               <img
                 src={site.about.portrait}
-                alt={`${site.about.name} at the drawing desk`}
+                alt={`${site.about.name} en su escritorio de dibujo`}
                 className="aspect-square w-full rounded-lg object-cover"
               />
             ) : (
@@ -324,14 +345,14 @@ function AboutBody() {
       </div>
 
       <section>
-        <Kicker>{site.labels.whatIDraw}</Kicker>
+        <Kicker>{site.about.nowLabel}</Kicker>
         <ul className="mt-2 flex flex-wrap gap-1.5">
-          {site.about.draws.map((thing) => (
+          {site.about.now.map((thing) => (
             <li
               key={thing}
               className="rounded-full border-2 border-ink/25 bg-chalk px-3 py-1.5 text-[12.5px] font-semibold text-ink"
             >
-              {thing}
+              <Txt>{thing}</Txt>
             </li>
           ))}
         </ul>
@@ -370,16 +391,35 @@ function AboutBody() {
 
 /* ------------------------------------------------------------------ contact */
 
-function ContactBody() {
-  const [copied, setCopied] = useState(false);
+const messageOptions: { id: string; label: string; text: string }[] = [
+  { id: "periodismo", label: "Nota o investigación", text: site.periodismo.messageStarter },
+  { id: "diseno", label: "Diseño o redes", text: site.diseno.messageStarter },
+  { id: "encargo", label: "Un dibujo", text: "Hola Mili, quiero hacer un encargo de dibujo: [contame qué querés y para qué].  " },
+  { id: "programacion", label: "Web, juego o UI/UX", text: site.programacion.messageStarter },
+  { id: "otro", label: "Otra cosa", text: site.contact.otherMessage },
+];
 
-  const copyEmail = async () => {
+function ContactBody({ preset }: { preset: string | null }) {
+  const [choice, setChoice] = useState<string | null>(preset);
+  const [text, setText] = useState(() => messageOptions.find((o) => o.id === preset)?.text.trim() ?? "");
+  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const areaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const pick = (id: string) => {
+    setChoice(id);
+    setText(messageOptions.find((o) => o.id === id)?.text.trim() ?? "");
+    setStatus("idle");
+  };
+
+  const copy = async () => {
     try {
-      await navigator.clipboard.writeText(site.contact.email);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2200);
+      await navigator.clipboard.writeText(text);
+      setStatus("copied");
+      window.setTimeout(() => setStatus("idle"), 2200);
     } catch {
-      setCopied(false);
+      areaRef.current?.focus();
+      areaRef.current?.select();
+      setStatus("failed");
     }
   };
 
@@ -387,29 +427,57 @@ function ContactBody() {
     <div className="space-y-5">
       <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink-soft">{site.contact.intro}</p>
 
-      {site.contact.email && (
-      <div className="rounded-2xl border-2 border-ink/80 bg-chalk px-4 py-4">
-        <Kicker>Email</Kicker>
-        <a
-          href={`mailto:${site.contact.email}`}
-          className="mt-1 block break-all font-display text-[19px] font-bold leading-tight text-ink underline decoration-orange decoration-2 underline-offset-4"
-        >
-          {site.contact.email}
-        </a>
-        <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">{site.contact.emailNote}</p>
-        <button
-          type="button"
-          onClick={copyEmail}
-          className="stamp-btn mt-2.5 inline-flex items-center gap-2 rounded-full border-2 border-ink bg-orange-soft px-3.5 py-1.5 font-display text-[12.5px] font-bold text-ink shadow-[0_2px_0_rgba(75,58,42,0.8)]"
-        >
-          <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
-            <rect x="8" y="8" width="11" height="12" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.9" />
-            <path d="M16 8V5.5A2.5 2.5 0 0 0 13.5 3H6.5A2.5 2.5 0 0 0 4 5.5v9A2.5 2.5 0 0 0 6.5 17H8" fill="none" stroke="currentColor" strokeWidth="1.9" />
-          </svg>
-          {copied ? site.contact.copiedLabel : site.contact.copyLabel}
-        </button>
-      </div>
-      )}
+      <section className="rounded-2xl border-2 border-ink/80 bg-chalk px-4 py-4">
+        <Kicker>{site.contact.pickLabel}</Kicker>
+        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{site.contact.pickHint}</p>
+        <ul className="mt-2.5 flex flex-wrap gap-1.5">
+          {messageOptions.map((option) => (
+            <li key={option.id}>
+              <button
+                type="button"
+                onClick={() => pick(option.id)}
+                aria-pressed={choice === option.id}
+                className={`min-h-[44px] rounded-full border-2 px-3.5 font-display text-[13px] font-bold ${
+                  choice === option.id
+                    ? "border-ink bg-orange-deep text-chalk"
+                    : "border-ink/30 bg-paper text-ink hover:bg-paper-deep"
+                }`}
+              >
+                {option.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {choice && (
+          <div className="mt-3">
+            <label htmlFor="mensaje" className="text-[12px] font-bold uppercase tracking-wide text-ink-soft">
+              {site.contact.messageLabel}
+            </label>
+            <textarea
+              id="mensaje"
+              ref={areaRef}
+              value={text}
+              onChange={(event) => {
+                setText(event.target.value);
+                setStatus("idle");
+              }}
+              rows={4}
+              className="mt-1 w-full resize-y rounded-xl border-2 border-ink/30 bg-paper px-3 py-2 text-[14px] leading-relaxed text-ink"
+            />
+            <button
+              type="button"
+              onClick={copy}
+              className="stamp-btn mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-full border-2 border-ink bg-orange-deep px-4 font-display text-[13.5px] font-bold text-chalk shadow-[0_2px_0_rgba(75,58,42,0.8)]"
+            >
+              {status === "copied" ? site.contact.copiedLabel : site.contact.copyLabel}
+            </button>
+            <p className="mt-1.5 text-[12px] text-ink-soft" role="status">
+              {status === "failed" ? site.contact.copyFail : ""}
+            </p>
+          </div>
+        )}
+      </section>
 
       <ul className="space-y-2">
         {site.contact.links.map((link) => {
@@ -419,14 +487,18 @@ function ContactBody() {
                 <span className="font-display text-[15px] font-bold leading-tight text-ink">
                   {link.label}
                   <span className="ml-2 font-body text-[12.5px] font-semibold text-orange-deep">
-                    {link.handle}
+                    <Txt>{link.handle}</Txt>
                   </span>
                 </span>
-                <span className="mt-0.5 text-[12px] leading-snug text-ink-soft">{link.note}</span>
+                <span className="mt-0.5 text-[12px] leading-snug text-ink-soft">
+                  <Txt>{link.note}</Txt>
+                </span>
               </span>
-              <svg viewBox="0 0 24 24" className="row-arrow h-4 w-4 shrink-0 text-ink-soft" aria-hidden="true">
-                <path d="M7 17 17 7M9 7h8v8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              {link.url && (
+                <svg viewBox="0 0 24 24" className="row-arrow h-4 w-4 shrink-0 text-ink-soft" aria-hidden="true">
+                  <path d="M7 17 17 7M9 7h8v8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
             </>
           );
 
@@ -456,11 +528,159 @@ function ContactBody() {
   );
 }
 
+/* --------------------------------------------------------- disciplinas */
+
+function DisciplineBody({
+  data,
+  onContact,
+  presetId,
+}: {
+  data: Discipline;
+  onContact: (preset: string) => void;
+  presetId: string;
+}) {
+  return (
+    <div className="space-y-6">
+      <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink">
+        <Txt>{data.intro}</Txt>
+      </p>
+
+      <section>
+        <Kicker>{site.labels.whatIDo}</Kicker>
+        <ul className="mt-2 space-y-2">
+          {data.does.map((item) => (
+            <li key={item} className="flex gap-2.5 text-[14px] leading-relaxed text-ink-soft">
+              <svg viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 shrink-0 text-moss" aria-hidden="true">
+                <path d="M4 13l5 5L20 6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>
+                <Txt>{item}</Txt>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
+          <b className="font-display text-ink">{site.labels.forWhom}: </b>
+          <Txt>{data.forWhom}</Txt>
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-display text-lg">{data.projectsLabel}</h3>
+        <ul className="mt-2 grid gap-3 sm:grid-cols-2">
+          {data.projects.map((project, index) => (
+            <li key={index} className="rounded-xl border-2 border-ink/25 bg-chalk/70 px-3.5 py-3">
+              <p className="font-display text-[15px] font-bold leading-tight text-ink">
+                <Txt>{project.title}</Txt>
+              </p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+                <Txt>{project.kind}</Txt>
+              </p>
+              <dl className="mt-2 space-y-1.5">
+                {project.fields.map((field) => (
+                  <div key={field.label}>
+                    <dt className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">{field.label}</dt>
+                    <dd className="text-[13px] leading-snug text-ink">
+                      <Txt>{field.value}</Txt>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              {project.link && (
+                <a
+                  href={project.link}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="mt-2 inline-block font-display text-[13px] font-bold text-orange-deep underline underline-offset-4"
+                >
+                  {site.labels.visit}
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <section className="rounded-xl border-2 border-ink/20 bg-paper-deep/60 px-3.5 py-3">
+          <Kicker>{site.labels.tools}</Kicker>
+          <ul className="mt-1.5 flex flex-wrap gap-1.5">
+            {data.tools.map((tool) => (
+              <li key={tool} className="rounded-full border border-ink/30 bg-chalk px-2.5 py-1 text-[12px] font-semibold text-ink">
+                <Txt>{tool}</Txt>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section className="rounded-xl border-2 border-ink/20 bg-paper-deep/60 px-3.5 py-3">
+          <Kicker>{data.extraLabel}</Kicker>
+          <ul className="mt-1.5 space-y-1">
+            {data.extra.map((item) => (
+              <li key={item} className="text-[13px] leading-snug text-ink-soft">
+                <Txt>{item}</Txt>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      <div className="rounded-2xl border-2 border-dashed border-ink/35 px-4 py-4 text-center">
+        <p className="text-[13px] text-ink-soft">{data.ctaNote}</p>
+        <button
+          type="button"
+          onClick={() => onContact(presetId)}
+          className="stamp-btn mt-2.5 inline-flex min-h-[44px] items-center gap-2 rounded-full border-2 border-ink bg-orange-deep px-5 py-2.5 font-display text-[15px] font-bold text-chalk shadow-[0_3px_0_rgba(75,58,42,0.85)]"
+        >
+          {data.ctaLabel}
+          <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+            <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DibujoBody({ onContact }: { onContact: (preset: string) => void }) {
+  const [tab, setTab] = useState<"galeria" | "encargos">("galeria");
+  const tabs = [
+    { id: "galeria" as const, label: site.commissions.tabGallery },
+    { id: "encargos" as const, label: site.commissions.tabCommissions },
+  ];
+  return (
+    <div>
+      <div role="tablist" aria-label="Taller de dibujo" className="mb-4 flex gap-1.5">
+        {tabs.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            id={`tab-${item.id}`}
+            aria-selected={tab === item.id}
+            aria-controls={`tabpanel-${item.id}`}
+            onClick={() => setTab(item.id)}
+            className={`min-h-[44px] rounded-full border-2 px-4 font-display text-[14px] font-bold ${
+              tab === item.id ? "border-ink bg-orange-deep text-chalk" : "border-ink/30 bg-chalk text-ink hover:bg-paper-deep"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id={`tabpanel-${tab}`} aria-labelledby={`tab-${tab}`}>
+        {tab === "galeria" ? <GalleryBody /> : <CommissionsBody onContact={onContact} />}
+      </div>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------- panel */
 
 const titles: Record<PlaceId, { title: string; kicker: string }> = {
-  gallery: { title: site.gallery.heading, kicker: site.gallery.kicker },
-  commissions: { title: site.commissions.heading, kicker: site.commissions.kicker },
+  periodismo: { title: site.periodismo.heading, kicker: site.periodismo.kicker },
+  diseno: { title: site.diseno.heading, kicker: site.diseno.kicker },
+  dibujo: { title: "Taller de dibujo", kicker: "Galería y encargos" },
+  programacion: { title: site.programacion.heading, kicker: site.programacion.kicker },
   about: { title: site.about.heading, kicker: site.about.kicker },
   contact: { title: site.contact.heading, kicker: site.contact.kicker },
 };
@@ -497,6 +717,15 @@ export function PlacePanel({
   }, [onClose]);
 
   const meta = titles[placeId];
+  const [preset, setPreset] = useState<string | null>(null);
+  const goContact = (id: string) => {
+    setPreset(id);
+    onNavigate("contact");
+  };
+  const order = site.map.places.map((place) => place.id);
+  const at = order.indexOf(placeId);
+  const prevPlace = site.map.places[(at - 1 + order.length) % order.length];
+  const nextPlace = site.map.places[(at + 1) % order.length];
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
@@ -545,12 +774,33 @@ export function PlacePanel({
         </div>
 
         <div className="panel-scroll overflow-y-auto px-4 pb-8 pt-4 sm:px-7">
-          {placeId === "gallery" && <GalleryBody />}
-          {placeId === "commissions" && <CommissionsBody onNavigate={onNavigate} />}
+          {placeId === "periodismo" && <DisciplineBody key="p" data={site.periodismo} onContact={goContact} presetId="periodismo" />}
+          {placeId === "diseno" && <DisciplineBody key="d" data={site.diseno} onContact={goContact} presetId="diseno" />}
+          {placeId === "dibujo" && <DibujoBody onContact={goContact} />}
+          {placeId === "programacion" && <DisciplineBody key="g" data={site.programacion} onContact={goContact} presetId="programacion" />}
           {placeId === "about" && <AboutBody />}
-          {placeId === "contact" && <ContactBody />}
+          {placeId === "contact" && <ContactBody key={preset ?? "none"} preset={preset} />}
 
-          <p className="mt-7 border-t border-dashed border-ink/20 pt-3 text-[11.5px] leading-relaxed text-ink-soft">
+          <nav aria-label="Otros lugares" className="mt-7 flex items-stretch justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate(prevPlace.id)}
+              className="min-h-[44px] flex-1 rounded-xl border-2 border-ink/25 bg-chalk/70 px-3 py-2 text-left hover:bg-paper-deep"
+            >
+              <span className="block text-[11px] font-bold uppercase tracking-wide text-ink-soft">← {site.labels.prevPlace}</span>
+              <span className="block font-display text-[14px] font-bold leading-tight text-ink">{prevPlace.name}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate(nextPlace.id)}
+              className="min-h-[44px] flex-1 rounded-xl border-2 border-ink/25 bg-chalk/70 px-3 py-2 text-right hover:bg-paper-deep"
+            >
+              <span className="block text-[11px] font-bold uppercase tracking-wide text-ink-soft">{site.labels.nextPlace} →</span>
+              <span className="block font-display text-[14px] font-bold leading-tight text-ink">{nextPlace.name}</span>
+            </button>
+          </nav>
+
+          <p className="mt-5 border-t border-dashed border-ink/20 pt-3 text-[11.5px] leading-relaxed text-ink-soft">
             {site.brand.footerNote}
           </p>
         </div>

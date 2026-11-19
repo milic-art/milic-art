@@ -274,9 +274,9 @@ export function MapStage({ places, activeId, onOpen, onHover }: MapStageProps) {
         if (event.pointerType === "mouse") onHover(null);
       }}
       role="group"
-      aria-label={`${site.brand.mapName}. An illustrated map with four landmarks: ${places
+      aria-label={`${site.brand.mapName}. Un mapa ilustrado con seis lugares: ${places
         .map((place) => place.name)
-        .join(", ")}. Drag to pan, pinch or scroll to zoom, or use the menu to open a place.`}
+        .join(", ")}. Arrastrá para moverte, pellizcá o usá scroll para acercar, o abrí un lugar desde el menú.`}
     >
       <div
         ref={layerRef}
