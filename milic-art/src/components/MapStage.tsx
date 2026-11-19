@@ -120,10 +120,11 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       if (!stage) return;
       const w = stage.clientWidth;
       const h = stage.clientHeight;
+      if (w < 2 || h < 2) return;
       const { fitAll, cover } = limits();
       void fitAll;
       minScale.current = cover;
-      maxScale.current = Math.max(cover * 3, 1.4);
+      maxScale.current = Math.max(cover * 2, 1.2);
       const s = Math.min(maxScale.current, Math.max(minScale.current, cover * 1.02));
 
       const next = clamp({
@@ -148,9 +149,11 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
   useEffect(() => {
     welcomeView(false);
     const onResize = () => {
+      const box = stageRef.current;
+      if (!box || box.clientWidth < 2 || box.clientHeight < 2) return;
       const { cover } = limits();
       minScale.current = cover;
-      maxScale.current = Math.max(cover * 3, 1.4);
+      maxScale.current = Math.max(cover * 2, 1.2);
       if (interacted.current) {
         setView(view.current);
       } else {
@@ -158,7 +161,14 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       }
     };
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    // En un marco que cambia de tamaño después de cargar, el mapa se vuelve a encuadrar.
+    const stage = stageRef.current;
+    const observer = typeof ResizeObserver !== "undefined" && stage ? new ResizeObserver(onResize) : null;
+    if (observer && stage) observer.observe(stage);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      observer?.disconnect();
+    };
   }, [limits, setView, welcomeView, portrait]);
 
   // Wheel zoom, registered by hand so the page never scrolls behind the map.
@@ -284,10 +294,11 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     >
       <div
         ref={layerRef}
-        className="absolute left-0 top-0 origin-top-left overflow-hidden rounded-[22px] shadow-[0_18px_44px_rgba(75,58,42,0.16)]"
+        className="absolute left-0 top-0 origin-top-left"
         style={{ width: WORLD_W, height: WORLD_H, willChange: "transform", opacity: 0 }}
       >
         <WorldBackdrop places={places} portrait={portrait} />
+        <div aria-hidden="true" className="map-grain absolute inset-0" />
 
         {places.map((place, index) => {
           const isActive = activeId === place.id;

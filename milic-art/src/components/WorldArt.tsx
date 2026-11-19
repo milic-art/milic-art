@@ -276,15 +276,6 @@ export function WorldBackdrop({ places, portrait = false }: { places: { id: Plac
       focusable="false"
       style={{ display: "block" }}
     >
-      <defs>
-        <filter id="soft-grain" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
-          <feColorMatrix type="saturate" values="0" />
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="0.06" />
-          </feComponentTransfer>
-        </filter>
-      </defs>
 
       <rect width="1600" height="1000" fill="#e6edc6" />
 
@@ -432,7 +423,6 @@ export function WorldBackdrop({ places, portrait = false }: { places: { id: Plac
         strokeLinecap="round"
       />
 
-      <rect width="1600" height="1000" filter="url(#soft-grain)" opacity="0.5" pointerEvents="none" />
     </svg>
   );
 }

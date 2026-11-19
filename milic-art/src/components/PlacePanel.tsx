@@ -103,7 +103,7 @@ function Lightbox({
   }, [index, items.length, onClose, onStep]);
 
   const overlay = (
-    <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-3 bg-ink/85 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-3 bg-ink/85 p-4">
       <div className="flex w-full max-w-3xl items-center justify-between gap-3">
         <p className="font-display text-sm font-bold text-paper">
           {item.title}
@@ -845,7 +845,7 @@ export function PlacePanel({
         type="button"
         aria-label={site.labels.close}
         onClick={onClose}
-        className="absolute inset-0 h-full w-full cursor-default bg-ink/45 backdrop-blur-[2px]"
+        className="absolute inset-0 h-full w-full cursor-default bg-ink/45"
         tabIndex={-1}
       />
 

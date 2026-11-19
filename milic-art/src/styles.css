@@ -107,12 +107,11 @@
 
 /* Thick chalk outline used by every sticker on the map. */
 @utility sticker {
-  filter: drop-shadow(0 6px 0 rgba(75, 58, 42, 0.14)) drop-shadow(0 12px 18px rgba(75, 58, 42, 0.16));
+  filter: drop-shadow(0 6px 0 rgba(75, 58, 42, 0.16));
 }
 
 @utility sticker-glow {
-  filter: drop-shadow(0 0 0 rgba(232, 135, 74, 0))
-    drop-shadow(0 0 14px rgba(232, 135, 74, 0.85)) drop-shadow(0 12px 18px rgba(75, 58, 42, 0.2));
+  filter: drop-shadow(0 0 10px rgba(232, 135, 74, 0.85)) drop-shadow(0 6px 0 rgba(75, 58, 42, 0.2));
 }
 
 /* ---------------------------------------------------------------- motion */
@@ -473,6 +472,7 @@
 /* ------------------------------------------------------------- the map */
 
 .landmark-idle {
+  will-change: transform;
   animation: landmark-idle 4.2s ease-in-out infinite;
 }
 @keyframes landmark-idle {
@@ -481,7 +481,6 @@
 }
 
 .cloud-drift {
-  animation: cloud-drift var(--d, 40s) ease-in-out infinite alternate;
 }
 @keyframes cloud-drift {
   from { transform: translateX(-34px); }
@@ -490,14 +489,12 @@
 
 .river-flow {
   stroke-dasharray: 2 26;
-  animation: river-flow 3.2s linear infinite;
 }
 @keyframes river-flow {
   to { stroke-dashoffset: -112; }
 }
 
 .water-glint {
-  animation: water-glint 3.4s ease-in-out infinite;
 }
 @keyframes water-glint {
   0%, 100% { opacity: 0.25; transform: translateX(-4px); }
@@ -507,7 +504,6 @@
 .twinkle {
   transform-box: fill-box;
   transform-origin: center;
-  animation: twinkle 2.8s ease-in-out infinite;
 }
 @keyframes twinkle {
   0%, 100% { transform: scale(0.6) rotate(0deg); opacity: 0.3; }
@@ -517,7 +513,6 @@
 .sunflower-sway {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: sunflower-sway 3.6s ease-in-out infinite;
 }
 @keyframes sunflower-sway {
   0%, 100% { transform: rotate(-3deg); }
@@ -527,7 +522,6 @@
 .tree-sway {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: tree-sway 5s ease-in-out infinite;
 }
 @keyframes tree-sway {
   0%, 100% { transform: rotate(-1.2deg); }
@@ -549,4 +543,11 @@
 @media (prefers-reduced-motion: reduce) {
   .clocky-walker { transition: none; }
   .clocky-walker[data-walking="true"] .clocky-walk-inner { animation: none; }
+}
+
+/* Grano de papel: una sola capa fija, sin filtros pesados. */
+.map-grain {
+  background-image: var(--paper-grain);
+  opacity: 0.35;
+  pointer-events: none;
 }
