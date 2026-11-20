@@ -416,6 +416,7 @@ function AboutBody() {
 const messageOptions: { id: string; label: string; text: string }[] = [
   { id: "periodismo", label: "Nota o investigación", text: site.periodismo.messageStarter },
   { id: "diseno", label: "Diseño o redes", text: site.diseno.messageStarter },
+  { id: "papeleria", label: "Papelería", text: site.stationery.messageStarter },
   { id: "encargo", label: "Un dibujo", text: "Hola Mili, quiero hacer un encargo de dibujo: [contame qué querés y para qué].  " },
   { id: "programacion", label: "Web, juego o UI/UX", text: site.programacion.messageStarter },
   { id: "otro", label: "Otra cosa", text: site.contact.otherMessage },
@@ -713,11 +714,50 @@ function DisciplineBody({
   );
 }
 
+function StationeryBody({ onContact }: { onContact: (preset: string) => void }) {
+  return (
+    <div className="space-y-6">
+      <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink">
+        <Txt>{site.stationery.intro}</Txt>
+      </p>
+      <ul className="divide-y divide-ink/15 rounded-xl border-2 border-ink/25 bg-chalk/70">
+        {site.stationery.items.map((item) => (
+          <li key={item.name} className="flex flex-wrap items-start justify-between gap-2 px-3.5 py-3">
+            <div className="max-w-[38ch]">
+              <p className="font-display text-[15px] font-bold leading-tight text-ink">{item.name}</p>
+              <p className="mt-0.5 text-[12.5px] leading-snug text-ink-soft">
+                <Txt>{item.detail}</Txt>
+              </p>
+            </div>
+            <p className="font-display text-[15px] font-bold leading-none text-orange-deep">
+              <Txt>{item.price}</Txt>
+            </p>
+          </li>
+        ))}
+      </ul>
+      <p className="text-[13.5px] leading-relaxed text-ink-soft">
+        <Txt>{site.stationery.availability}</Txt>
+      </p>
+      <div className="rounded-2xl border-2 border-dashed border-ink/35 px-4 py-4 text-center">
+        <p className="text-[13px] text-ink-soft">{site.stationery.ctaNote}</p>
+        <button
+          type="button"
+          onClick={() => onContact("papeleria")}
+          className="stamp-btn mt-2.5 inline-flex min-h-[44px] items-center rounded-full border-2 border-ink bg-orange-deep px-5 py-2.5 font-display text-[15px] font-bold text-chalk shadow-[0_3px_0_rgba(75,58,42,0.85)]"
+        >
+          {site.stationery.ctaLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DibujoBody({ onContact }: { onContact: (preset: string) => void }) {
-  const [tab, setTab] = useState<"galeria" | "encargos">("galeria");
+  const [tab, setTab] = useState<"galeria" | "encargos" | "papeleria">("galeria");
   const tabs = [
     { id: "galeria" as const, label: site.commissions.tabGallery },
     { id: "encargos" as const, label: site.commissions.tabCommissions },
+    { id: "papeleria" as const, label: site.commissions.tabStationery },
   ];
   return (
     <div>
@@ -740,7 +780,9 @@ function DibujoBody({ onContact }: { onContact: (preset: string) => void }) {
         ))}
       </div>
       <div role="tabpanel" id={`tabpanel-${tab}`} aria-labelledby={`tab-${tab}`}>
-        {tab === "galeria" ? <GalleryBody /> : <CommissionsBody onContact={onContact} />}
+        {tab === "galeria" && <GalleryBody />}
+        {tab === "encargos" && <CommissionsBody onContact={onContact} />}
+        {tab === "papeleria" && <StationeryBody onContact={onContact} />}
       </div>
     </div>
   );
@@ -783,7 +825,7 @@ function CasitaBody({ tab, onTab, preset }: { tab: "sobre" | "contacto"; onTab: 
 const titles: Record<PlaceId, { title: string; kicker: string }> = {
   periodismo: { title: site.periodismo.heading, kicker: site.periodismo.kicker },
   diseno: { title: site.diseno.heading, kicker: site.diseno.kicker },
-  dibujo: { title: "Taller de dibujo", kicker: "Galería y encargos" },
+  dibujo: { title: "Taller de dibujo", kicker: "Galería, encargos y papelería" },
   programacion: { title: site.programacion.heading, kicker: site.programacion.kicker },
   casita: { title: "Casita", kicker: "Sobre mí y contacto" },
 };

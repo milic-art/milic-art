@@ -113,7 +113,7 @@ export const site = {
     places: [
       { id: "periodismo" as PlaceId, name: "Redacción", short: "Redacción", blurb: "Periodismo e investigación", x: 20, y: 30, px: 57, py: 22, image: "" },
       { id: "diseno" as PlaceId, name: "Estudio", short: "Estudio", blurb: "Diseño y redes sociales", x: 50, y: 24, px: 43, py: 36, image: "" },
-      { id: "dibujo" as PlaceId, name: "Taller de dibujo", short: "Dibujo", blurb: "Galería y encargos", x: 80, y: 30, px: 57, py: 50, image: "" },
+      { id: "dibujo" as PlaceId, name: "Taller de dibujo", short: "Dibujo", blurb: "Galería, encargos y papelería", x: 80, y: 30, px: 57, py: 50, image: "" },
       { id: "programacion" as PlaceId, name: "Laboratorio", short: "Lab", blurb: "Webs, juegos y UI/UX", x: 28, y: 74, px: 43, py: 64, image: "" },
       { id: "casita" as PlaceId, name: "Casita", short: "Casita", blurb: "Sobre mí y contacto", x: 72, y: 74, px: 57, py: 78, image: "" },
     ],
@@ -290,6 +290,25 @@ export const site = {
     testimonials: sampleTestimonials,
     tabGallery: "Galería",
     tabCommissions: "Encargos",
+    tabStationery: "Papelería",
+  },
+
+  /* ----------------------------------------------------------- papelería */
+  stationery: {
+    heading: "Papelería",
+    kicker: "Cosas para el escritorio",
+    intro: "Además de dibujar, hago papelería con mis ilustraciones. [Una frase sobre cómo se hacen y cómo se compran.]",
+    items: [
+      { name: "Washi tapes", detail: "[Diseños, medidas y cantidad por rollo]", price: "[Precio]" },
+      { name: "Stickers", detail: "[Tamaños y acabado, por ejemplo mate o brillante]", price: "[Precio]" },
+      { name: "Sticker sheets", detail: "[Qué diseños trae cada hoja]", price: "[Precio]" },
+      { name: "Memo pads", detail: "[Tamaño y cantidad de hojas]", price: "[Precio]" },
+      { name: "Prints", detail: "[Tamaños y papel]", price: "[Precio]" },
+    ],
+    availability: "[Disponibilidad: dónde y cuándo se pueden comprar]",
+    ctaLabel: "Escribime por papelería",
+    ctaNote: "Preguntame por stock, envíos o pedidos.",
+    messageStarter: "Hola Mili, te escribo por tu papelería (washi tapes, stickers, memo pads, sticker sheets o prints): [contame qué te interesa].",
   },
 
   /* -------------------------------------------------------------- about */
@@ -298,7 +317,7 @@ export const site = {
     kicker: "Casita",
     name: "milic",
     intro:
-      "¡Hola, soy milic! Soy comunicadora y periodista investigadora, diseño, dibujo, programo, escribo y edito videos. Soy community manager y un poco de todo. Acá comparto mi trabajo, con debilidad por los chibis.",
+      "¡Hola, soy milic! Soy comunicadora y periodista investigadora, diseño, dibujo, programo, escribo y edito videos. También hago papelería: washi tapes, stickers, memo pads, sticker sheets y prints. Soy community manager y un poco de todo. Acá comparto mi trabajo, con debilidad por los chibis.",
     paragraphs: [
       "Estoy empezando en internet. Comparto mi arte primero en X, después en Instagram y otras plataformas, en español e inglés.",
       "Ahora estoy armando este portfolio, por eso el tablón de encargos está cerrado. Cuando esté listo los abro y publico primero las reglas y los precios.",
