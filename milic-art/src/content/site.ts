@@ -277,7 +277,7 @@ export const site = {
     statusTag: "Cerrado",
     intro:
       "Así van a funcionar los encargos cuando los abra. Los precios son una base. Los valores exactos se publican acá.",
-    payments: "No pido pago por adelantado. Los datos de pago se comparten cuando abra el tablón.",
+    payments: "Cobro por MercadoPago o Cuenta DNI, en pesos argentinos. No pido pago por adelantado. Los datos de pago se comparten cuando abra el tablón.",
     turnaround: "Depende del dibujo. Un boceto tarda de 1 a 4 días.",
     rules: [
       "Después del lineart no acepto cambios grandes.",
