@@ -43,10 +43,13 @@ def _v():
     for k, v in c.items():
         paths.append([(d[k], v[1] + 2), (d[k], v[1] + 14), (195, v[1] + 14)])
     return dict(lw=390, lh=860, isl=(24, 52, 342, 702), p=3.2, under=64, casas=c, pond=(272, 676, 18, 10), rest=(195, 330), paths=paths,
-                n=(14, 12, 6, 8, 48), deco=[dict(k="pozo_balde_arriba", x=238, y=372, rx=11), dict(k="cartel", x=160, y=480, rx=6), dict(k="farolito", x=172, y=250, rx=3), dict(k="farolito", x=222, y=470, rx=3),
+                n=(18, 20, 10, 14, 150), deco=[dict(k="pozo_balde_arriba", x=238, y=372, rx=11), dict(k="cartel", x=160, y=480, rx=6), dict(k="farolito", x=172, y=250, rx=3), dict(k="farolito", x=222, y=470, rx=3),
                       dict(k="puesto", x=238, y=630, rx=14), dict(k="buzon_bandera_arriba", x=156, y=716, rx=4), dict(k="barril", x=80, y=272, rx=5),
                       dict(k="jardin:maceta_tulipanes", x=222, y=190, rx=4), dict(k="jardin:maceta_margaritas", x=170, y=330, rx=4),
-                      dict(k="banco_derecha", x=232, y=204, rx=11)], hub=(195, 330), stream=dict(amp=6, per=60))
+                      dict(k="banco_derecha", x=232, y=204, rx=11),
+                      dict(k="farolito", x=172, y=370, rx=3), dict(k="farolito", x=222, y=600, rx=3), dict(k="farolito", x=172, y=560, rx=3),
+                      dict(k="jardin:enrejado", x=250, y=440, rx=8), dict(k="cerca_baja_derecha", x=78, y=520, rx=0),
+                      dict(k="jardin:maceta_lavanda", x=170, y=640, rx=4), dict(k="jardin:maceta_cempasuchil", x=222, y=420, rx=4)], hub=(195, 330), stream=dict(amp=6, per=60))
 
 
 def _shift(cfg, dx, lw, lh, dy=0):
@@ -219,6 +222,21 @@ def build(key, cfg):
             m = T[yy0:yy0 + hh, xx0:xx0 + ww]
             blk[m, :3] = t[:hh, :ww][m]
             blk[m, 3] = 255
+    if key == "v":
+        RAMP = [(0x35, 0x56, 0x3a), (0x58, 0x7a, 0x35), (0x8a, 0xa2, 0x3a), (0xbc, 0xc0, 0x46), (0xe2, 0xd8, 0x70)]
+        def shift(mask, d):
+            for i, c in enumerate(RAMP):
+                j = i + d
+                if 0 <= j < len(RAMP):
+                    sel = mask & (img[:, :, 0] == c[0]) & (img[:, :, 1] == c[1]) & (img[:, :, 2] == c[2])
+                    img[sel, :3] = RAMP[j]
+        chk = ((xs + ys) % 2 == 0)
+        tibio = (vnoise(7, 80, 0.67) | (vnoise(7, 80, 0.62) & chk)) & T
+        umbra = (vnoise(9, 100, 0.68) | (vnoise(9, 100, 0.63) & chk)) & T & ~tibio
+        orig = img.copy()
+        shift(tibio, 1)
+        img2 = img.copy(); img[:] = orig; shift(umbra, -1)
+        img[tibio] = img2[tibio]
     dark = np.zeros((lh, lw), bool)
     light = dark
     SHEET = {n: (np.array(Image.open(os.path.join(PASTO, n + ".png")).convert("RGBA")), json.load(open(os.path.join(PASTO, n + ".json")))) for n in ("pasto_medianas_hoja", "pasto_extra_hoja")}
@@ -724,6 +742,20 @@ def poblar(g, cfg):
     for i, (x, y) in enumerate(poisson(nt, 34, "arbol")):
         k = "arbol_grande_puerta" if i == 0 else rnd.choice(arboles)
         out["props"].append({"k": k, "x": x, "y": y})
+    if cfg["key"] == "v":
+        def borde(x, y):
+            return not (T[y, x - 30] and T[y, x + 30])
+        got = []
+        for _ in range(9000):
+            if len(got) >= 16:
+                break
+            x = rnd.randrange(ix + 8, ix + iw - 8); y = rnd.randrange(iy + 20, iy + ih - 10)
+            if not libre(x, y, 0, "arbol") or not borde(x, y):
+                continue
+            if all(math.hypot(x - a, y - b) >= 26 for a, b in pts):
+                got.append((x, y)); pts.append((x, y))
+        for (x, y) in got:
+            out["props"].append({"k": rnd.choice(["pino", "pino", "arbol_redondo", "sauce", "alamo", "arbol_frutal"]), "x": x, "y": y})
     arbustos = ["arbusto_1", "arbusto_2", "arbusto_3", "arbusto_4_alto", "arbusto_5_bayas", "jardin:arbusto_flores_rosas", "jardin:arbusto_flores_blancas", "jardin:arbusto_flores_amarillas"]
     for (x, y) in poisson(nb, 24, "arbusto"):
         out["props"].append({"k": rnd.choice(arbustos), "x": x, "y": y})
@@ -737,13 +769,13 @@ def poblar(g, cfg):
     # flores en grupitos (2 especies por ramo) y algunas sueltas
     especies = ["tulipan", "margarita", "lavanda", "jacinto", "dalia", "amapola", "lirio", "pensamiento"]
     for (cx_, cy_) in poisson(max(4, nfl // 6), 38, "arbusto", tries=9000):
-        ks = rnd.sample(especies, 2)
-        n_ = rnd.randint(3, 6)
+        ks = rnd.sample(especies, 3 if cfg["key"] == "v" else 2)
+        n_ = rnd.randint(8, 14) if cfg["key"] == "v" else rnd.randint(3, 6)
         puestos = []
         for _ in range(60):
             if len(puestos) >= n_:
                 break
-            a_ = rnd.uniform(0, 6.283); r_ = rnd.uniform(4, 15)
+            a_ = rnd.uniform(0, 6.283); r_ = rnd.uniform(4, 24 if cfg["key"] == "v" else 15)
             x = int(cx_ + math.cos(a_) * r_); y = int(cy_ + math.sin(a_) * r_ * 0.7)
             if not libre(x, y, 0, "arbusto"):
                 continue

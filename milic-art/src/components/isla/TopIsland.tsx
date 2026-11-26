@@ -24,6 +24,9 @@ import { loadImage, mulberry, mix, hexRgb, nightFactorFromClock, silueta, toSpr,
  * lógica (lw x lh) escalado con número entero y image-rendering: pixelated.
  */
 
+// cielo del celu: más alto y con más color (azul arriba, durazno en el horizonte)
+const SKY_DAY_V = ["#5fa8e6", "#74b6ea", "#8cc6ee", "#a3d4ee", "#b9e0ea", "#d2ead8", "#f1efc4", "#f9dcb0"];
+
 type Props = {
   portrait: boolean;
   mode: IslaMode;
@@ -247,13 +250,15 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     const nn = st.n;
     // cielo en franjas
     const warm = Math.sin(Math.PI * Math.min(1, Math.max(0, nn))) * 0.55;
-    const bands = SKY_DAY.length;
+    const SD = portrait ? SKY_DAY_V : SKY_DAY;
+    const bands = SD.length;
     for (let b = 0; b < bands; b++) {
-      let col = mix(SKY_DAY[b], SKY_NIGHT[b], nn);
+      const bi = Math.min(SKY_NIGHT.length - 1, Math.floor((b * SKY_NIGHT.length) / bands));
+      let col = mix(SD[b], SKY_NIGHT[bi], nn);
       if (warm > 0.02) {
-        const d = SKY_DUSK[b];
-        const base = hexRgb(SKY_DAY[b]);
-        const nb = hexRgb(SKY_NIGHT[b]);
+        const d = SKY_DUSK[bi];
+        const base = hexRgb(SD[b]);
+        const nb = hexRgb(SKY_NIGHT[bi]);
         const m = base.map((v, k) => v + (nb[k] - v) * nn);
         const dd = hexRgb(d);
         col = `rgb(${Math.round(m[0] + (dd[0] - m[0]) * warm)},${Math.round(m[1] + (dd[1] - m[1]) * warm)},${Math.round(m[2] + (dd[2] - m[2]) * warm)})`;
