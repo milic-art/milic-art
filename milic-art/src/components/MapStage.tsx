@@ -147,7 +147,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       minScale.current = cover;
       maxScale.current = Math.max(cover * 2.2, 1.4);
       // La isla entera entra en pantalla (con aire arriba para el menú).
-      const fit = Math.min((w * 0.98) / (layout.islaW * layout.z), (h * 0.86) / (layout.islaH * layout.z));
+      const fit = Math.min((w * (portrait ? 1.08 : 0.98)) / (layout.islaW * layout.z), (h * 0.86) / (layout.islaH * layout.z));
       const s = Math.min(maxScale.current, Math.max(minScale.current, fit));
 
       const next = clamp({
@@ -349,6 +349,10 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
               onPointerDown={(event) => {
                 if (event.pointerType !== "mouse") setHoveredId(place.id);
               }}
+              onPointerUp={(event) => {
+                if (event.pointerType !== "mouse") window.setTimeout(() => setHoveredId(null), 450);
+              }}
+              onPointerCancel={() => setHoveredId(null)}
               onPointerEnter={(event) => {
                 if (event.pointerType !== "mouse") return;
                 setHoveredId(place.id);

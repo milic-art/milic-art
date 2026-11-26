@@ -245,6 +245,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     { spr: S.nubeS, y: lh * (portrait ? 0.62 : 0.5), x: lw * 0.95, sp: 3.0, k: -0.5, far: false },
   ];
 
+  let pending = false;
   let nTarget = nightFactorFromClock();
   let n = nTarget;
   let hover: PlaceId | null = initial.hover;
@@ -253,7 +254,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     nTarget = m === "day" ? 0 : m === "night" ? 1 : nightFactorFromClock();
     if (still) { n = nTarget; request(); }
   };
-  setMode(initial.mode);
+  nTarget = initial.mode === "day" ? 0 : initial.mode === "night" ? 1 : nightFactorFromClock();
   n = nTarget;
 
   /* --- dibujo de sprites con fundido día/noche --- */
@@ -577,7 +578,6 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     }
     raf = requestAnimationFrame(loop);
   }
-  let pending = false;
   function request() {
     if (pending || !still) return;
     pending = true;
@@ -608,6 +608,8 @@ export function IsoIsland({ portrait, mode, hoverId, onReady }: Props) {
     createEngine(canvas, portrait, { mode: live.current.mode, hover: live.current.hoverId }).then((e) => {
       if (dead) { e.stop(); return; }
       engine.current = e;
+      e.setMode(live.current.mode);
+      e.setHover(live.current.hoverId);
       onReady?.({ setParallax: e.setParallax });
     });
     return () => {
