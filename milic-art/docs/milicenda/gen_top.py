@@ -7,7 +7,7 @@ from PIL import Image
 from gen_lib import OUT, SRC_ISLA, hx
 
 NF = 4
-CLIFF = 13
+CLIFF = 16
 
 PUERTA = {"periodismo": 31, "diseno": 45, "dibujo": 31, "programacion": 31, "casita": 31}
 
@@ -17,28 +17,53 @@ def _dx(id_, base):
 
 
 def _h():
-    c = {"periodismo": (120, 120), "diseno": (240, 112), "dibujo": (360, 120), "programacion": (166, 208), "casita": (330, 208)}
+    # mundo grande: 760x580, isla de 680x430
+    c = {"periodismo": (150, 168), "diseno": (380, 146), "dibujo": (610, 168), "programacion": (190, 346), "casita": (570, 346)}
     d = {k: _dx(k, v) for k, v in c.items()}
-    paths = [[(108, 146), (372, 146)]]
+    TR, BT = 252, 392
+    paths = [[(104, TR), (656, TR)]]
     for k in ("periodismo", "diseno", "dibujo"):
-        paths.append([(d[k], c[k][1] + 2), (d[k], 146)])
-    paths.append([(108, 146), (108, 218), (d["programacion"], 218), (d["programacion"], c["programacion"][1] + 2)])
-    paths.append([(372, 146), (372, 218), (d["casita"], 218), (d["casita"], c["casita"][1] + 2)])
-    return dict(lw=480, lh=330, isl=(60, 36, 360, 204), p=3.4, under=46, casas=c, pond=(250, 190, 18, 10), rest=(186, 150), paths=paths,
-                n=(7, 7, 4, 5, 55))
+        paths.append([(d[k], c[k][1] + 2), (d[k], TR)])
+    paths.append([(104, TR), (104, BT), (656, BT), (656, TR)])
+    for k in ("programacion", "casita"):
+        paths.append([(d[k], c[k][1] + 2), (d[k], BT)])
+    return dict(lw=760, lh=580, isl=(40, 34, 680, 436), p=3.2, under=74, casas=c, pond=(380, 322, 28, 13), rest=(380, 276), paths=paths,
+                n=(22, 20, 9, 12, 75), deco=[dict(k="pozo_balde_arriba", x=470, y=246, rx=11), dict(k="banco_derecha", x=296, y=248, rx=11), dict(k="cartel", x=338, y=246, rx=6),
+                      dict(k="farolito", x=230, y=246, rx=3), dict(k="farolito", x=530, y=246, rx=3), dict(k="puente", x=374, y=402, rx=0),
+                      dict(k="puesto", x=486, y=352, rx=14), dict(k="buzon_bandera_arriba", x=616, y=356, rx=4), dict(k="barril", x=236, y=352, rx=5),
+                      dict(k="jardin:maceta_tulipanes", x=300, y=396, rx=4), dict(k="jardin:maceta_margaritas", x=330, y=396, rx=4),
+                      dict(k="jardin:maceta_lavanda", x=436, y=396, rx=4), dict(k="jardin:maceta_cempasuchil", x=466, y=396, rx=4),
+                      dict(k="jardin:enrejado", x=650, y=350, rx=8), dict(k="cerca_baja_derecha", x=96, y=330, rx=0)], hub=(380, TR), stream=dict(amp=9, per=70))
 
 
 def _v():
-    c = {"periodismo": (92, 158), "diseno": (208, 208), "dibujo": (92, 258), "programacion": (208, 308), "casita": (92, 358)}
+    c = {"periodismo": (112, 176), "diseno": (278, 298), "dibujo": (112, 420), "programacion": (278, 542), "casita": (112, 664)}
     d = {k: _dx(k, v) for k, v in c.items()}
-    paths = [[(150, 150), (150, 372)]]
+    paths = [[(195, 160), (195, 690)]]
     for k, v in c.items():
-        paths.append([(d[k], v[1] + 2), (d[k], v[1] + 12), (150, v[1] + 12)])
-    return dict(lw=300, lh=500, isl=(30, 62, 240, 340), p=3.4, under=50, casas=c, pond=(212, 372, 16, 9), rest=(150, 236), paths=paths,
-                n=(6, 6, 3, 4, 40))
+        paths.append([(d[k], v[1] + 2), (d[k], v[1] + 14), (195, v[1] + 14)])
+    return dict(lw=390, lh=860, isl=(24, 52, 342, 702), p=3.2, under=64, casas=c, pond=(272, 676, 18, 10), rest=(195, 330), paths=paths,
+                n=(14, 12, 6, 8, 48), deco=[dict(k="pozo_balde_arriba", x=238, y=372, rx=11), dict(k="cartel", x=160, y=480, rx=6), dict(k="farolito", x=172, y=250, rx=3), dict(k="farolito", x=222, y=470, rx=3),
+                      dict(k="puesto", x=238, y=630, rx=14), dict(k="buzon_bandera_arriba", x=156, y=716, rx=4), dict(k="barril", x=80, y=272, rx=5),
+                      dict(k="jardin:maceta_tulipanes", x=222, y=190, rx=4), dict(k="jardin:maceta_margaritas", x=170, y=330, rx=4),
+                      dict(k="banco_derecha", x=232, y=204, rx=11)], hub=(195, 330), stream=dict(amp=6, per=60))
 
 
-ORIENT = {"h": _h(), "v": _v()}
+def _shift(cfg, dx, lw, lh, dy=0):
+    """Agranda el cielo alrededor de la isla (para que se vea completa sin bordes vacíos)."""
+    ix, iy, iw, ih = cfg["isl"]
+    cfg["isl"] = (ix + dx, iy + dy, iw, ih)
+    cfg["casas"] = {k: (x + dx, y + dy) for k, (x, y) in cfg["casas"].items()}
+    cfg["pond"] = (cfg["pond"][0] + dx, cfg["pond"][1] + dy, cfg["pond"][2], cfg["pond"][3])
+    cfg["rest"] = (cfg["rest"][0] + dx, cfg["rest"][1] + dy)
+    cfg["paths"] = [[(x + dx, y + dy) for (x, y) in pth] for pth in cfg["paths"]]
+    cfg["deco"] = [dict(d, x=d["x"] + dx, y=d["y"] + dy) for d in cfg["deco"]]
+    cfg["hub"] = (cfg["hub"][0] + dx, cfg["hub"][1] + dy)
+    cfg["lw"], cfg["lh"] = lw, lh
+    return cfg
+
+
+ORIENT = {"h": _shift(_h(), 130, 1020, 600), "v": _shift(_v(), 50, 490, 880)}
 
 
 def rgb(h):
@@ -95,7 +120,7 @@ def build(key, cfg):
         for k in range(seg):
             bump[x + k] = v
         x += seg
-    stal = [(cx0 + 4, 20, U + 40), (cx0 - iw * 0.27, 10, U + 18), (cx0 + iw * 0.3, 9, U + 12)]
+    stal = [(cx0 + 4, 24, U + 52), (cx0 - iw * 0.27, 13, U + 26), (cx0 + iw * 0.3, 12, U + 20), (cx0 - iw * 0.08, 8, U + 14)]
     B = np.zeros((lh, lw), bool)
     for x in range(lw):
         if yb[x] < 0:
@@ -130,17 +155,50 @@ def build(key, cfg):
             ellipse(out, x, y, r.randint(*rx), r.randint(*ry))
         return out
 
-    put(blobs(34, (8, 22), (5, 11), 21, T) & T, "#bcc046")
-    put(blobs(22, (6, 14), (3, 7), 22, T) & T, "#587a35")
-    put(blobs(14, (5, 10), (3, 6), 23, T) & T & blobs(40, (10, 20), (5, 9), 24, T), "#e2d870")
-    # matitas de pasto (v de 3 px)
-    for _ in range(200):
-        y = rnd.randrange(iy + 4, iy + ih - 6)
-        x = rnd.randrange(ix + 4, ix + iw - 6)
-        if T[y, x] and T[y + 2, x + 2] and T[y, x + 2]:
-            col = "#587a35" if rnd.random() < 0.5 else "#bcc046"
+    def vnoise(seed, cell, thr, step=3):
+        """Manchas orgánicas: ruido de valor en celdas, suavizado y cuantizado en bloques de `step` px."""
+        r = random.Random(seed)
+        gh, gw = lh // cell + 3, lw // cell + 3
+        grid = np.array([[r.random() for _ in range(gw)] for _ in range(gh)])
+        yy, xx = np.mgrid[:lh, :lw]
+        yy = (yy // step) * step + step / 2
+        xx = (xx // step) * step + step / 2
+        gy, gx = yy / cell, xx / cell
+        y0, x0 = gy.astype(int), gx.astype(int)
+        fy, fx = gy - y0, gx - x0
+        fy, fx = fy * fy * (3 - 2 * fy), fx * fx * (3 - 2 * fx)
+        v = (grid[y0, x0] * (1 - fx) + grid[y0, x0 + 1] * fx) * (1 - fy) + (grid[y0 + 1, x0] * (1 - fx) + grid[y0 + 1, x0 + 1] * fx) * fy
+        return v > thr
+
+    light = vnoise(41, 46, 0.64, 4) & T
+    dark = vnoise(42, 38, 0.75, 4) & T
+    pale = vnoise(43, 24, 0.76, 4) & light & T
+    put(light, "#bcc046")
+    put(dark & ~light, "#587a35")
+    put(pale, "#e2d870")
+    # matitas: grupos de 2 a 4 hojitas en V, más densas en las zonas oscuras
+    for _ in range(int(lw * lh / 260)):
+        y = rnd.randrange(iy + 4, iy + ih - 8)
+        x = rnd.randrange(ix + 4, ix + iw - 8)
+        if not (T[y, x] and T[y + 2, x + 6] and T[y, x + 6]):
+            continue
+        bg_dark = dark[y, x] and not light[y, x]
+        col = "#35563a" if bg_dark and rnd.random() < 0.6 else ("#587a35" if not bg_dark else "#8aa23a")
+        hi = "#e2d870" if (light[y, x] and rnd.random() < 0.5) else ("#bcc046" if bg_dark else "#8aa23a")
+        n = rnd.choice((1, 2, 2, 3))
+        for k in range(n):
+            ox_ = k * 3
             for dx, dy in ((0, 0), (2, 0), (1, 1)):
-                img[y + dy, x + dx, :3] = rgb(col)
+                img[y + dy, x + ox_ + dx, :3] = rgb(col)
+            if rnd.random() < 0.5:
+                img[y - 1, x + ox_ + 1, :3] = rgb(hi)
+    # florcitas blancas sueltas sobre el pasto
+    for _ in range(int(lw * lh / 1500)):
+        y = rnd.randrange(iy + 4, iy + ih - 8)
+        x = rnd.randrange(ix + 4, ix + iw - 8)
+        if T[y, x] and T[y + 1, x + 1]:
+            img[y, x, :3] = rgb("#fffdf7")
+            img[y, x + 1, :3] = rgb("#f9e07a") if rnd.random() < 0.5 else rgb("#fffdf7")
 
     # ---- camino
     P = np.zeros((lh, lw), bool)
@@ -168,16 +226,25 @@ def build(key, cfg):
         if P[y, x] and not edge[y, x] and P[y, x + 2]:
             img[y, x, :3] = rgb("#a8a08e"); img[y, x + 1, :3] = rgb("#d6cbb0")
 
-    # ---- estanque + arroyo
+    # ---- estanque + arroyo sinuoso
     pcx, pcy, prx, pry = cfg["pond"]
     Wm = np.zeros((lh, lw), bool)
     ellipse(Wm, pcx, pcy, prx, pry)
-    ellipse(Wm, pcx - 9, pcy - 3, prx * 0.6, pry * 0.9)
-    ellipse(Wm, pcx + 12, pcy + 2, prx * 0.55, pry * 0.8)
-    # arroyo hasta el borde del frente
-    sx0 = pcx
-    for x in range(int(sx0 - 4), int(sx0 + 4)):
-        Wm[int(pcy):yb[x] + CLIFF + 1, x] = True
+    ellipse(Wm, pcx - prx * 0.55, pcy - 3, prx * 0.55, pry * 0.85)
+    ellipse(Wm, pcx + prx * 0.6, pcy + 3, prx * 0.5, pry * 0.8)
+    ellipse(Wm, pcx + prx * 0.1, pcy + pry * 0.6, prx * 0.4, pry * 0.6)
+    amp, per = cfg["stream"]["amp"], cfg["stream"]["per"]
+    ytop = int(pcy + pry * 0.5)
+    exit_x = pcx
+    ybot = int(yb[int(pcx)]) + CLIFF + 1
+    for y in range(ytop, ybot):
+        t = (y - ytop) / max(1, (yb[int(pcx)] - ytop))
+        cxs = pcx + amp * math.sin((y - ytop) / per * 6.28) * min(1, t * 3) * (1 - 0.6 * max(0, t - 0.75) / 0.25)
+        w = 3.2 + 1.8 * t
+        for x in range(int(cxs - w), int(cxs + w) + 1):
+            if 0 <= x < lw:
+                Wm[y, x] = True
+        exit_x = cxs
     Wm &= (T | C)
     # banco de tierra alrededor
     bank = np.zeros_like(Wm)
@@ -304,7 +371,7 @@ def build(key, cfg):
         outline |= np.roll(np.roll(solid2, dy, 0), dx, 1) & ~solid2
     outline[0, :] = False
     # la parte de arriba no lleva sombra: el contorno completo es #2e1b14
-    return dict(img=img, T=T, C=C, B=B, P=Pin, Wm=Wm, Win=Win, Wedge=Wedge, outline=outline, yb=yb, bank=bank, cfg=cfg, rnd=rnd, lip=lip)
+    return dict(exit_x=exit_x, img=img, T=T, C=C, B=B, P=Pin, Wm=Wm, Win=Win, Wedge=Wedge, outline=outline, yb=yb, bank=bank, cfg=cfg, rnd=rnd, lip=lip)
 
 
 def pintar_agua(g, frame):
@@ -337,9 +404,9 @@ def pintar_agua(g, frame):
     img[cw & (colpat == 0), :3] = rgb("#b2f0cc")
     img[cw & (colpat == 2), :3] = rgb("#58cc9f")
     # chorro que sigue cayendo bajo el acantilado
-    pcx = g["cfg"]["pond"][0]
+    pcx = g["exit_x"]
     bot = int(g["yb"][int(pcx)] + CLIFF + 1)
-    for x in range(int(pcx - 4), int(pcx + 4)):
+    for x in range(int(pcx - 5), int(pcx + 5)):
         for k in range(0, 46):
             y = bot + k
             if y >= lh:
@@ -351,7 +418,7 @@ def pintar_agua(g, frame):
             if g["B"][y, x]:
                 pass
             c = "#58cc9f" if ((x + (y + sh * 5) // 4) % 3) else "#b2f0cc"
-            if x in (int(pcx - 4), int(pcx + 3)):
+            if x in (int(pcx - 5), int(pcx + 4)):
                 c = "#2c9488"
             img[y, x, :3] = rgb(c)
             img[y, x, 3] = 255
@@ -403,16 +470,15 @@ def poblar(g, cfg):
         r = 8 + margen
         if P[max(0, y - r):y + r, max(0, x - r):x + r].any():
             return False
-        pcx, pcy, prx, pry = cfg["pond"]
-        if ((x - pcx) / (prx + 12 + margen)) ** 2 + ((y - pcy) / (pry + 10 + margen)) ** 2 < 1.4:
-            return False
-        if abs(x - pcx) < 12 + margen and y > pcy:
+        if Wm[max(0, y - 12):y + 8, max(0, x - 16 - margen):x + 16 + margen].any():
             return False
         return True
-    out = {"arboles": [], "arbustos": [], "flores": [], "girasoles": [], "rocas": []}
-    pts = []
+    out = {"props": [], "flores": [], "girasoles": [], "deco": cfg["deco"]}
+    pts = [(d["x"], d["y"]) for d in cfg["deco"]]
+    for (hx_, hy_) in casas.values():
+        pts.append((hx_, hy_ - 12))
 
-    def poisson(n, mind, tipo, margen=0, tries=4000):
+    def poisson(n, mind, tipo, margen=0, tries=6000):
         got = []
         for _ in range(tries):
             if len(got) >= n:
@@ -426,17 +492,37 @@ def poblar(g, cfg):
                 pts.append((x, y))
         return got
     nt, nb, nr, ng, nfl = cfg["n"]
-    for (x, y) in poisson(nt, 30, "arbol"):
-        out["arboles"].append({"x": x, "y": y, "v": rnd.choice([0, 1, 2, 0, 1, 2, 3, 3])})
-    for (x, y) in poisson(nb, 20, "arbusto"):
-        out["arbustos"].append({"x": x, "y": y, "v": rnd.randrange(3)})
-    for (x, y) in poisson(nr, 22, "arbusto"):
-        out["rocas"].append({"x": x, "y": y, "v": rnd.randrange(2)})
-    for (x, y) in poisson(ng, 24, "arbusto"):
-        out["girasoles"].append({"x": x, "y": y})
-    for (x, y) in poisson(nfl, 12, "arbusto", tries=9000):
-        out["flores"].append({"x": x, "y": y, "v": rnd.randrange(8)})
+    arboles = ["arbol_redondo"] * 4 + ["arbol_frutal"] * 3 + ["pino"] * 5 + ["sauce"] * 2 + ["alamo"] * 3 + ["arbol_paraguas"] * 2
+    for i, (x, y) in enumerate(poisson(nt, 34, "arbol")):
+        k = "arbol_grande_puerta" if i == 0 else rnd.choice(arboles)
+        out["props"].append({"k": k, "x": x, "y": y})
+    arbustos = ["arbusto_1", "arbusto_2", "arbusto_3", "arbusto_4_alto", "arbusto_5_bayas", "jardin:arbusto_flores_rosas", "jardin:arbusto_flores_blancas", "jardin:arbusto_flores_amarillas"]
+    for (x, y) in poisson(nb, 24, "arbusto"):
+        out["props"].append({"k": rnd.choice(arbustos), "x": x, "y": y})
+    rocas = ["roca_1", "roca_2", "roca_3", "roca_4_apilada", "tronco_1", "tronco_2", "tocon_1", "tocon_2"]
+    for (x, y) in poisson(nr, 26, "arbusto"):
+        out["props"].append({"k": rnd.choice(rocas), "x": x, "y": y})
+    for (x, y) in poisson(max(8, nb), 14, "arbusto", tries=9000):
+        out["props"].append({"k": rnd.choice(["hongos_1", "hongos_2", "hongos_3", "hongos_4", "hongos_5", "hongos_6", "jardin:pasto_alto_1", "jardin:pasto_alto_2", "jardin:pasto_alto_3"]), "x": x, "y": y})
+    for (x, y) in poisson(ng, 30, "arbusto"):
+        out["girasoles"].append({"x": x, "y": y, "g": rnd.choice(["girasol_grande", "girasol_grande", "girasol_chico"])})
+    for (x, y) in poisson(nfl, 13, "arbusto", tries=12000):
+        out["flores"].append({"x": x, "y": y, "k": rnd.choice(["tulipan", "margarita", "lavanda", "jacinto", "dalia", "amapola", "lirio", "pensamiento"])})
     return out
+
+
+SOMBRA = {  # (dx, dy, rx, ry) por tipo de prop
+    "arbol_grande_puerta": (0, -2, 20, 6), "sauce": (0, -1, 15, 5), "arbol_paraguas": (2, -1, 16, 5), "alamo": (1, -1, 8, 3),
+    "arbol": (2, -1, 12, 4), "pino": (1, -1, 11, 4), "arbusto": (0, 0, 9, 3), "roca": (0, 0, 7, 2), "tronco": (0, 0, 10, 3), "tocon": (0, 0, 7, 2),
+    "hongos": (0, 0, 4, 1), "jardin:arbusto": (0, 0, 9, 3), "jardin:pasto": (0, 0, 5, 1),
+}
+
+
+def sombra_de(k):
+    for pref in sorted(SOMBRA, key=len, reverse=True):
+        if k.startswith(pref):
+            return SOMBRA[pref]
+    return (0, 0, 6, 2)
 
 
 def main():
@@ -445,7 +531,9 @@ def main():
         cfg["key"] = key
         g = build(key, cfg)
         pob = poblar(g, cfg)
-        objs = [(a["x"] + 3, a["y"], 12, 5) for a in pob["arboles"]] + [(a["x"], a["y"], 8, 3) for a in pob["arbustos"]] + [(a["x"], a["y"], 5, 2) for a in pob["rocas"]]
+        objs = [(a["x"] + sombra_de(a["k"])[0], a["y"] + sombra_de(a["k"])[1], sombra_de(a["k"])[2], sombra_de(a["k"])[3]) for a in pob["props"]]
+        objs += [(a["x"], a["y"], 4, 2) for a in pob["girasoles"]]
+        objs += [(d["x"], d["y"] - 1, max(1, d.get("rx", 9)), 3) for d in cfg["deco"] if d["k"] not in ("puente", "puente_nat")]
         hornear_sombras(g, objs, list(cfg["casas"].values()))
         lh, lw = cfg["lh"], cfg["lw"]
         for f in range(NF):

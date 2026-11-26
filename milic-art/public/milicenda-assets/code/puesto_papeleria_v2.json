@@ -1,0 +1,20 @@
+{
+ "puesto_papeleria_v2": {
+  "x": 0,
+  "y": 0,
+  "w": 42,
+  "h": 42,
+  "frames": [
+   {
+    "x": 0,
+    "y": 0
+   },
+   {
+    "x": 44,
+    "y": 0
+   }
+  ],
+  "ms": 400,
+  "nota": "toldo y postales con viento"
+ }
+}

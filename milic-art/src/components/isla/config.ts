@@ -121,7 +121,8 @@ export function topLayout(portrait: boolean): Layout {
     const [x, y] = D.casas[id];
     places[id] = { x: ((x - 32 + CASITAS_TOP[id].puerta) / D.lw) * 100, y: (y / D.lh) * 100 };
   });
-  const rx = ix + iw / 2, ry = iy + ih / 2 + 34;
+  const rest0 = D.rest as number[];
+  const rx = portrait ? rest0[0] : ix + iw / 2, ry = portrait ? rest0[1] : iy + ih / 2 + 24;
   return {
     lw: D.lw, lh: D.lh, z, ox: 0, oy: 0, worldW: D.lw * z, worldH: D.lh * z, places,
     focus: { x: rx * z, y: ry * z }, islaW: iw + 40, islaH: ih + 120,

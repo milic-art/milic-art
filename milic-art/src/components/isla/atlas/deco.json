@@ -1,0 +1,89 @@
+{
+ "cartel": {
+  "x": 0,
+  "y": 0,
+  "w": 18,
+  "h": 20
+ },
+ "cerca_baja_derecha": {
+  "x": 20,
+  "y": 0,
+  "w": 34,
+  "h": 34
+ },
+ "cerca_baja_izquierda": {
+  "x": 56,
+  "y": 0,
+  "w": 34,
+  "h": 34,
+  "nota": "espejo de cerca_baja_derecha"
+ },
+ "barril": {
+  "x": 92,
+  "y": 0,
+  "w": 14,
+  "h": 18
+ },
+ "buzon_bandera_arriba": {
+  "x": 108,
+  "y": 0,
+  "w": 14,
+  "h": 22
+ },
+ "buzon_bandera_abajo": {
+  "x": 124,
+  "y": 0,
+  "w": 14,
+  "h": 22
+ },
+ "puesto_papeleria": {
+  "x": 140,
+  "y": 0,
+  "w": 42,
+  "h": 42
+ },
+ "farolito": {
+  "x": 184,
+  "y": 0,
+  "w": 10,
+  "h": 26
+ },
+ "muelle": {
+  "x": 0,
+  "y": 44,
+  "w": 50,
+  "h": 34
+ },
+ "puente": {
+  "x": 52,
+  "y": 44,
+  "w": 52,
+  "h": 38,
+  "nota": "v2: baranda pareja"
+ },
+ "pozo_balde_arriba": {
+  "x": 106,
+  "y": 44,
+  "w": 30,
+  "h": 40
+ },
+ "pozo_balde_abajo": {
+  "x": 138,
+  "y": 44,
+  "w": 30,
+  "h": 40
+ },
+ "banco_derecha": {
+  "x": 170,
+  "y": 44,
+  "w": 30,
+  "h": 30
+ },
+ "banco_izquierda": {
+  "x": 0,
+  "y": 86,
+  "w": 30,
+  "h": 30,
+  "nota": "espejo de banco_derecha"
+ }
+}

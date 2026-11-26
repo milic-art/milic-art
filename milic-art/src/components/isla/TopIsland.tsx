@@ -1,6 +1,20 @@
 import { useEffect, useRef } from "react";
 import type { PlaceId } from "../../content";
-import { ASSETS, ASSETS_TOP, CASITAS_TOP, TOP, topLayout } from "./config";
+import { ASSETS, CASITAS_TOP, TOP, topLayout } from "./config";
+import atNat from "./atlas/naturaleza.json";
+import atDeco from "./atlas/deco.json";
+import atJar from "./atlas/jardin.json";
+import atFlor from "./atlas/flores.json";
+import atGira from "./atlas/girasoles.json";
+import atMece from "./atlas/mecen.json";
+import atBich from "./atlas/bichitos.json";
+import atPuesto from "./atlas/puesto.json";
+
+type Meta = { x: number; y: number; w: number; h: number; frames?: { x: number; y: number }[]; ms?: number };
+type Atlas = { spr: Spr; meta: Record<string, Meta> };
+async function atlas(file: string, meta: unknown): Promise<Atlas> {
+  return { spr: toSpr(await loadImage(`code/${file}.png`)), meta: meta as Record<string, Meta> };
+}
 import { loadImage, mulberry, mix, hexRgb, nightFactorFromClock, silueta, toSpr, SKY_DAY, SKY_NIGHT, SKY_DUSK, type IslaControl, type IslaMode, type Spr, type State } from "./IsoIsland";
 
 /**
@@ -42,15 +56,18 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const imgs = await Promise.all(names.map(loadImage));
   const A: Record<string, HTMLImageElement | null> = {};
   Object.keys(ASSETS).forEach((k, i) => (A[k] = imgs[i]));
-  const [arbustoI, rocaI] = await Promise.all([loadImage(ASSETS_TOP.arbusto), loadImage(ASSETS_TOP.roca)]);
+  const [aNat, aDeco, aJar, aFlor, aGira, aMece, aBich, aPuesto] = await Promise.all([
+    atlas("naturaleza_hoja_v2", atNat), atlas("deco_hoja_v2", atDeco), atlas("jardin_hoja", atJar), atlas("flores_hoja", atFlor),
+    atlas("girasoles_hoja", atGira), atlas("mecen_hoja", atMece), atlas("bichitos_hoja", atBich), atlas("puesto_papeleria_v2", atPuesto),
+  ]);
+  const aSombra = { spr: toSpr(A.arbolSombra), meta: {} as Record<string, Meta> };
+  void aSombra;
   const suelo = await Promise.all(Array.from({ length: D.nf as number }, (_, f) => loadImage(`generados/isla_${key}_${f}.png`)));
   const casaImgs = await Promise.all(ids.flatMap((id) => [loadImage(CASITAS_TOP[id].file), loadImage(CASITAS_TOP[id].fileNoche)]));
 
   const S = {
     arbol: toSpr(A.arbol), flores: toSpr(A.flores),
     nubeS: toSpr(A.nubeS), nubeM: toSpr(A.nubeM), nubeL: toSpr(A.nubeL), sol: toSpr(A.sol), luna: toSpr(A.luna),
-    girasol: toSpr(A.girasol), mariposas: toSpr(A.mariposas), pato: toSpr(A.pato),
-    arbusto: toSpr(arbustoI), roca: toSpr(rocaI),
   };
   const sueloS = suelo.map((im) => toSpr(im));
   const casas = ids.map((id, k) => ({ id, spr: toSpr(casaImgs[k * 2], casaImgs[k * 2 + 1]), c: CASITAS_TOP[id], pos: D.casas[id] as number[] }));
@@ -92,27 +109,50 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     g.globalAlpha = 1;
   }
 
-  /* --- objetos ordenados por y --- */
+  /* --- objetos ordenados por y (ancla = centro abajo del sprite) --- */
   const objects: Draw[] = [];
-  for (const t of D.arboles as { x: number; y: number; v: number }[]) {
-    const ph = rnd() * 6, v = t.v % 3;
-    objects.push({ x: t.x, y: t.y, fn: (_g, st) => {
-      const sway = still ? 0 : Math.round(Math.sin(st.t * 1.1 + ph) * 1.2);
-      const strips = [[0, 14, sway], [14, 12, Math.round(sway / 2)], [26, 22, 0]];
-      for (const [sy, sh, off] of strips) put(S.arbol, v * 32, sy, 32, sh, t.x - 16 + off, t.y - 45 + sy, st);
+  const drawM = (at: Atlas, m: Meta, fi: number, cx: number, by: number, st: State) => {
+    const fr = m.frames ? m.frames[fi % m.frames.length] : { x: m.x, y: m.y };
+    put(at.spr, fr.x, fr.y, m.w, m.h, cx - m.w / 2, by - m.h, st);
+  };
+  const frameAt = (m: Meta, t: number, ph = 0) => (m.frames ? Math.floor((t * 1000) / (m.ms ?? 300) + ph) % m.frames.length : 0);
+  const findAt = (k: string): [Atlas, Meta] | null => {
+    if (k.startsWith("jardin:")) { const m = aJar.meta[k.slice(7)]; return m ? [aJar, m] : null; }
+    if (aNat.meta[k]) return [aNat, aNat.meta[k]];
+    if (aDeco.meta[k]) return [aDeco, aDeco.meta[k]];
+    return null;
+  };
+  for (const p of D.props as { k: string; x: number; y: number }[]) {
+    const f = findAt(p.k);
+    if (!f) continue;
+    const ph = rnd() * 8;
+    const mece = aMece.meta[`${p.k}_mece`];
+    objects.push({ x: p.x, y: p.y, fn: (_g, st) => {
+      if (mece && !still) drawM(aMece, mece, frameAt(mece, st.t, ph), p.x, p.y, st);
+      else drawM(f[0], f[1], 0, p.x, p.y, st);
     } });
   }
-  for (const b of D.arbustos as { x: number; y: number; v: number }[]) {
-    objects.push({ x: b.x, y: b.y, fn: (_g, st) => put(S.arbusto, (b.v % 3) * 18, 0, 18, 14, b.x - 9, b.y - 11, st) });
+  for (const d of D.deco as { k: string; x: number; y: number }[]) {
+    if (d.k === "puesto") {
+      const m = aPuesto.meta["puesto_papeleria_v2"];
+      objects.push({ x: d.x, y: d.y, fn: (_g, st) => drawM(aPuesto, m, still ? 0 : frameAt(m, st.t), d.x, d.y, st) });
+      continue;
+    }
+    const f = findAt(d.k);
+    if (!f) continue;
+    const isBridge = d.k === "puente";
+    objects.push({ x: d.x, y: isBridge ? -1 : d.y, fn: (_g, st) => {
+      const alt = d.k === "pozo_balde_arriba" && !still && Math.floor(st.t / 2.2) % 2 === 1 ? aDeco.meta["pozo_balde_abajo"] : f[1];
+      drawM(f[0], alt, 0, d.x, d.y, st);
+    } });
   }
-  for (const r of D.rocas as { x: number; y: number; v: number }[]) {
-    objects.push({ x: r.x, y: r.y, fn: (_g, st) => put(S.roca, (r.v % 2) * 14, 0, 14, 10, r.x - 7, r.y - 8, st) });
+  for (const fl of D.flores as { x: number; y: number; k: string }[]) {
+    const m = aFlor.meta[fl.k];
+    if (m) objects.push({ x: fl.x, y: fl.y, fn: (_g, st) => drawM(aFlor, m, 0, fl.x, fl.y, st) });
   }
-  for (const f of D.flores as { x: number; y: number; v: number }[]) {
-    objects.push({ x: f.x, y: f.y, fn: (_g, st) => put(S.flores, f.v * 8, 0, 8, 8, f.x - 4, f.y - 7, st) });
-  }
-  (D.girasoles as { x: number; y: number }[]).forEach((s, k) => {
-    objects.push({ x: s.x, y: s.y, fn: (_g, st) => put(S.girasol, (Math.floor(st.t * 2.5 + k) % 2) * 16, 0, 16, 24, s.x - 8, s.y - 23, st) });
+  (D.girasoles as { x: number; y: number; g: string }[]).forEach((s2, k) => {
+    const m = aGira.meta[s2.g] ?? aGira.meta["girasol_grande"];
+    objects.push({ x: s2.x, y: s2.y, fn: (_g, st) => drawM(aGira, m, still ? 0 : (Math.floor(st.t * 2.5 + k) % 2), s2.x, s2.y, st) });
   });
   for (const h of casas) {
     const [bx, by] = h.pos;
@@ -152,23 +192,27 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   // patos en el estanque
   const [pcx, pcy, prx, pry] = D.pond as number[];
   const patos = [{ r: prx * 0.45, sp: 0.5, ph: 0 }, { r: prx * 0.3, sp: 0.37, ph: 2.4 }];
+  const mPatos = aBich.meta["patitos_nadando"];
   for (const p of patos) {
-    objects.push({ x: pcx, y: pcy + 4, fn: (_g, st) => {
+    objects.push({ x: pcx, y: pcy + 6, fn: (_g, st) => {
       const a = st.t * p.sp + p.ph;
       const x = pcx + Math.round(Math.cos(a) * p.r), y = pcy + Math.round(Math.sin(a) * (pry * 0.35));
-      put(S.pato, (Math.floor(st.t * 2) % 2) * 11, 0, 11, 9, x - 5, y - 6, st);
+      drawM(aBich, mPatos, still ? 0 : frameAt(mPatos, st.t, p.ph), x, y + 3, st);
     } });
   }
-  // mariposas
-  const maripos = [
-    { x0: ix + iw * 0.3, y0: iy + ih * 0.45, sx: 40, sy: 12, sp: 0.5, ph: 0, c: 0 },
-    { x0: ix + iw * 0.62, y0: iy + ih * 0.7, sx: 34, sy: 10, sp: 0.42, ph: 2, c: 1 },
-    { x0: ix + iw * 0.8, y0: iy + ih * 0.3, sx: 30, sy: 9, sp: 0.6, ph: 4, c: 0 },
+  // bichitos que andan por la isla
+  const vola = [
+    { n: "mariposa_rosa", x0: ix + iw * 0.3, y0: iy + ih * 0.45, sx: 70, sy: 22, sp: 0.5, ph: 0 },
+    { n: "mariposa_lila", x0: ix + iw * 0.62, y0: iy + ih * 0.68, sx: 60, sy: 18, sp: 0.42, ph: 2 },
+    { n: "mariposa_rosa", x0: ix + iw * 0.8, y0: iy + ih * 0.3, sx: 50, sy: 16, sp: 0.6, ph: 4 },
+    { n: "abeja", x0: ix + iw * 0.45, y0: iy + ih * 0.3, sx: 36, sy: 12, sp: 0.9, ph: 1 },
+    { n: "libelula", x0: pcx, y0: pcy - 8, sx: 46, sy: 14, sp: 0.7, ph: 3 },
   ];
-  for (const b of maripos) {
+  for (const b of vola) {
+    const m = aBich.meta[b.n];
     objects.push({ x: b.x0, y: lh + 10, fn: (_g, st) => {
       const a = st.t * b.sp + b.ph;
-      put(S.mariposas, (b.c * 2 + (Math.floor(st.t * 4) % 2)) * 7, 0, 7, 5, b.x0 + Math.cos(a) * b.sx - 3, b.y0 + Math.sin(a * 1.7) * b.sy - 2, st);
+      drawM(aBich, m, still ? 0 : frameAt(m, st.t), b.x0 + Math.cos(a) * b.sx, b.y0 + Math.sin(a * 1.7) * b.sy + m.h / 2, st);
     } });
   }
   objects.sort((a, b) => a.y - b.y || a.x - b.x);

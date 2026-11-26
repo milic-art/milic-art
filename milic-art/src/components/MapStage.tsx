@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { site, type PlaceId } from "../content";
 import { LandmarkArt } from "./WorldArt";
 import { IsoIsland, type IslaControl, type IslaMode } from "./isla/IsoIsland";
 import { TopIsland } from "./isla/TopIsland";
-import { VISTA, islaLayout } from "./isla/config";
+import { VISTA, islaLayout, TOP } from "./isla/config";
 import { ClockyArt, type ClockyState } from "./ClockyArt";
 
 type View = { x: number; y: number; s: number };
@@ -26,7 +26,7 @@ type MapStageProps = {
  * pinch, and the round zoom pegs for people who would rather not drag.
  */
 export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, onPokeClocky }: MapStageProps) {
-  const layout = islaLayout(portrait);
+  const layout = useMemo(() => islaLayout(portrait), [portrait]);
   const WORLD_W = layout.worldW;
   const WORLD_H = layout.worldH;
   const [mode, setMode] = useState<IslaMode>("auto");
@@ -60,7 +60,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     el.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${s})`;
     el.style.opacity = "1";
     // Alejado, los nombres se esconden (tapan las casitas) salvo el del lugar tocado.
-    stageRef.current?.setAttribute("data-far", s < 0.62 ? "true" : "false");
+    stageRef.current?.setAttribute("data-far", s < 0.26 ? "true" : "false");
     // Place names stay readable at every zoom level.
     const counter = Math.min(2.6, Math.max(0.42, 1 / s));
     for (const label of labelRefs.current) {
@@ -145,11 +145,11 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       const h = stage.clientHeight;
       if (w < 2 || h < 2) return;
       const { cover } = limits();
-      minScale.current = cover;
+      minScale.current = VISTA === "cenital" ? Math.min(cover, 0.3) : cover;
       maxScale.current = Math.max(cover * 2.2, 1.4);
       // La isla entera entra en pantalla (con aire arriba para el menú).
       const fit = Math.min((w * (portrait ? (VISTA === "cenital" ? 0.97 : 1.2) : 0.94)) / (layout.islaW * layout.z), (h * 0.74) / (layout.islaH * layout.z));
-      const s = Math.min(maxScale.current, Math.max(minScale.current, fit));
+      const s = VISTA === "cenital" ? Math.min(maxScale.current, Math.max(minScale.current, portrait ? 0.5 : 0.7)) : Math.min(maxScale.current, Math.max(minScale.current, fit));
 
       const next = clamp({
         s,
@@ -170,13 +170,38 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     [clamp, limits, paint, layout],
   );
 
+  /** Alterna entre el encuadre cercano y la isla completa. */
+  const toggleFit = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const { cover } = limits();
+    const [, , iw0, ih0] = (TOP[portrait ? "v" : "h"].isl as number[]);
+    const sFit0 = Math.min(stage.clientWidth / (iw0 + 30) / layout.z, stage.clientHeight / (ih0 + 150) / layout.z);
+    if (view.current.s > sFit0 * 1.25) {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      const [ix, iy, iw, ih] = (TOP[portrait ? "v" : "h"].isl as number[]);
+      const sFit = Math.min(w / (iw + 30) / layout.z, h / (ih + 150) / layout.z);
+      const s = Math.min(maxScale.current, Math.max(sFit, 0.12));
+      minScale.current = Math.min(minScale.current, s);
+      if (layerRef.current) {
+        layerRef.current.style.transition = "transform 420ms cubic-bezier(0.22, 1, 0.36, 1)";
+        window.setTimeout(() => { if (layerRef.current) layerRef.current.style.transition = ""; }, 460);
+      }
+      view.current = clamp({ s, x: w / 2 - (ix + iw / 2) * layout.z * s, y: h / 2 - (iy + ih / 2 + 30) * layout.z * s });
+      interacted.current = true;
+      paint();
+    } else {
+      welcomeView(true);
+    }
+  }, [limits, clamp, paint, layout, portrait, welcomeView]);
+
   useEffect(() => {
     welcomeView(false);
     const onResize = () => {
       const box = stageRef.current;
       if (!box || box.clientWidth < 2 || box.clientHeight < 2) return;
       const { cover } = limits();
-      minScale.current = cover;
+      minScale.current = VISTA === "cenital" ? Math.min(cover, 0.3) : cover;
       maxScale.current = Math.max(cover * 2, 1.2);
       if (interacted.current) {
         setView(view.current);
@@ -308,6 +333,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     <div
       ref={stageRef}
       className="map-stage relative h-full w-full overflow-hidden"
+      style={{ background: nightShown ? "linear-gradient(#1b1840, #3a2f6b 55%, #5a4a86)" : "linear-gradient(#8fd2d2, #c8ecdc 55%, #fbf3e4)" }}
       data-dragging={dragging}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -407,7 +433,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
               type="button"
               onClick={onPokeClocky}
               aria-label={site.mascot.poke}
-              className="clocky-walker absolute z-20 block w-[132px] cursor-pointer"
+              className="clocky-walker absolute z-20 block w-[150px] cursor-pointer"
               data-walking={walking}
               style={{
                 left: `calc(${spot.x}% + ${near ? layout.walker.dx : 0}px)`,
@@ -455,7 +481,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
         </button>
         <button
           type="button"
-          onClick={() => welcomeView(true)}
+          onClick={toggleFit}
           className="zoom-peg flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink bg-paper text-ink shadow-[0_3px_0_rgba(75,58,42,0.8)]"
           aria-label={site.labels.resetView}
         >
