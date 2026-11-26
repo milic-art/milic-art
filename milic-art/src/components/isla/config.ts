@@ -22,10 +22,10 @@ export const PANZA = {
 /** Casitas de los lugares: hoja de 2 cuadros de 64x64 (día) y su versión de noche.
  *  (a, b): celda de arriba de la huella de 2x2 baldosas. Reemplazar `file`/`fileNoche` por las de Malena. */
 export const CASITAS: Record<PlaceId, { file: string; fileNoche: string; fw: number; fh: number; frames: number; ms: number; a: number; b: number }> = {
-  periodismo: { file: "generados/casa_redaccion.png", fileNoche: "generados/casa_redaccion_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 1, b: 3 },
+  periodismo: { file: "generados/casa_redaccion.png", fileNoche: "generados/casa_redaccion_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 0, b: 4 },
   diseno: { file: "generados/casa_estudio.png", fileNoche: "generados/casa_estudio_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 3, b: 2 },
-  dibujo: { file: "generados/casa_taller.png", fileNoche: "generados/casa_taller_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 5, b: 1 },
-  programacion: { file: "generados/casa_laboratorio.png", fileNoche: "generados/casa_laboratorio_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 3, b: 5 },
+  dibujo: { file: "generados/casa_taller.png", fileNoche: "generados/casa_taller_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 6, b: 0 },
+  programacion: { file: "generados/casa_laboratorio.png", fileNoche: "generados/casa_laboratorio_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 3, b: 6 },
   casita: { file: "generados/casa_casita.png", fileNoche: "generados/casa_casita_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 6, b: 5 },
 };
 
@@ -37,6 +37,7 @@ export const ASSETS = {
   flores: "flores_chicas.png", // 8 flores 8x8
   piedra: "piedra_flotante.png", // 16x16
   raiz: "raiz_colgante.png", // 16x32
+  camino: "generados/camino_hoja.png", // 16 variantes de unión, 32x16
   agua: "generados/agua_hoja.png", // 16 variantes de orilla x 2 cuadros, 32x16
   cascada: "generados/cascada_hoja.png", // 3 cuadros 16x64
   nubeS: "generados/nube_s.png",

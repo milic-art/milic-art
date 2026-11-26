@@ -86,34 +86,27 @@ def cascada():
 
 
 # ------------------------------------------------------------------ nubes
-def nube(w, h, seed, nombre):
-    r = random.Random(seed)
+def nube(w, h, circulos, base, nombre):
+    """Nube esponjosa: círculos apoyados en una base plana, sombra abajo."""
     l = Lienzo(w, h)
-    base = h - 3
-    circulos = []
-    n = max(3, w // 12)
-    for k in range(n):
-        cx = 6 + (w - 12) * k / max(1, n - 1)
-        rad = r.randint(int(h * 0.28), int(h * 0.5))
-        if k in (n // 2, (n - 1) // 2):
-            rad = int(h * 0.55)
-        circulos.append((cx, base - rad + 1, rad))
+    xs = [c[0] for c in circulos]
     for y in range(h):
         for x in range(w):
-            dentro = any((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= rr * rr for cx, cy, rr in circulos)
+            dentro = any((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= r * r for cx, cy, r in circulos)
+            dentro = dentro or (min(xs) <= x <= max(xs) and base - 5 <= y <= base)
             if dentro and y <= base:
-                l.px(x, y, "#fffdf7")
-    # base plana redondeada
-    for x in range(2, w - 2):
-        if l.im.getpixel((x, base))[3]:
-            pass
-    # sombra abajo (tercio inferior) y luz arriba-izquierda
-    for y in range(h):
-        for x in range(w):
-            if l.im.getpixel((x, y))[3]:
-                if y >= base - 2:
-                    l.px(x, y, "#c2e0d8")
-                elif y >= base - 5 and x > w * 0.45:
+                if y >= base - 1:
+                    c = "#c2e0d8"
+                elif y >= base - 3:
+                    c = "#c8ecdc"
+                else:
+                    c = "#fffdf7"
+                l.px(x, y, c)
+    # sombra suave en el lado derecho de cada puff
+    for cx_, cy_, r in circulos:
+        for y in range(h):
+            for x in range(w):
+                if l.im.getpixel((x, y))[:3] == (255, 253, 247) and (x - cx_) ** 2 + (y - cy_) ** 2 <= r * r and (x - cx_) * 0.7 + (y - cy_) > r * 0.75:
                     l.px(x, y, "#c8ecdc")
     guardar(l, nombre)
 
@@ -222,6 +215,60 @@ def pato():
         bitmap(l, 0, 0, fr, pal)
         hoja.pegar(l, i * 11, 0)
     guardar(hoja, "pato_hoja.png")
+
+
+# ------------------------------------------------------------------ camino de tierra
+def baldosa_camino(flags, var):
+    """Baldosa de tierra 32x16. flags: 1 UL, 2 UR, 4 LR, 8 LL = lado con vecino de camino (se extiende al borde);
+    los lados sin vecino se achican 2 px y dejan ver el pasto de abajo."""
+    l = Lienzo(32, 16)
+    for y in range(16):
+        w = ancho_fila(y)
+        x0 = 16 - w // 2
+        for x in range(x0, x0 + w):
+            # distancia a cada borde del rombo (aprox. en px de pantalla)
+            dl = x - x0
+            dr = x0 + w - 1 - x
+            arriba = y < 8
+            # lado izquierdo de la fila pertenece a UL (arriba) o LL (abajo); derecho a UR o LR
+            if arriba:
+                if not (flags & 1) and dl < 3 and y < 7:
+                    continue
+                if not (flags & 2) and dr < 3 and y < 7:
+                    continue
+                if not ((flags & 1) and (flags & 2)) and y < 1 and not (flags & 3):
+                    continue
+            else:
+                if not (flags & 8) and dl < 3 and y > 8:
+                    continue
+                if not (flags & 4) and dr < 3 and y > 8:
+                    continue
+                if not (flags & 12) and y > 14:
+                    continue
+            c = "#e0b070"
+            h = (x * 7 + y * 13 + var * 5) % 17
+            if h in (0, 1) and y % 2 == 0:
+                c = "#bf8444"
+            elif h == 8 and (x + var) % 3 == 0:
+                c = "#f2bd6e"
+            elif (x // 3 + y // 2 + var) % 7 == 0 and y % 3 == 1:
+                c = "#bf8444"
+            l.px(x, y, c)
+    # piedritas
+    stones = {0: ((14, 7), (20, 10)), 1: ((10, 8), (22, 6)), 2: ((16, 9),), 3: ((12, 6), (19, 11))}[var % 4]
+    for (sx, sy) in stones:
+        if l.im.getpixel((sx, sy))[3]:
+            l.px(sx, sy, "#a8a08e")
+            if l.im.getpixel((sx + 1, sy))[3]:
+                l.px(sx + 1, sy, "#d6cbb0")
+    return l
+
+
+def hoja_camino():
+    hoja = Lienzo(32 * 16, 16)
+    for f in range(16):
+        hoja.pegar(baldosa_camino(f, f), f * 32, 0)
+    guardar(hoja, "camino_hoja.png")
 
 
 # ------------------------------------------------------------------ casitas 64x64
@@ -450,8 +497,8 @@ if __name__ == "__main__":
     guardar_noche_json()
     hoja_agua()
     cascada()
-    nube(40, 16, 1, "nube_s.png")
-    nube(64, 24, 2, "nube_m.png")
-    nube(96, 32, 3, "nube_l.png")
-    sol(); luna(); girasol(); mariposas(); pato(); hojas_casas()
+    nube(40, 16, [(10, 10, 5), (20, 7, 7), (30, 10, 5)], 13, "nube_s.png")
+    nube(64, 24, [(12, 16, 6), (26, 11, 9), (42, 13, 8), (53, 17, 5)], 21, "nube_m.png")
+    nube(96, 32, [(14, 23, 7), (30, 16, 11), (50, 12, 12), (68, 16, 10), (82, 23, 7)], 29, "nube_l.png")
+    hoja_camino(); sol(); luna(); girasol(); mariposas(); pato(); hojas_casas()
     print("ok")

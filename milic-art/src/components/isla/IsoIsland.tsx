@@ -172,7 +172,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
 
   const S = {
     arbol: toSpr(A.arbol), arbolSombra: toSpr(A.arbolSombra), pasto: toSpr(A.pasto), borde: toSpr(A.borde),
-    flores: toSpr(A.flores), piedra: toSpr(A.piedra), raiz: toSpr(A.raiz), agua: toSpr(A.agua), cascada: toSpr(A.cascada),
+    flores: toSpr(A.flores), camino: toSpr(A.camino), piedra: toSpr(A.piedra), raiz: toSpr(A.raiz), agua: toSpr(A.agua), cascada: toSpr(A.cascada),
     nubeS: toSpr(A.nubeS), nubeM: toSpr(A.nubeM), nubeL: toSpr(A.nubeL), sol: toSpr(A.sol), luna: toSpr(A.luna),
     girasol: toSpr(A.girasol), mariposas: toSpr(A.mariposas), pato: toSpr(A.pato), panza: toSpr(panzaImg),
   };
@@ -184,9 +184,16 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     const c = CASITAS[id];
     for (let di = 0; di < 2; di++) for (let dj = 0; dj < 2; dj++) occ[c.a + di][c.b + dj] = "casa:" + id;
   }
-  const pond = [[1, 6], [1, 7], [2, 7], [1, 8]];
+  const pond = [[1, 6], [1, 7], [1, 8]];
   for (const [i, j] of pond) occ[i][j] = "agua";
   const isWater = (i: number, j: number) => pond.some(([a, b]) => a === i && b === j);
+  // camino de tierra entre las casitas
+  const pathCells: [number, number][] = [];
+  for (let i = 2; i <= 7; i++) pathCells.push([i, 4]);
+  for (let j = 5; j <= 7; j++) pathCells.push([2, j], [5, j]);
+  pathCells.push([6, 7], [7, 2], [7, 3]);
+  for (const [i, j] of pathCells) if (!occ[i][j]) occ[i][j] = "camino";
+  const isPath = (i: number, j: number) => i >= 0 && j >= 0 && i <= 8 && j <= 8 && occ[i]?.[j] === "camino";
 
   const rnd = mulberry(20260);
   const cx = (i: number, j: number) => ox + (i - j) * 16 + 16;
@@ -210,7 +217,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   /* --- decoración --- */
   type Tree = { i: number; j: number; v: number; ph: number };
   const treeCells: [number, number, number][] = [
-    [0, 1, 0], [2, 0, 1], [4, 0, 2], [7, 0, 0], [0, 4, 1], [7, 3, 2], [5, 7, 2], [0, 2, 2], [7, 7, 0],
+    [0, 1, 0], [2, 0, 1], [4, 0, 2], [7, 0, 0], [0, 4, 1], [7, 3, 2], [5, 7, 2], [0, 2, 2],
   ];
   const trees: Tree[] = [];
   for (const [i, j, v] of treeCells) {
@@ -223,7 +230,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const flowers: { x: number; y: number; v: number }[] = [];
   for (let n = 0; n < 46; n++) {
     const i = Math.floor(rnd() * 8), j = Math.floor(rnd() * 8);
-    if (occ[i][j] === "agua" || (occ[i][j] || "").startsWith("casa")) continue;
+    if (occ[i][j] === "agua" || occ[i][j] === "camino" || (occ[i][j] || "").startsWith("casa")) continue;
     flowers.push({ x: cx(i, j) + Math.round((rnd() - 0.5) * 18), y: cy(i, j) + Math.round((rnd() - 0.5) * 6), v: Math.floor(rnd() * 8) });
   }
   const sparkles = Array.from({ length: 14 }, () => ({ x: ox - 120 + rnd() * 270, y: oy + 20 + rnd() * 120, ph: Math.floor(rnd() * 16) }));
@@ -340,7 +347,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   // patos
   const patos = [
     { cx: cx(1, 7) + 2, cy: cy(1, 7) + 1, r: 5, sp: 0.5, ph: 0 },
-    { cx: cx(2, 7) - 2, cy: cy(2, 7) + 1, r: 4, sp: 0.37, ph: 2 },
+    { cx: cx(1, 6) + 1, cy: cy(1, 6) + 1, r: 4, sp: 0.37, ph: 2 },
   ];
   for (const p of patos) {
     objects.push({ x: p.cx, y: p.cy + 3, fn: (gg, st) => {
@@ -383,6 +390,10 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
           put(S.agua, flags * 32, fr * 16, 32, 16, x, y, st);
         } else {
           put(S.pasto, grass[i][j] * 32, 0, 32, 16, x, y, st);
+          if (isPath(i, j)) {
+            const fl = (isPath(i - 1, j) ? 1 : 0) | (isPath(i, j - 1) ? 2 : 0) | (isPath(i + 1, j) ? 4 : 0) | (isPath(i, j + 1) ? 8 : 0);
+            put(S.camino, fl * 32, 0, 32, 16, x, y, st);
+          }
         }
         const edgeL = j === 8, edgeR = i === 8;
         if (edgeL || edgeR) {
@@ -437,7 +448,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     }
     // sol y luna
     const sunX = lw * (portrait ? 0.22 : 0.14) + px * 4, sunY = lh * 0.1 + py * 3;
-    const moonX = lw * (portrait ? 0.78 : 0.86) + px * 4, moonY = lh * 0.1 + py * 3;
+    const moonX = lw * (portrait ? 0.78 : 0.72) + px * 4, moonY = lh * 0.1 + py * 3;
     const sunVis = 1 - nn, moonVis = nn;
     if (sunVis > 0.02) {
       g.globalAlpha = sunVis;
@@ -455,6 +466,20 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
       const span = lw + c.spr.w + 40;
       const x = ((c.x + t * c.sp) % span) - c.spr.w - 10 + px * c.k * 8;
       put(c.spr, 0, 0, c.spr.w, c.spr.h, x, c.y + py * c.k * 4, st);
+    }
+    // pajaritos (de día)
+    if (nn < 0.7) {
+      g.fillStyle = "#463f4a";
+      for (let k = 0; k < 3; k++) {
+        const span = lw + 60;
+        const bx = Math.round(((t * (5 + k * 1.7) + k * 170) % span) - 30 + px * 3);
+        const by = Math.round(lh * (0.16 + k * 0.07) + Math.sin(t * 0.8 + k) * 3 + py * 2);
+        const wing = Math.floor(t * 4 + k) % 2 === 0;
+        const pts = wing ? [[-3, -1], [-2, 0], [-1, 0], [0, 1], [1, 0], [2, 0], [3, -1]] : [[-3, 1], [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0], [3, 1]];
+        g.globalAlpha = 1 - nn / 0.7;
+        for (const [dx, dy] of pts) g.fillRect(bx + dx, by + dy, 1, 1);
+        g.globalAlpha = 1;
+      }
     }
     // isla
     const bob = still ? 0 : Math.round(2.4 * Math.sin((t / 6) * Math.PI * 2));
