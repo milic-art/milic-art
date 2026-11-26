@@ -159,12 +159,20 @@ export const site = {
       listLabel: "Todas las entradas",
       items: [
         {
-          title: "Regenerar futuro: por dónde empezar",
-          date: "29 de septiembre de 2026",
-          tag: "Newsletter · OLA Productiva · Edición 01",
-          summary: "Primera edición del newsletter de OLA. Qué es regenerar y por dónde puede empezar una pyme.",
+          title: "¿Qué significa hacer negocios de otra manera?",
+          date: "3 de noviembre de 2026",
+          tag: "Newsletter · OLA Productiva · Edición 04",
+          summary: "Si una empresa puede ser rentable y a la vez cuidar a su comunidad y al ambiente. Con los casos de Pacari y South Post.",
           body: ["Leé la edición completa en la web de OLA Productiva."],
-          link: "https://olaproductiva.com.ar",
+          link: "https://www.olaproductiva.com.ar/newsletters/que-significa-hacer-negocios-de-otra-manera",
+        },
+        {
+          title: "¿Qué significa apostar por lo local?",
+          date: "13 de octubre de 2026",
+          tag: "Newsletter · OLA Productiva · Edición 03",
+          summary: "Por qué el crecimiento no siempre mejora la calidad de vida y qué cambia al acercar las decisiones a las comunidades.",
+          body: ["Leé la edición completa en la web de OLA Productiva."],
+          link: "https://www.olaproductiva.com.ar/newsletters/que-significa-apostar-por-lo-local",
         },
         {
           title: "[Título de tu primera entrada]",
