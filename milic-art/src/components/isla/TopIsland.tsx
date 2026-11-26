@@ -13,6 +13,31 @@ import atLuces from "./atlas/luces.json";
 
 type Meta = { x: number; y: number; w: number; h: number; frames?: { x: number; y: number }[]; ms?: number };
 type Atlas = { spr: Spr; meta: Record<string, Meta> };
+const RAMP_V: [number, number, number][] = [[0x35, 0x56, 0x3a], [0x58, 0x7a, 0x35], [0x8a, 0xa2, 0x3a], [0xbc, 0xc0, 0x46], [0xe2, 0xd8, 0x70]];
+/** Copia del atlas con los verdes corridos un escalón en la rampa (árbol más oscuro o más claro). */
+function shiftAtlas(at: { spr: Spr; meta: Record<string, Meta> }, d: number) {
+  const src = at.spr.day;
+  const c = document.createElement("canvas");
+  c.width = src.width; c.height = src.height;
+  const cg = c.getContext("2d")!;
+  cg.drawImage(src, 0, 0);
+  const im = cg.getImageData(0, 0, c.width, c.height);
+  const a = im.data;
+  for (let i = 0; i < a.length; i += 4) {
+    if (!a[i + 3]) continue;
+    for (let k = 0; k < RAMP_V.length; k++) {
+      const r = RAMP_V[k];
+      if (a[i] === r[0] && a[i + 1] === r[1] && a[i + 2] === r[2]) {
+        const t = RAMP_V[Math.max(0, Math.min(RAMP_V.length - 1, k + d))];
+        a[i] = t[0]; a[i + 1] = t[1]; a[i + 2] = t[2];
+        break;
+      }
+    }
+  }
+  cg.putImageData(im, 0, 0);
+  return { spr: toSpr(c as unknown as HTMLImageElement), meta: at.meta };
+}
+
 async function atlas(file: string, meta: unknown): Promise<Atlas> {
   return { spr: toSpr(await loadImage(`code/${file}.png`)), meta: meta as Record<string, Meta> };
 }
@@ -64,6 +89,8 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     atlas("naturaleza_hoja_v2", atNat), atlas("deco_hoja_v2", atDeco), atlas("jardin_hoja", atJar), atlas("flores_hoja", atFlor),
     atlas("girasoles_hoja", atGira), atlas("mecen_hoja", atMece), atlas("bichitos_hoja", atBich), atlas("puesto_papeleria_v2", atPuesto), atlas("pasto_luces_hoja", atLuces),
   ]);
+  const treeVar = (at: Atlas): Atlas[] => [at, shiftAtlas(at, -1), shiftAtlas(at, 1)];
+  const natV = treeVar(aNat), meceV = treeVar(aMece);
   const aSombra = { spr: toSpr(A.arbolSombra), meta: {} as Record<string, Meta> };
   void aSombra;
   const suelo = await Promise.all(Array.from({ length: D.nf as number }, (_, f) => loadImage(`generados/isla_${key}_${f}.png`)));
@@ -147,12 +174,14 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     if (!f) continue;
     const ph = rnd() * 8;
     const mece = aMece.meta[`${p.k}_mece`];
+    const esArbol = /^(arbol|pino|sauce|alamo)/.test(p.k);
+    const vi = esArbol ? Math.abs(Math.floor(p.x * 7 + p.y * 13)) % 3 : 0;
     const hm = /^hongos_(\d)$/.exec(p.k);
     const luz = hm ? aLuz.meta[`hongos_brillo_${[1, 1, 2, 2, 3, 3][+hm[1] - 1]}`] : null;
     objects.push({ x: p.x, y: p.y, fn: (_g, st) => {
       if (luz && st.n > 0.5) { lit(luz, still ? 0 : frameAt(luz, st.t, ph), p.x, p.y, st, 5); return; }
-      if (mece && !still) drawM(aMece, mece, frameAt(mece, st.t, ph), p.x, p.y, st);
-      else drawM(f[0], f[1], 0, p.x, p.y, st);
+      if (mece && !still) drawM(meceV[vi], mece, frameAt(mece, st.t, ph), p.x, p.y, st);
+      else drawM(f[0] === aNat ? natV[vi] : f[0], f[1], 0, p.x, p.y, st);
     } });
   }
   for (const d of D.deco as { k: string; x: number; y: number }[]) {
@@ -334,6 +363,23 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     const fi = still ? 0 : (((Math.floor(t * 4) % sueloS.length) + sueloS.length) % sueloS.length);
     put(sueloS[fi], 0, 0, lw, lh, 0, 0, st);
     for (const o of objects) o.fn(g, st);
+    // rayos de luz entre las copas (solo de día): franjas diagonales que respiran despacio
+    if (st.n < 0.7) {
+      const k = 1 - st.n / 0.7;
+      g.fillStyle = "#f9e07a";
+      for (let i = 0; i < 7; i++) {
+        const bx = ix + 30 + ((i * 97 + 40) % (iw - 60));
+        const w = 9 + (i % 3) * 4;
+        const a = (0.05 + 0.04 * Math.sin(t * 0.5 + i * 1.7)) * k;
+        if (a <= 0.005) continue;
+        g.globalAlpha = a;
+        for (let y = iy + 30; y < iy + ih - 40; y += 2) {
+          const x = Math.round(bx + (y - iy) * 0.35);
+          g.fillRect(x, y, w, 2);
+        }
+      }
+      g.globalAlpha = 1;
+    }
     // brillitos
     for (const s of sparkles) {
       const f = (Math.floor(t * 4) + s.ph) % 16;
