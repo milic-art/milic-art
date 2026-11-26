@@ -11,22 +11,25 @@ import type { PlaceId } from "../../content";
  *  inferior del rombo SUPERIOR de la isla (el txt de la panza de Malena trae estos números).
  *  incluyeCarasDelBorde: true si el sprite ya trae las caras laterales del borde (entonces el
  *  motor no dibuja los bloques de borde_isla_hoja). */
+/** Lado de la isla en baldosas. */
+export const GRID = 11;
+
 export const PANZA = {
-  file: "generados/panza_9x9_claude.png",
+  file: `generados/panza_${GRID}x${GRID}_claude.png`,
   left: [0, -13] as [number, number],
-  right: [288, -13] as [number, number],
-  bottom: [144, 59] as [number, number],
+  right: [32 * GRID, -13] as [number, number],
+  bottom: [16 * GRID, 8 * GRID - 13] as [number, number],
   incluyeCarasDelBorde: false,
 };
 
 /** Casitas de los lugares: hoja de 2 cuadros de 64x64 (día) y su versión de noche.
  *  (a, b): celda de arriba de la huella de 2x2 baldosas. Reemplazar `file`/`fileNoche` por las de Malena. */
-export const CASITAS: Record<PlaceId, { file: string; fileNoche: string; fw: number; fh: number; frames: number; ms: number; a: number; b: number }> = {
-  periodismo: { file: "generados/casa_redaccion.png", fileNoche: "generados/casa_redaccion_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 0, b: 4 },
-  diseno: { file: "generados/casa_estudio.png", fileNoche: "generados/casa_estudio_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 3, b: 2 },
-  dibujo: { file: "generados/casa_taller.png", fileNoche: "generados/casa_taller_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 6, b: 0 },
-  programacion: { file: "generados/casa_laboratorio.png", fileNoche: "generados/casa_laboratorio_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 3, b: 6 },
-  casita: { file: "generados/casa_casita.png", fileNoche: "generados/casa_casita_noche.png", fw: 64, fh: 64, frames: 2, ms: 500, a: 6, b: 5 },
+export const CASITAS: Record<PlaceId, { file: string; fileNoche: string; fw: number; fh: number; frames: number; ms: number; a: number; b: number; humo: [number, number] | null }> = {
+  periodismo: { file: "generados/casa_redaccion.png", fileNoche: "generados/casa_redaccion_noche.png", fw: 64, fh: 80, frames: 2, ms: 500, a: 0, b: 4, humo: [48, 33] },
+  diseno: { file: "generados/casa_estudio.png", fileNoche: "generados/casa_estudio_noche.png", fw: 64, fh: 80, frames: 2, ms: 500, a: 4, b: 2, humo: null },
+  dibujo: { file: "generados/casa_taller.png", fileNoche: "generados/casa_taller_noche.png", fw: 64, fh: 80, frames: 2, ms: 500, a: 8, b: 0, humo: null },
+  programacion: { file: "generados/casa_laboratorio.png", fileNoche: "generados/casa_laboratorio_noche.png", fw: 64, fh: 80, frames: 2, ms: 500, a: 5, b: 8, humo: [47, 26] },
+  casita: { file: "generados/casa_casita.png", fileNoche: "generados/casa_casita_noche.png", fw: 64, fh: 80, frames: 2, ms: 500, a: 8, b: 6, humo: [44, 31] },
 };
 
 export const ASSETS = {
@@ -50,6 +53,23 @@ export const ASSETS = {
   pato: "generados/pato_hoja.png", // 2 cuadros 11x9
 };
 
+/** Qué vista usa el mapa: "cenital" (isla vista desde arriba, la que ayuda a que Clocky camine) o "isometrica" (la versión en diagonal, guardada para comparar). */
+export const VISTA: "cenital" | "isometrica" = "cenital";
+
+export const ASSETS_TOP = {
+  arbusto: "generados/arbusto_hoja.png", // 3 arbustos 18x14
+  roca: "generados/roca_hoja.png", // 2 rocas 14x10
+};
+
+/** Casitas vistas desde arriba: hoja de 2 cuadros de 64x72, base (puerta) en la fila 68. humo = punto de la chimenea. */
+export const CASITAS_TOP: Record<PlaceId, { file: string; fileNoche: string; fw: number; fh: number; base: number; frames: number; ms: number; humo: [number, number] | null; puerta: number }> = {
+  periodismo: { file: "generados/casat_redaccion.png", fileNoche: "generados/casat_redaccion_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: [41, 5], puerta: 31 },
+  diseno: { file: "generados/casat_estudio.png", fileNoche: "generados/casat_estudio_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: null, puerta: 45 },
+  dibujo: { file: "generados/casat_taller.png", fileNoche: "generados/casat_taller_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: null, puerta: 31 },
+  programacion: { file: "generados/casat_laboratorio.png", fileNoche: "generados/casat_laboratorio_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: [49, 36], puerta: 31 },
+  casita: { file: "generados/casat_casita.png", fileNoche: "generados/casat_casita_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: [13, 7], puerta: 31 },
+};
+
 export type Layout = {
   lw: number; // ancho lógico en píxeles de pixel art
   lh: number;
@@ -64,21 +84,52 @@ export type Layout = {
   focus: { x: number; y: number };
   islaW: number;
   islaH: number;
+  /** dónde descansa Clocky (en % del mundo) y cuánto se corre cuando camina hasta una casita (px del mundo) */
+  rest: { x: number; y: number };
+  walker: { dx: number; dy: number; ty: number };
 };
 
 export function isoLayout(portrait: boolean): Layout {
-  const lw = portrait ? 320 : 700;
-  const lh = portrait ? 640 : 420;
+  const lw = portrait ? 420 : 760;
+  const lh = portrait ? 720 : 440;
   const z = 3;
-  const ox = portrait ? 144 : 334;
-  const oy = portrait ? 196 : 86;
+  const ox = portrait ? 194 : 364;
+  const oy = portrait ? 215 : 78;
   const places = {} as Layout["places"];
   (Object.keys(CASITAS) as PlaceId[]).forEach((id) => {
     const c = CASITAS[id];
     const sx = ox + (c.a - c.b) * 16 - 16;
-    const sy = oy + (c.a + c.b) * 8 - 33;
+    const sy = oy + (c.a + c.b) * 8 - 49;
     // la base de la casita (centro abajo del sprite)
-    places[id] = { x: ((sx + 32) / lw) * 100, y: ((sy + 62) / lh) * 100 };
+    places[id] = { x: ((sx + 32) / lw) * 100, y: ((sy + 78) / lh) * 100 };
   });
-  return { lw, lh, z, ox, oy, worldW: lw * z, worldH: lh * z, places, focus: { x: (ox + 16) * z, y: (oy + 118) * z }, islaW: 300, islaH: 340 };
+  return { lw, lh, z, ox, oy, worldW: lw * z, worldH: lh * z, places, focus: { x: (ox + 16) * z, y: (oy + 126) * z }, islaW: 16 * 2 * GRID + 16, islaH: 8 * GRID + 8 * GRID + 70, rest: { x: 50, y: 54 }, walker: { dx: 104, dy: 46, ty: -50 } };
+}
+
+import layoutTop from "./layout_top.json";
+
+type TopOrient = { lw: number; lh: number; isl: number[]; casas: Record<string, number[]>; hub?: number[][] };
+export const TOP = layoutTop as unknown as Record<"h" | "v", TopOrient & Record<string, any>>;
+
+/** Layout de la vista cenital: las casitas están en coordenadas lógicas (base = puerta) y Clocky camina hasta la puerta. */
+export function topLayout(portrait: boolean): Layout {
+  const D = TOP[portrait ? "v" : "h"];
+  const z = 3;
+  const [ix, iy, iw, ih] = D.isl;
+  const places = {} as Layout["places"];
+  (Object.keys(CASITAS_TOP) as PlaceId[]).forEach((id) => {
+    const [x, y] = D.casas[id];
+    places[id] = { x: ((x - 32 + CASITAS_TOP[id].puerta) / D.lw) * 100, y: (y / D.lh) * 100 };
+  });
+  const rx = ix + iw / 2, ry = iy + ih / 2 + 34;
+  return {
+    lw: D.lw, lh: D.lh, z, ox: 0, oy: 0, worldW: D.lw * z, worldH: D.lh * z, places,
+    focus: { x: rx * z, y: ry * z }, islaW: iw + 40, islaH: ih + 120,
+    rest: { x: ((D.rest as number[])[0] / D.lw) * 100, y: ((D.rest as number[])[1] / D.lh) * 100 },
+    walker: { dx: 0, dy: 34, ty: -92 },
+  };
+}
+
+export function islaLayout(portrait: boolean): Layout {
+  return VISTA === "cenital" ? topLayout(portrait) : isoLayout(portrait);
 }

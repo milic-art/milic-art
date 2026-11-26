@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { PlaceId } from "../../content";
-import { ASSETS, CASITAS, PANZA, isoLayout } from "./config";
+import { ASSETS, CASITAS, GRID, PANZA, isoLayout } from "./config";
 import noche from "./noche_tabla.json";
 
 /**
@@ -25,7 +25,7 @@ type Props = {
 
 /* ------------------------------------------------------------------ utilidades */
 
-function mulberry(seed: number) {
+export function mulberry(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -36,13 +36,13 @@ function mulberry(seed: number) {
   };
 }
 
-function assetUrl(name: string) {
+export function assetUrl(name: string) {
   const bundled = (window as unknown as { __ASSETS__?: Record<string, string> }).__ASSETS__;
   if (bundled && bundled[name]) return bundled[name];
   return `${import.meta.env.BASE_URL}milicenda-assets/${name}`;
 }
 
-function loadImage(name: string): Promise<HTMLImageElement | null> {
+export function loadImage(name: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => resolve(img);
@@ -58,7 +58,7 @@ for (const [k, v] of Object.entries(noche as Record<string, string>)) {
 }
 const LUCES = new Set(["255,211,107", "255,241,168", "255,246,214", "255,243,196"]);
 
-function aNoche(src: HTMLCanvasElement): HTMLCanvasElement {
+export function aNoche(src: HTMLCanvasElement): HTMLCanvasElement {
   const c = document.createElement("canvas");
   c.width = src.width;
   c.height = src.height;
@@ -83,9 +83,9 @@ function aNoche(src: HTMLCanvasElement): HTMLCanvasElement {
   return c;
 }
 
-type Spr = { day: HTMLCanvasElement; night: HTMLCanvasElement; w: number; h: number };
+export type Spr = { day: HTMLCanvasElement; night: HTMLCanvasElement; w: number; h: number };
 
-function toSpr(img: HTMLImageElement | null, nightImg?: HTMLImageElement | null): Spr {
+export function toSpr(img: HTMLImageElement | null, nightImg?: HTMLImageElement | null): Spr {
   const c = document.createElement("canvas");
   c.width = img?.width ?? 1;
   c.height = img?.height ?? 1;
@@ -101,7 +101,7 @@ function toSpr(img: HTMLImageElement | null, nightImg?: HTMLImageElement | null)
 }
 
 const siluetas = new Map<HTMLCanvasElement, HTMLCanvasElement>();
-function silueta(c: HTMLCanvasElement, sx: number, sy: number, sw: number, sh: number): HTMLCanvasElement {
+export function silueta(c: HTMLCanvasElement, sx: number, sy: number, sw: number, sh: number): HTMLCanvasElement {
   const key = c;
   const cacheKey = `${sx},${sy},${sw},${sh}`;
   let sub = (siluetas as unknown as Map<HTMLCanvasElement, Record<string, HTMLCanvasElement>>) as Map<HTMLCanvasElement, any>;
@@ -123,21 +123,21 @@ function silueta(c: HTMLCanvasElement, sx: number, sy: number, sw: number, sh: n
 
 type Draw = { y: number; x: number; fn: (g: CanvasRenderingContext2D, st: State) => void };
 
-type State = { tick: number; t: number; n: number; hover: PlaceId | null; still: boolean };
+export type State = { tick: number; t: number; n: number; hover: PlaceId | null; still: boolean };
 
-const SKY_DAY = ["#8fd2d2", "#a9dccf", "#c8ecdc", "#e3efdc", "#fbf3e4"];
-const SKY_NIGHT = ["#1b1840", "#252058", "#3a2f6e", "#4d4287", "#6a5aa0"];
-const SKY_DUSK = ["#8a5fc0", "#c3a2e6", "#f092a4", "#f4b183", "#f9e07a"];
+export const SKY_DAY = ["#8fd2d2", "#a9dccf", "#c8ecdc", "#e3efdc", "#fbf3e4"];
+export const SKY_NIGHT = ["#1b1840", "#252058", "#3a2f6e", "#4d4287", "#6a5aa0"];
+export const SKY_DUSK = ["#8a5fc0", "#c3a2e6", "#f092a4", "#f4b183", "#f9e07a"];
 
-function hexRgb(h: string): [number, number, number] {
+export function hexRgb(h: string): [number, number, number] {
   return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 }
-function mix(a: string, b: string, t: number) {
+export function mix(a: string, b: string, t: number) {
   const A = hexRgb(a), B = hexRgb(b);
   return `rgb(${Math.round(A[0] + (B[0] - A[0]) * t)},${Math.round(A[1] + (B[1] - A[1]) * t)},${Math.round(A[2] + (B[2] - A[2]) * t)})`;
 }
 
-function nightFactorFromClock(): number {
+export function nightFactorFromClock(): number {
   const d = new Date();
   const h = d.getHours() + d.getMinutes() / 60;
   if (h >= 7.5 && h < 17.5) return 0;
@@ -162,6 +162,8 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   g.imageSmoothingEnabled = false;
   const still = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  const N = GRID;
+  const E = N - 1; // fila/columna del borde
   const ids = Object.keys(CASITAS) as PlaceId[];
   const names = Object.values(ASSETS);
   const imgs = await Promise.all(names.map(loadImage));
@@ -179,21 +181,21 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const casas = ids.map((id, k) => ({ id, spr: toSpr(casaImgs[k * 2], casaImgs[k * 2 + 1]) }));
 
   /* --- ocupación de celdas --- */
-  const occ: (string | null)[][] = Array.from({ length: 9 }, () => Array(9).fill(null));
+  const occ: (string | null)[][] = Array.from({ length: N }, () => Array(N).fill(null));
   for (const id of ids) {
     const c = CASITAS[id];
     for (let di = 0; di < 2; di++) for (let dj = 0; dj < 2; dj++) occ[c.a + di][c.b + dj] = "casa:" + id;
   }
-  const pond = [[1, 6], [1, 7], [1, 8]];
+  const pond = [[1, 8], [1, 9], [2, 9], [1, E]];
   for (const [i, j] of pond) occ[i][j] = "agua";
   const isWater = (i: number, j: number) => pond.some(([a, b]) => a === i && b === j);
   // camino de tierra entre las casitas
   const pathCells: [number, number][] = [];
-  for (let i = 2; i <= 7; i++) pathCells.push([i, 4]);
-  for (let j = 5; j <= 7; j++) pathCells.push([2, j], [5, j]);
-  pathCells.push([6, 7], [7, 2], [7, 3]);
+  for (let i = 2; i <= 9; i++) pathCells.push([i, 4]);
+  for (let j = 5; j <= 8; j++) pathCells.push([2, j], [7, j]);
+  pathCells.push([8, 8], [5, 7], [6, 7], [9, 2], [9, 3], [6, 4], [6, 5], [5, 4]);
   for (const [i, j] of pathCells) if (!occ[i][j]) occ[i][j] = "camino";
-  const isPath = (i: number, j: number) => i >= 0 && j >= 0 && i <= 8 && j <= 8 && occ[i]?.[j] === "camino";
+  const isPath = (i: number, j: number) => i >= 0 && j >= 0 && i <= E && j <= E && occ[i]?.[j] === "camino";
 
   const rnd = mulberry(20260);
   const cx = (i: number, j: number) => ox + (i - j) * 16 + 16;
@@ -202,9 +204,9 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   /* --- baldosas de suelo --- */
   const grass: number[][] = [];
   let prev = -1;
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < N; i++) {
     grass[i] = [];
-    for (let j = 0; j < 9; j++) {
+    for (let j = 0; j < N; j++) {
       let v = Math.floor(rnd() * 6);
       if (v === prev || (i > 0 && grass[i - 1][j] === v)) v = (v + 1 + Math.floor(rnd() * 4)) % 6;
       grass[i][j] = v;
@@ -212,30 +214,30 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     }
   }
   const blocks: number[][] = [];
-  for (let i = 0; i < 9; i++) { blocks[i] = []; for (let j = 0; j < 9; j++) blocks[i][j] = Math.floor(rnd() * 5); }
+  for (let i = 0; i < N; i++) { blocks[i] = []; for (let j = 0; j < N; j++) blocks[i][j] = Math.floor(rnd() * 5); }
 
   /* --- decoración --- */
   type Tree = { i: number; j: number; v: number; ph: number };
   const treeCells: [number, number, number][] = [
-    [0, 1, 0], [2, 0, 1], [4, 0, 2], [7, 0, 0], [0, 4, 1], [7, 3, 2], [5, 7, 2], [0, 2, 2],
+    [0, 0, 0], [2, 0, 1], [0, 3, 2], [3, 1, 1], [6, 0, 2], [6, 2, 0], [7, 3, 1], [0, 8, 2], [0, 10 - 1, 0], [4, 6, 1], [3, 9, 2], [9, 9, 1], [9, 5, 0]
   ];
   const trees: Tree[] = [];
   for (const [i, j, v] of treeCells) {
     if (!occ[i][j]) { occ[i][j] = "arbol"; trees.push({ i, j, v, ph: rnd() * 6 }); }
   }
   const sunflowers: { i: number; j: number; ph: number }[] = [];
-  for (const [i, j] of [[0, 3], [5, 3], [2, 6], [6, 7], [4, 4], [7, 6], [3, 1], [0, 5]] as [number, number][]) {
+  for (const [i, j] of [[1, 4], [6, 3], [2, 3], [5, 7], [6, 9], [9, 4], [4, 9], [8, 3], [1, 7], [3, 3]] as [number, number][]) {
     if (!occ[i][j]) { occ[i][j] = "girasol"; sunflowers.push({ i, j, ph: rnd() * 4 }); }
   }
   const flowers: { x: number; y: number; v: number }[] = [];
-  for (let n = 0; n < 46; n++) {
-    const i = Math.floor(rnd() * 8), j = Math.floor(rnd() * 8);
+  for (let n = 0; n < 90; n++) {
+    const i = Math.floor(rnd() * (N - 1)), j = Math.floor(rnd() * (N - 1));
     if (occ[i][j] === "agua" || occ[i][j] === "camino" || (occ[i][j] || "").startsWith("casa")) continue;
     flowers.push({ x: cx(i, j) + Math.round((rnd() - 0.5) * 18), y: cy(i, j) + Math.round((rnd() - 0.5) * 6), v: Math.floor(rnd() * 8) });
   }
-  const sparkles = Array.from({ length: 14 }, () => ({ x: ox - 120 + rnd() * 270, y: oy + 20 + rnd() * 120, ph: Math.floor(rnd() * 16) }));
+  const sparkles = Array.from({ length: 14 }, () => ({ x: ox - 16 * E + rnd() * 32 * N, y: oy + 20 + rnd() * 8 * N, ph: Math.floor(rnd() * 16) }));
   const stars = Array.from({ length: 70 }, () => ({ x: rnd() * lw, y: rnd() * lh * 0.62, s: rnd() < 0.18 ? 2 : 1, ph: Math.floor(rnd() * 12) }));
-  const flies = Array.from({ length: 16 }, (_, k) => ({ x: ox - 100 + rnd() * 250, y: oy + 40 + rnd() * 100, ph: rnd() * 6.28, sp: 0.4 + rnd() * 0.6, k }));
+  const flies = Array.from({ length: 16 }, (_, k) => ({ x: ox - 12 * E + rnd() * 28 * N, y: oy + 40 + rnd() * 7 * N, ph: rnd() * 6.28, sp: 0.4 + rnd() * 0.6, k }));
   const clouds = [
     { spr: S.nubeL, y: lh * 0.12, x: 20, sp: 2.2, k: 0.25, far: true },
     { spr: S.nubeM, y: lh * 0.28, x: lw * 0.7, sp: 3.4, k: 0.35, far: true },
@@ -273,8 +275,8 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
 
   /* --- panza y posición --- */
   const pOx = ox - 128; // x del origen del sprite de la panza
-  const pOy = oy + 72 - PANZA.left[1];
-  const pOxFix = ox - 128 - PANZA.left[0];
+  const pOy = oy + 8 * N - PANZA.left[1];
+  const pOxFix = ox - 16 * E - PANZA.left[0];
 
   /* --- lista de objetos (se ordenan por y de la base) --- */
   const objects: Draw[] = [];
@@ -305,17 +307,17 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const casaInfo = casas.map(({ id, spr }) => {
     const c = CASITAS[id];
     const x = ox + (c.a - c.b) * 16 - 16;
-    const y = oy + (c.a + c.b) * 8 - 33;
+    const y = oy + (c.a + c.b) * 8 - 49;
     return { id, spr, c, x, y };
   });
   for (const h of casaInfo) {
-    const baseY = h.y + 61;
+    const baseY = h.y + 77;
     shadows.push({ x: h.x, y: baseY, fn: (gg) => {
       gg.globalAlpha = 0.3;
       gg.fillStyle = "#35563a";
       for (let r = -12; r <= 12; r++) {
         const w = Math.round(30 * (1 - Math.abs(r) / 13));
-        gg.fillRect(h.x + 32 - w + 4, h.y + 49 + r + 3, w * 2, 1);
+        gg.fillRect(h.x + 32 - w + 4, h.y + 65 + r + 3, w * 2, 1);
       }
       gg.globalAlpha = 1;
     } });
@@ -329,11 +331,11 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
       }
       put(h.spr, fr * h.c.fw, 0, h.c.fw, h.c.fh, h.x, h.y + bounce, st);
       // humo de la chimenea
-      const puffs = hov ? 6 : 4;
+      const puffs = h.c.humo ? (hov ? 6 : 4) : 0;
       for (let p = 0; p < puffs; p++) {
         const life = ((st.t * (hov ? 7 : 4.5) + p * (10 / puffs)) % 10) / 10;
-        const px = h.x + 44 + Math.round(life * 7 + Math.sin(life * 6 + p) * 1.5);
-        const py = h.y + 6 - Math.round(life * 20);
+        const px = h.x + (h.c.humo?.[0] ?? 44) + Math.round(life * 7 + Math.sin(life * 6 + p) * 1.5);
+        const py = h.y + (h.c.humo?.[1] ?? 6) - Math.round(life * 20);
         const sz = life < 0.35 ? 2 : 3;
         gg.globalAlpha = 1 - life * 0.9;
         gg.fillStyle = st.n > 0.5 ? "#a8a08e" : life < 0.5 ? "#fffdf7" : "#c8ecdc";
@@ -360,9 +362,9 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   }
   // mariposas
   const maripos = [
-    { x0: cx(3, 4), y0: cy(3, 4) - 14, sx: 40, sy: 8, sp: 0.5, ph: 0, c: 0 },
-    { x0: cx(5, 6), y0: cy(5, 6) - 12, sx: 34, sy: 7, sp: 0.42, ph: 2, c: 1 },
-    { x0: cx(1, 1), y0: cy(1, 1) - 16, sx: 30, sy: 6, sp: 0.6, ph: 4, c: 0 },
+    { x0: cx(4, 5), y0: cy(4, 5) - 14, sx: 40, sy: 8, sp: 0.5, ph: 0, c: 0 },
+    { x0: cx(6, 7), y0: cy(6, 7) - 12, sx: 34, sy: 7, sp: 0.42, ph: 2, c: 1 },
+    { x0: cx(2, 2), y0: cy(2, 2) - 16, sx: 30, sy: 6, sp: 0.6, ph: 4, c: 0 },
   ];
   for (const b of maripos) {
     objects.push({ x: b.x0, y: b.y0 + 100, fn: (gg, st) => {
@@ -373,18 +375,18 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   }
 
   function drawGround(st: State) {
-    for (let s = 0; s <= 16; s++) {
-      for (let i = 0; i < 9; i++) {
+    for (let s = 0; s <= 2 * E; s++) {
+      for (let i = 0; i < N; i++) {
         const j = s - i;
-        if (j < 0 || j > 8) continue;
+        if (j < 0 || j > E) continue;
         const x = ox + (i - j) * 16, y = oy + (i + j) * 8;
         const water = isWater(i, j);
         if (water) {
           let flags = 0;
           if (!isWater(i - 1, j) && i - 1 >= 0) flags |= 1;
           if (!isWater(i, j - 1) && j - 1 >= 0) flags |= 2;
-          if (!isWater(i + 1, j) && i + 1 <= 8) flags |= 4;
-          if (!isWater(i, j + 1) && j + 1 <= 8) flags |= 8;
+          if (!isWater(i + 1, j) && i + 1 <= E) flags |= 4;
+          if (!isWater(i, j + 1) && j + 1 <= E) flags |= 8;
           if (i - 1 < 0) flags |= 1;
           if (j - 1 < 0) flags |= 2;
           const fr = Math.floor(st.t * 2) % 2;
@@ -396,7 +398,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
             put(S.camino, fl * 32, 0, 32, 16, x, y, st);
           }
         }
-        const edgeL = j === 8, edgeR = i === 8;
+        const edgeL = j === E, edgeR = i === E;
         if (edgeL || edgeR) {
           if (water) {
             put(S.borde, blocks[i][j] * 32, 0, 16, 32, x, y, st); // cara izquierda del bloque
@@ -405,7 +407,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
             if (edgeR) put(S.borde, blocks[i][j] * 32 + 16, 0, 16, 32, x + 16, y, st);
           }
         }
-        if (i === 1 && j === 8) {
+        if (i === 1 && j === E) {
           const fr = Math.floor(st.t * 8) % 3;
           put(S.cascada, fr * 16, 0, 16, 64, x, y, st);
         }
@@ -488,7 +490,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     // sombra de la isla (se achica cuando sube)
     g.globalAlpha = 0.18;
     g.fillStyle = "#1b5f66";
-    const shW = 100 - bob * 3, shY = oy + (portrait ? 330 : 308);
+    const shW = 12 * N - bob * 3, shY = oy + 8 * N + 13 + (portrait ? 215 : 195);
     for (let r = -5; r <= 5; r++) {
       const w = Math.round(shW * Math.sqrt(1 - (r / 6) * (r / 6)));
       g.fillRect(Math.round(ox + 16 - w / 2), shY + r, w, 1);
@@ -498,9 +500,9 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     g.save();
     g.translate(Math.round(px * -1.5), bob + Math.round(py * -1));
     // raíces colgantes (atrás de la panza)
-    for (const [rx, side] of [[-76, 0], [58, 1], [-20, 0], [100, 1]] as [number, number][]) {
+    for (const [rx, side] of [[-9 * N, 0], [6 * N, 1], [-2 * N, 0], [11 * N, 1]] as [number, number][]) {
       const x = ox + 16 + rx;
-      const ry = side === 0 ? oy + 160 - (16 - (x - ox)) / 2 : oy + 160 - (x - ox - 16) / 2;
+      const ry = side === 0 ? oy + 16 * N + 16 - (16 - (x - ox)) / 2 : oy + 16 * N + 16 - (x - ox - 16) / 2;
       put(S.raiz, 0, 0, 16, 32, x - 8, ry - 14, st);
     }
     // panza
@@ -528,8 +530,8 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     // piedra flotante (se mueve aparte)
     g.save();
     g.translate(Math.round(px * -2.5), bob2 + Math.round(py * -1.5));
-    put(S.piedra, 0, 0, 16, 16, ox + 176, oy + 22, st);
-    put(S.piedra, 0, 0, 16, 16, ox - 170, oy + 96, st, 1);
+    put(S.piedra, 0, 0, 16, 16, ox + 16 * N + 30, oy + 22, st);
+    put(S.piedra, 0, 0, 16, 16, ox - 16 * N - 30, oy + 100, st, 1);
     g.restore();
 
     // luciérnagas

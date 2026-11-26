@@ -500,5 +500,5 @@ if __name__ == "__main__":
     nube(40, 16, [(10, 10, 5), (20, 7, 7), (30, 10, 5)], 13, "nube_s.png")
     nube(64, 24, [(12, 16, 6), (26, 11, 9), (42, 13, 8), (53, 17, 5)], 21, "nube_m.png")
     nube(96, 32, [(14, 23, 7), (30, 16, 11), (50, 12, 12), (68, 16, 10), (82, 23, 7)], 29, "nube_l.png")
-    hoja_camino(); sol(); luna(); girasol(); mariposas(); pato(); hojas_casas()
+    hoja_camino(); sol(); luna(); girasol(); mariposas(); pato()  # las casitas: gen_casas.py
     print("ok")

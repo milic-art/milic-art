@@ -32,3 +32,8 @@ Todo en `src/components/isla/config.ts`:
 - La panza puede ganar detalle (más raíces, piedritas); las casitas son parecidas entre sí, esperan las de Malena.
 - Texto de los lugares y contenidos del sitio: no se tocó nada.
 - Audio: no incluido.
+
+## Vista cenital (actual)
+`VISTA = "cenital"` en `src/components/isla/config.ts` (poné `"isometrica"` para volver a la versión en diagonal, que sigue en `IsoIsland.tsx`).
+Generadores: `gen_top.py` (suelo horneado, 4 cuadros de agua, `layout_top.json`), `gen_casas_top.py` (5 casitas de frente, día y noche), `gen_top_objs.py` (arbustos y rocas).
+Motor: `TopIsland.tsx`. Clocky camina hasta la puerta de cada casita (`walker` en el layout).

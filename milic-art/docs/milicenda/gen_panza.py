@@ -24,14 +24,18 @@ TR = [hx(c) for c in ("#b96d32", "#8a4e2a", "#5a3322", "#4a2c1f")]  # cara derec
 RL = [hx(c) for c in ("#d6cbb0", "#a8a08e", "#77707c", "#463f4a")]
 RR = [hx(c) for c in ("#a8a08e", "#77707c", "#463f4a", "#463f4a")]
 
-W = 288
-H = 205
-CX = 144
+import sys
+N = int(sys.argv[1]) if len(sys.argv) > 1 else 11
+W = 32 * N
+CX = W // 2
+SC = W / 288.0
+VC = 3 + 8 * N
+H = VC + 92
 rnd = random.Random(7)
 
 
 def vtop(x):
-    return 3 + 72 - abs(x - CX) / 2.0
+    return 3 + 8 * N - abs(x - CX) / 2.0
 
 
 def lerp_profile(points, x):
@@ -55,13 +59,13 @@ while x < W:
     x += seg
 
 def body_bottom(x):
-    u = abs(x - CX) / 144.0
-    base = 3 + 142 * (1 - u ** 1.7) ** 0.8
+    u = abs(x - CX) / float(CX)
+    base = 3 + (8 * N + 50) * (1 - u ** 1.6) ** 0.85
     # los costados quedan en la V; el centro baja mucho
     return base + bump[x] * min(1, (1 - u) * 3)
 
 # estalactitas (x, ancho de base, y de la punta, y donde nace)
-stal = [(CX + 2, 24, 199, 112), (90, 12, 170, 92), (206, 11, 162, 90)]
+stal = [(CX + 2, 22, VC + 86, VC + 24), (CX - 6 * N, 11, VC + 62, VC + 12), (CX + 7 * N, 10, VC + 56, VC + 10)]
 
 mask = np.zeros((H, W), bool)
 for x in range(W):
@@ -82,10 +86,10 @@ for x in range(W):
 # altura de la transición (profundidad desde la V) en tramos escalonados
 trans = np.zeros(W, int)
 x = 0
-cur = 34
+cur = 30
 while x < W:
     seg = rnd.randint(7, 15)
-    cur = max(34, min(62, cur + rnd.randint(-8, 8)))
+    cur = max(28, min(50, cur + rnd.randint(-7, 7)))
     for k in range(seg):
         if x + k < W:
             trans[x + k] = cur
@@ -145,9 +149,9 @@ for y in range(H):
                 t -= 1
             if in_blob(b_rock_d, x, y) and rd > 4:
                 t += 1
-            if y > 112 + bump[x] * 3:
+            if y > VC + 26 + bump[x] * 3:
                 t += 1  # más oscuro cuanto más abajo
-            if y > 150 + bump[x] * 3 and left:
+            if y > VC + 50 + bump[x] * 3 and left:
                 t += 1
             t = max(0, min(3, t))
             col = pal[t]
@@ -165,7 +169,7 @@ def root(x0, y0, length, drift, color):
         if k % (4 + (x0 % 3)) == 3:
             x += drift
 
-for rx0, ln, dr in ((22, 26, 1), (58, 30, -1), (108, 34, 1), (150, 24, -1), (176, 36, 1), (222, 30, -1), (254, 24, 1)):
+for rx0, ln, dr in [(int(a * SC), b, c) for a, b, c in ((22, 24, 1), (58, 28, -1), (108, 30, 1), (150, 22, -1), (176, 32, 1), (222, 28, -1), (254, 22, 1), (40, 20, -1), (200, 24, 1), (130, 20, 1))]:
     d0 = int(vtop(rx0)) + 2
     col = TL[3] if rx0 < CX else TR[3]
     root(rx0, d0, ln, dr, col)
@@ -186,8 +190,8 @@ def stone(sx, sy, w, h, left):
         if 0 <= x < W and 0 <= y < H and mask[y, x]:
             img[y, x, :3] = (TL if left else TR)[3]
 
-for (sx, off, w, h) in ((16, 22, 4, 2), (44, 30, 3, 2), (72, 18, 4, 2), (100, 40, 3, 2), (124, 26, 4, 2),
-                         (166, 34, 3, 2), (192, 20, 4, 2), (220, 36, 3, 2), (246, 24, 4, 2), (270, 12, 3, 2)):
+for (sx, off, w, h) in [(int(a * SC), b, c, d) for a, b, c, d in ((16, 18, 4, 2), (44, 26, 3, 2), (72, 14, 4, 2), (100, 34, 3, 2), (124, 22, 4, 2),
+                         (166, 30, 3, 2), (192, 16, 4, 2), (220, 32, 3, 2), (246, 20, 4, 2), (270, 10, 3, 2), (30, 30, 3, 2), (140, 36, 3, 2), (210, 28, 4, 2))]:
     stone(sx, int(vtop(sx)) + off, w, h, sx < CX)
 
 # ---------- grietas en la roca (líneas cortas quebradas) ----------
@@ -204,12 +208,13 @@ def crack(x0, y0, n, left):
             if k % 3 == 0:
                 y += 1
 
-for (cx, off, n) in ((30, 12, 9), (66, 18, 11), (96, 22, 10), (130, 16, 12), (160, 30, 12), (186, 18, 9), (230, 14, 10), (262, 6, 7)):
+for (cx, off, n) in [(int(a * SC), b, c) for a, b, c in ((30, 12, 9), (66, 18, 11), (96, 22, 10), (130, 16, 12), (160, 30, 12), (186, 18, 9), (230, 14, 10), (262, 6, 7), (50, 10, 8), (210, 26, 9))]:
     crack(cx, int(vtop(cx)) + trans[cx] + off, n, cx < CX)
 
 # ---------- huesito en la tierra (derecha-centro) ----------
 bone = [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0)]
-bx, by = 186, int(vtop(186)) + 22
+bx = int(186 * SC)
+by = int(vtop(bx)) + 20
 bone_px = [(0, 0, 1), (1, 0, 1), (0, 1, 1), (1, 1, 1), (2, 1, 1), (3, 1, 1), (4, 1, 1), (5, 1, 1), (6, 1, 1), (6, 0, 1), (5, 0, 1), (6, 2, 1), (5, 2, 1), (0, 2, 1), (1, 2, 1)]
 for dx, dy, _ in bone_px:
     x, y = bx + dx, by + dy
@@ -238,10 +243,10 @@ ys = np.where(out[:, :, 3] > 0)[0]
 H2 = int(ys.max()) + 1
 out = out[:H2]
 im = Image.fromarray(out, "RGBA")
-im.save(os.path.join(OUT, "panza_9x9_claude.png"))
-im.resize((im.width * 8, im.height * 8), Image.NEAREST).save(os.path.join(OUT, "panza_9x9_claude_x8.png"))
-with open(os.path.join(OUT, "panza_9x9_claude.json"), "w") as f:
-    json.dump({"file": "panza_9x9_claude.png", "w": im.width, "h": im.height,
-               "left": [0, -13], "right": [288, -13], "bottom": [144, 59],
+im.save(os.path.join(OUT, f"panza_{N}x{N}_claude.png"))
+im.resize((im.width * 8, im.height * 8), Image.NEAREST).save(os.path.join(OUT, f"panza_{N}x{N}_claude_x8.png"))
+with open(os.path.join(OUT, f"panza_{N}x{N}_claude.json"), "w") as f:
+    json.dump({"file": f"panza_{N}x{N}_claude.png", "w": im.width, "h": im.height,
+               "left": [0, -13], "right": [W, -13], "bottom": [CX, 8 * N - 13],
                "incluyeCarasDelBorde": False}, f)
 print("panza", im.size)

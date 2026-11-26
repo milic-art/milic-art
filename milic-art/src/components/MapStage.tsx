@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { site, type PlaceId } from "../content";
 import { LandmarkArt } from "./WorldArt";
 import { IsoIsland, type IslaControl, type IslaMode } from "./isla/IsoIsland";
-import { isoLayout } from "./isla/config";
+import { TopIsland } from "./isla/TopIsland";
+import { VISTA, islaLayout } from "./isla/config";
 import { ClockyArt, type ClockyState } from "./ClockyArt";
 
 type View = { x: number; y: number; s: number };
@@ -25,7 +26,7 @@ type MapStageProps = {
  * pinch, and the round zoom pegs for people who would rather not drag.
  */
 export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, onPokeClocky }: MapStageProps) {
-  const layout = isoLayout(portrait);
+  const layout = islaLayout(portrait);
   const WORLD_W = layout.worldW;
   const WORLD_H = layout.worldH;
   const [mode, setMode] = useState<IslaMode>("auto");
@@ -147,7 +148,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       minScale.current = cover;
       maxScale.current = Math.max(cover * 2.2, 1.4);
       // La isla entera entra en pantalla (con aire arriba para el menú).
-      const fit = Math.min((w * (portrait ? 1.08 : 0.98)) / (layout.islaW * layout.z), (h * 0.86) / (layout.islaH * layout.z));
+      const fit = Math.min((w * (portrait ? (VISTA === "cenital" ? 0.97 : 1.2) : 0.94)) / (layout.islaW * layout.z), (h * 0.74) / (layout.islaH * layout.z));
       const s = Math.min(maxScale.current, Math.max(minScale.current, fit));
 
       const next = clamp({
@@ -325,15 +326,20 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
         className="absolute left-0 top-0 origin-top-left"
         style={{ width: WORLD_W, height: WORLD_H, willChange: "transform", opacity: 0 }}
       >
-        <IsoIsland
-          portrait={portrait}
-          mode={mode}
-          hoverId={hoveredId ?? activeId}
-          onReady={(api) => {
-            isla.current = api;
-            schedule();
-          }}
-        />
+        {(() => {
+          const Isla = VISTA === "cenital" ? TopIsland : IsoIsland;
+          return (
+            <Isla
+              portrait={portrait}
+              mode={mode}
+              hoverId={hoveredId ?? activeId}
+              onReady={(api) => {
+                isla.current = api;
+                schedule();
+              }}
+            />
+          );
+        })()}
 
         {places.map((place, index) => {
           const isActive = activeId === place.id;
@@ -373,7 +379,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
               }}
               aria-haspopup="dialog"
               aria-label={`${place.name}. ${place.blurb}.`}
-              className="group absolute z-10 block h-[186px] w-[186px] cursor-pointer text-center focus-visible:outline-none"
+              className="group absolute z-10 block h-[216px] w-[192px] cursor-pointer text-center focus-visible:outline-none"
               style={{ left: `${place.x}%`, top: `${place.y}%`, transform: "translate(-50%, -100%)" }}
             >
               <span
@@ -382,7 +388,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
                 }}
                 style={{ transformOrigin: "top center", willChange: "transform" }}
                 data-on={isActive || isHovered}
-                className={`place-label absolute left-1/2 top-[calc(100%-2px)] z-10 inline-flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
+                className={`place-label absolute left-1/2 top-[calc(100%+6px)] z-10 inline-flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
                   isActive || isHovered ? "bg-orange-deep text-chalk" : "bg-chalk text-ink"
                 } group-focus-visible:ring-4 group-focus-visible:ring-orange/60`}
               >
@@ -394,7 +400,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
 
         {/* Clocky camina por el mapa hasta el lugar que abrís */}
         {(() => {
-          const spot = places.find((place) => place.id === clockyAt) ?? { x: 50, y: 54 };
+          const spot = places.find((place) => place.id === clockyAt) ?? layout.rest;
           const near = clockyAt !== null;
           return (
             <button
@@ -404,9 +410,9 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
               className="clocky-walker absolute z-20 block w-[132px] cursor-pointer"
               data-walking={walking}
               style={{
-                left: `calc(${spot.x}% + ${near ? 104 : 0}px)`,
-                top: `calc(${spot.y}% + ${near ? 46 : 0}px)`,
-                transform: "translate(-50%, -50%)",
+                left: `calc(${spot.x}% + ${near ? layout.walker.dx : 0}px)`,
+                top: `calc(${spot.y}% + ${near ? layout.walker.dy : 0}px)`,
+                transform: `translate(-50%, ${VISTA === "cenital" ? layout.walker.ty : -50}%)`,
               }}
             >
               <span className="clocky-walk-inner block aspect-[220/200] w-full">
