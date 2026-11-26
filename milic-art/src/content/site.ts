@@ -163,7 +163,8 @@ export const site = {
           date: "29 de septiembre de 2026",
           tag: "Newsletter · OLA Productiva · Edición 01",
           summary: "Primera edición del newsletter de OLA. Qué es regenerar y por dónde puede empezar una pyme.",
-          body: ["[Pegá acá el texto de la edición 01: título, dos subtítulos y el cuerpo.]"],
+          body: ["Leé la edición completa en la web de OLA Productiva."],
+          link: "https://olaproductiva.com.ar",
         },
         {
           title: "[Título de tu primera entrada]",

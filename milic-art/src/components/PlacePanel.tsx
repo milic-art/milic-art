@@ -601,21 +601,32 @@ function BlogView({
           <ul className="space-y-2.5">
             {journal.items.map((item, index) => (
               <li key={index}>
-                <button
-                  type="button"
-                  onClick={() => setOpen(index)}
-                  className="w-full rounded-xl border-2 border-ink/25 bg-chalk/70 px-3.5 py-3 text-left"
-                >
-                  <span className="block text-[11px] font-bold uppercase tracking-wide text-ink-soft">
-                    <Txt>{item.tag}</Txt> · <Txt>{item.date}</Txt>
-                  </span>
-                  <span className="mt-0.5 block font-display text-[16px] font-bold leading-tight text-ink">
-                    <Txt>{item.title}</Txt>
-                  </span>
-                  <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">
-                    <Txt>{item.summary}</Txt>
-                  </span>
-                </button>
+                {(() => {
+                  const inner = (
+                    <>
+                      <span className="block text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+                        <Txt>{item.tag}</Txt> · <Txt>{item.date}</Txt>
+                      </span>
+                      <span className="mt-0.5 block font-display text-[16px] font-bold leading-tight text-ink">
+                        <Txt>{item.title}</Txt>
+                        {item.link && <span aria-hidden="true"> ↗</span>}
+                      </span>
+                      <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">
+                        <Txt>{item.summary}</Txt>
+                      </span>
+                    </>
+                  );
+                  const cls = "block w-full rounded-xl border-2 border-ink/25 bg-chalk/70 px-3.5 py-3 text-left";
+                  return item.link ? (
+                    <a href={item.link} target="_blank" rel="noreferrer noopener" className={cls}>
+                      {inner}
+                    </a>
+                  ) : (
+                    <button type="button" onClick={() => setOpen(index)} className={cls}>
+                      {inner}
+                    </button>
+                  );
+                })()}
               </li>
             ))}
           </ul>
