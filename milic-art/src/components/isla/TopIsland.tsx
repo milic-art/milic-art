@@ -250,7 +250,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     const nn = st.n;
     // cielo en franjas
     const warm = Math.sin(Math.PI * Math.min(1, Math.max(0, nn))) * 0.55;
-    const SD = portrait ? SKY_DAY_V : SKY_DAY;
+    const SD = SKY_DAY_V;
     const bands = SD.length;
     for (let b = 0; b < bands; b++) {
       const bi = Math.min(SKY_NIGHT.length - 1, Math.floor((b * SKY_NIGHT.length) / bands));

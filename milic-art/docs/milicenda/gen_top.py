@@ -28,7 +28,7 @@ def _h():
     for k in ("programacion", "casita"):
         paths.append([(d[k], c[k][1] + 2), (d[k], BT)])
     return dict(lw=760, lh=580, isl=(40, 34, 680, 436), p=3.2, under=74, casas=c, pond=(380, 322, 28, 13), rest=(380, 276), paths=paths,
-                n=(22, 20, 9, 12, 75), deco=[dict(k="pozo_balde_arriba", x=470, y=246, rx=11), dict(k="banco_derecha", x=296, y=248, rx=11), dict(k="cartel", x=338, y=246, rx=6),
+                n=(230, 30, 14, 18, 90), deco=[dict(k="pozo_balde_arriba", x=470, y=246, rx=11), dict(k="banco_derecha", x=296, y=248, rx=11), dict(k="cartel", x=338, y=246, rx=6),
                       dict(k="farolito", x=230, y=246, rx=3), dict(k="farolito", x=530, y=246, rx=3), 
                       dict(k="puesto", x=486, y=352, rx=14), dict(k="buzon_bandera_arriba", x=616, y=356, rx=4), dict(k="barril", x=236, y=352, rx=5),
                       dict(k="jardin:maceta_tulipanes", x=300, y=384, rx=4), dict(k="jardin:maceta_margaritas", x=330, y=384, rx=4),
@@ -46,7 +46,7 @@ def _v():
         yy = v[1] + 14
         paths.append([(d[k], v[1] + 2), (d[k], yy), (sx(yy), yy)])
     return dict(lw=390, lh=860, isl=(24, 52, 342, 702), p=3.2, under=64, casas=c, pond=(272, 676, 18, 10), rest=(195, 330), paths=paths,
-                n=(18, 20, 10, 14, 150), deco=[dict(k="pozo_balde_arriba", x=250, y=372, rx=11), dict(k="cartel", x=sx(480) - 20, y=480, rx=6), dict(k="farolito", x=sx(250) - 20, y=250, rx=3), dict(k="farolito", x=sx(470) + 20, y=470, rx=3),
+                n=(150, 26, 10, 14, 70), deco=[dict(k="pozo_balde_arriba", x=250, y=372, rx=11), dict(k="cartel", x=sx(480) - 20, y=480, rx=6), dict(k="farolito", x=sx(250) - 20, y=250, rx=3), dict(k="farolito", x=sx(470) + 20, y=470, rx=3),
                       dict(k="puesto", x=250, y=630, rx=14), dict(k="buzon_bandera_arriba", x=sx(716) - 22, y=716, rx=4), dict(k="barril", x=80, y=272, rx=5),
                       dict(k="jardin:maceta_tulipanes", x=sx(190) + 24, y=190, rx=4), dict(k="jardin:maceta_margaritas", x=sx(330) - 24, y=330, rx=4),
                       dict(k="banco_derecha", x=sx(204) + 32, y=204, rx=11),
@@ -225,7 +225,7 @@ def build(key, cfg):
             m = T[yy0:yy0 + hh, xx0:xx0 + ww]
             blk[m, :3] = t[:hh, :ww][m]
             blk[m, 3] = 255
-    if key == "v":
+    if True:
         RAMP = [(0x35, 0x56, 0x3a), (0x58, 0x7a, 0x35), (0x8a, 0xa2, 0x3a), (0xbc, 0xc0, 0x46), (0xe2, 0xd8, 0x70)]
         def shift(mask, d):
             for i, c in enumerate(RAMP):
@@ -234,8 +234,8 @@ def build(key, cfg):
                     sel = mask & (img[:, :, 0] == c[0]) & (img[:, :, 1] == c[1]) & (img[:, :, 2] == c[2])
                     img[sel, :3] = RAMP[j]
         chk = ((xs + ys) % 2 == 0)
-        tibio = (vnoise(7, 80, 0.67) | (vnoise(7, 80, 0.62) & chk)) & T
-        umbra = (vnoise(9, 100, 0.68) | (vnoise(9, 100, 0.63) & chk)) & T & ~tibio
+        tibio = (vnoise(7, 80, 0.80) | (vnoise(7, 80, 0.76) & chk)) & T
+        umbra = (vnoise(9, 70, 0.50) | (vnoise(9, 70, 0.45) & chk)) & T & ~tibio
         orig = img.copy()
         shift(tibio, 1)
         img2 = img.copy(); img[:] = orig; shift(umbra, -1)
@@ -706,10 +706,14 @@ def poblar(g, cfg):
             return False
         for (hx_, hy_) in casas.values():
             if tipo == "arbol":
-                if abs(x - hx_) < 40 and hy_ - 66 < y < hy_ + 14:
+                if abs(x - hx_) < 46 and hy_ - 66 < y < hy_ + 54:
                     return False
             else:
                 if abs(x - hx_) < 36 and hy_ - 62 < y < hy_ + 12:
+                    return False
+        if tipo == "arbol":
+            for d_ in cfg["deco"]:
+                if abs(x - d_["x"]) < 28 and d_["y"] - 10 < y < d_["y"] + 48:
                     return False
         r = 8 + margen
         if P[max(0, y - r):y + r, max(0, x - r):x + r].any():
@@ -718,6 +722,8 @@ def poblar(g, cfg):
             return False
         # la copa tapa lo que está arriba del pie: tampoco sobre el sendero
         if tipo == "arbol" and P[max(0, y - 42):max(0, y - 2), max(0, x - 20):x + 20].any():
+            return False
+        if tipo == "arbol" and Wm[max(0, y - 40):max(0, y - 2), max(0, x - 18):x + 18].any():
             return False
         if tipo == "arbusto" and margen == 0 and P[max(0, y - 14):max(0, y - 1), max(0, x - 9):x + 9].any():
             return False
@@ -741,16 +747,16 @@ def poblar(g, cfg):
                 pts.append((x, y))
         return got
     nt, nb, nr, ng, nfl = cfg["n"]
-    arboles = ["arbol_redondo"] * 4 + ["arbol_frutal"] * 3 + ["pino"] * 5 + ["sauce"] * 2 + ["alamo"] * 3 + ["arbol_paraguas"] * 2
-    for i, (x, y) in enumerate(poisson(nt, 34, "arbol")):
+    arboles = ["arbol_redondo"] * 5 + ["arbol_frutal"] * 2 + ["pino"] * 7 + ["sauce"] * 3 + ["alamo"] * 3 + ["arbol_paraguas"] * 1
+    for i, (x, y) in enumerate(poisson(nt, 14, "arbol", tries=60000)):
         k = "arbol_grande_puerta" if i == 0 else rnd.choice(arboles)
         out["props"].append({"k": k, "x": x, "y": y})
-    if cfg["key"] == "v":
+    if True:
         def borde(x, y):
-            return not (T[y, x - 30] and T[y, x + 30])
+            return not (T[y, x - 30] and T[y, x + 30] and T[max(0, y - 26), x])
         got = []
         for _ in range(9000):
-            if len(got) >= 16:
+            if len(got) >= (16 if cfg["key"] == "v" else 26):
                 break
             x = rnd.randrange(ix + 8, ix + iw - 8); y = rnd.randrange(iy + 20, iy + ih - 10)
             if not libre(x, y, 0, "arbol") or not borde(x, y):
@@ -772,13 +778,13 @@ def poblar(g, cfg):
     # flores en grupitos (2 especies por ramo) y algunas sueltas
     especies = ["tulipan", "margarita", "lavanda", "jacinto", "dalia", "amapola", "lirio", "pensamiento"]
     for (cx_, cy_) in poisson(max(4, nfl // 6), 38, "arbusto", tries=9000):
-        ks = rnd.sample(especies, 3 if cfg["key"] == "v" else 2)
-        n_ = rnd.randint(8, 14) if cfg["key"] == "v" else rnd.randint(3, 6)
+        ks = rnd.sample(especies, 3)
+        n_ = rnd.randint(8, 14)
         puestos = []
         for _ in range(60):
             if len(puestos) >= n_:
                 break
-            a_ = rnd.uniform(0, 6.283); r_ = rnd.uniform(4, 24 if cfg["key"] == "v" else 15)
+            a_ = rnd.uniform(0, 6.283); r_ = rnd.uniform(4, 24)
             x = int(cx_ + math.cos(a_) * r_); y = int(cy_ + math.sin(a_) * r_ * 0.7)
             if not libre(x, y, 0, "arbusto"):
                 continue

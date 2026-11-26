@@ -1,3 +1,4 @@
+import { createLofi } from "./lofi";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { site, type PlaceId } from "../content";
 import { LandmarkArt } from "./WorldArt";
@@ -42,6 +43,12 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     return h >= 19 || h < 6;
   });
   const [music, setMusic] = useState(false);
+  const lofi = useRef<ReturnType<typeof createLofi> | null>(null);
+  const toggleMusic = () => {
+    lofi.current = lofi.current ?? createLofi();
+    if (lofi.current.isOn()) { lofi.current.stop(); setMusic(false); } else { lofi.current.start(); setMusic(true); }
+  };
+  useEffect(() => () => lofi.current?.stop(), []);
   const isla = useRef<IslaControl | null>(null);
   const pointerPar = useRef({ x: 0, y: 0 });
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -459,7 +466,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
                 }}
                 style={{ transformOrigin: "top center", willChange: "transform" }}
                 data-on={isActive || isHovered}
-                className={`place-label absolute left-1/2 top-[calc(100%+6px)] z-10 inline-flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
+                className={`place-label absolute left-1/2 ${clockyAt === place.id ? "top-[calc(100%+44px)]" : "top-[calc(100%+6px)]"} z-10 inline-flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
                   isActive || isHovered ? "bg-orange-deep text-chalk" : "bg-chalk text-ink"
                 } group-focus-visible:ring-4 group-focus-visible:ring-orange/60`}
               >
@@ -572,11 +579,11 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
         </button>
         <button
           type="button"
-          onClick={() => setMusic((m) => !m)}
+          onClick={toggleMusic}
           className="zoom-peg flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink bg-paper text-ink shadow-[0_3px_0_rgba(75,58,42,0.8)]"
-          aria-label={music ? "Música: encendida (todavía sin audio)" : "Música: apagada"}
+          aria-label={music ? "Música: encendida. Tocá para apagar" : "Música: apagada. Tocá para encender"}
           aria-pressed={music}
-          title="Música lofi: próximamente"
+          title="Musiquita lofi"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
             <path d="M9 18V6l10-2v12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />

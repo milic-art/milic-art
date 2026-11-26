@@ -346,7 +346,7 @@ export const site = {
   commissions: {
     heading: "Encargos",
     kicker: "Tablón de misiones",
-    status: "Los encargos están cerrados por ahora.",
+    status: "Los encargos están cerrados por cuestiones personales y laborales. Por ahora solo hago encargos por Nitro en Discord.",
     statusTag: "Cerrado",
     intro:
       "Así van a funcionar los encargos cuando los abra. Los precios son una base. Los valores exactos se publican acá.",
@@ -360,6 +360,7 @@ export const site = {
       "También podés pedir el archivo de Krita.",
       "Podés dejar observaciones en cada paso.",
       "Acordamos los encargos por Discord.",
+      "Tamaños de lienzo: cuadrado 1:1, banner, wallpaper, A4, A3 u otro a convenir.",
     ],
     prices: [
       { name: "Ícono", price: "[Precio]", detail: "Un retrato chico para tu perfil.", time: "[Tiempo]" },
