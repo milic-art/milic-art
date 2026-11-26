@@ -146,20 +146,33 @@ def build(key, cfg):
             bump[x + k] = v
         x += seg
     stal = [(cx0 + 4, 24, U + 52), (cx0 - iw * 0.27, 13, U + 26), (cx0 + iw * 0.3, 12, U + 20), (cx0 - iw * 0.08, 8, U + 14)]
+    rs = random.Random(1234 + ord(key))
+    for _ in range(max(4, int(iw / 70))):
+        stal.append((cx0 + rs.uniform(-0.38, 0.38) * iw, rs.randint(7, 12), U + rs.randint(10, 36)))
     B = np.zeros((lh, lw), bool)
+    S = np.zeros((lh, lw), bool)
+    Sx = np.zeros((lh, lw), float)
     for x in range(lw):
         if yb[x] < 0:
             continue
         u = abs(x - cx0) / (iw / 2)
         d = U * max(0, 1 - u ** 1.6) ** 0.8 + bump.get(x, 0) * min(1, (1 - u) * 4)
+        dm = d
+        best = None
         for (sx, bw, ext) in stal:
             dx = abs(x - sx)
             if dx < bw:
-                d = max(d, (ext) * (1 - (dx / bw) ** 1.1))
+                dd = (ext) * (1 - (dx / bw) ** 1.1) + (rs.random() - 0.5) * 1.6
+                if dd > d:
+                    d = dd
+                    best = (sx, bw)
         top = yb[x] + CLIFF + 1
         bot = int(top + d)
         if bot > top:
             B[top:min(lh, bot), x] = True
+            if best is not None and d > dm:
+                S[int(top + dm):min(lh, bot), x] = True
+                Sx[int(top + dm):min(lh, bot), x] = (x - best[0]) / best[1]
     solid = T | C | B
     img = np.zeros((lh, lw, 4), np.uint8)
 
@@ -351,7 +364,7 @@ def build(key, cfg):
             u = (x - cx0) / (iw / 2)
             tot = max(1, colbot[x] - yb[x])
             v = d / tot
-            sh = (u + 0.5) * 1.4 + (n1[y, x] - 0.5) * 0.9      # 0 = iluminado, sube hacia la derecha
+            sh = (u + 0.5) * 1.4 + (n1[y, x] - 0.5) * 0.9 + (((x + y) % 2) - 0.5) * 0.26      # 0 = iluminado, sube hacia la derecha
             if d < soilT[x] + (n2[y, x] - 0.5) * 3:
                 # capas de tierra con vetas onduladas
                 strat = int((d + 2.2 * math.sin(x / 5.0)) // 5)
@@ -368,6 +381,13 @@ def build(key, cfg):
                 col = ROCK[max(0, min(3, t))]
             img[y, x, :3] = rgb(col)
             img[y, x, 3] = 255
+    # estalactitas: luz propia de cada una (izquierda clara, derecha oscura) y vetas
+    for y, x in np.argwhere(S):
+        ul = Sx[y, x]
+        t = 1 if ul < -0.35 else (2 if ul < 0.25 else 3)
+        if (x + y // 3) % 7 == 0 and t < 3:
+            t += 1
+        img[y, x, :3] = rgb(ROCK[t])
     # rocas con relieve: luz arriba-izquierda, sombra abajo-derecha
     def roca(cx, cy, rx, ry, base):
         m = np.zeros((lh, lw), bool)
