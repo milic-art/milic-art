@@ -39,17 +39,20 @@ def _h():
 def _v():
     c = {"periodismo": (112, 176), "diseno": (278, 298), "dibujo": (112, 420), "programacion": (278, 542), "casita": (112, 664)}
     d = {k: _dx(k, v) for k, v in c.items()}
-    paths = [[(195, 160), (195, 690)]]
+    sx = lambda y: int(round(195 + 20 * math.sin((y - 160) / 530 * 2 * math.pi * 1.5)))
+    ys_ = sorted(set(range(160, 691, 10)) | {v[1] + 14 for v in c.values()})
+    paths = [[(sx(y), y) for y in ys_]]
     for k, v in c.items():
-        paths.append([(d[k], v[1] + 2), (d[k], v[1] + 14), (195, v[1] + 14)])
+        yy = v[1] + 14
+        paths.append([(d[k], v[1] + 2), (d[k], yy), (sx(yy), yy)])
     return dict(lw=390, lh=860, isl=(24, 52, 342, 702), p=3.2, under=64, casas=c, pond=(272, 676, 18, 10), rest=(195, 330), paths=paths,
-                n=(18, 20, 10, 14, 150), deco=[dict(k="pozo_balde_arriba", x=238, y=372, rx=11), dict(k="cartel", x=160, y=480, rx=6), dict(k="farolito", x=172, y=250, rx=3), dict(k="farolito", x=222, y=470, rx=3),
-                      dict(k="puesto", x=238, y=630, rx=14), dict(k="buzon_bandera_arriba", x=156, y=716, rx=4), dict(k="barril", x=80, y=272, rx=5),
-                      dict(k="jardin:maceta_tulipanes", x=222, y=190, rx=4), dict(k="jardin:maceta_margaritas", x=170, y=330, rx=4),
-                      dict(k="banco_derecha", x=232, y=204, rx=11),
-                      dict(k="farolito", x=172, y=370, rx=3), dict(k="farolito", x=222, y=600, rx=3), dict(k="farolito", x=172, y=560, rx=3),
-                      dict(k="jardin:enrejado", x=250, y=440, rx=8), dict(k="cerca_baja_derecha", x=78, y=520, rx=0),
-                      dict(k="jardin:maceta_lavanda", x=170, y=640, rx=4), dict(k="jardin:maceta_cempasuchil", x=222, y=420, rx=4)], hub=(195, 330), stream=dict(amp=6, per=60))
+                n=(18, 20, 10, 14, 150), deco=[dict(k="pozo_balde_arriba", x=250, y=372, rx=11), dict(k="cartel", x=sx(480) - 20, y=480, rx=6), dict(k="farolito", x=sx(250) - 20, y=250, rx=3), dict(k="farolito", x=sx(470) + 20, y=470, rx=3),
+                      dict(k="puesto", x=250, y=630, rx=14), dict(k="buzon_bandera_arriba", x=sx(716) - 22, y=716, rx=4), dict(k="barril", x=80, y=272, rx=5),
+                      dict(k="jardin:maceta_tulipanes", x=sx(190) + 24, y=190, rx=4), dict(k="jardin:maceta_margaritas", x=sx(330) - 24, y=330, rx=4),
+                      dict(k="banco_derecha", x=sx(204) + 32, y=204, rx=11),
+                      dict(k="farolito", x=sx(370) - 20, y=370, rx=3), dict(k="farolito", x=sx(600) + 20, y=600, rx=3), dict(k="farolito", x=sx(560) - 20, y=560, rx=3),
+                      dict(k="jardin:enrejado", x=262, y=440, rx=8), dict(k="cerca_baja_derecha", x=78, y=520, rx=0),
+                      dict(k="jardin:maceta_lavanda", x=sx(640) - 24, y=640, rx=4), dict(k="jardin:maceta_cempasuchil", x=sx(420) + 24, y=420, rx=4)], hub=(195, 330), stream=dict(amp=6, per=60))
 
 
 def _shift(cfg, dx, lw, lh, dy=0):

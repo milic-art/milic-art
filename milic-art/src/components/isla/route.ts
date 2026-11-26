@@ -51,22 +51,31 @@ function graphRoute(segs: Seg[], from: Pt, to: Pt): Pt[] {
     if (!edges.has(kq)) edges.set(kq, new Map());
     edges.get(kp)!.set(kq, d); edges.get(kq)!.set(kp, d);
   };
+  const onSeg = (s: Seg, q: Pt) => {
+    const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y, l2 = dx * dx + dy * dy || 1;
+    const t = ((q.x - s.a.x) * dx + (q.y - s.a.y) * dy) / l2;
+    if (t < -0.001 || t > 1.001) return false;
+    return Math.hypot(s.a.x + dx * t - q.x, s.a.y + dy * t - q.y) < 0.6;
+  };
+  const cross = (s: Seg, o: Seg): Pt | null => {
+    const r = { x: s.b.x - s.a.x, y: s.b.y - s.a.y }, q = { x: o.b.x - o.a.x, y: o.b.y - o.a.y };
+    const den = r.x * q.y - r.y * q.x;
+    if (Math.abs(den) < 1e-9) return null;
+    const t = ((o.a.x - s.a.x) * q.y - (o.a.y - s.a.y) * q.x) / den;
+    const u = ((o.a.x - s.a.x) * r.y - (o.a.y - s.a.y) * r.x) / den;
+    if (t < -0.001 || t > 1.001 || u < -0.001 || u > 1.001) return null;
+    return { x: s.a.x + r.x * t, y: s.a.y + r.y * t };
+  };
   for (const s of segs) {
     const cuts: Pt[] = [s.a, s.b];
     for (const o of segs) {
       if (o === s) continue;
-      const sH = s.a.y === s.b.y, oH = o.a.y === o.b.y;
-      if (sH === oH) continue;
-      const h = sH ? s : o, v = sH ? o : s;
-      const x = v.a.x, y = h.a.y;
-      if (x >= Math.min(h.a.x, h.b.x) - 0.01 && x <= Math.max(h.a.x, h.b.x) + 0.01 && y >= Math.min(v.a.y, v.b.y) - 0.01 && y <= Math.max(v.a.y, v.b.y) + 0.01) cuts.push({ x, y });
+      const c = cross(s, o);
+      if (c) cuts.push(c);
     }
-    for (const q of [from, to]) {
-      const onH = s.a.y === s.b.y && Math.abs(q.y - s.a.y) < 0.01 && q.x >= Math.min(s.a.x, s.b.x) - 0.01 && q.x <= Math.max(s.a.x, s.b.x) + 0.01;
-      const onV = s.a.x === s.b.x && Math.abs(q.x - s.a.x) < 0.01 && q.y >= Math.min(s.a.y, s.b.y) - 0.01 && q.y <= Math.max(s.a.y, s.b.y) + 0.01;
-      if (onH || onV) cuts.push(q);
-    }
-    cuts.sort((m, n) => (s.a.y === s.b.y ? m.x - n.x : m.y - n.y));
+    for (const q of [from, to]) if (onSeg(s, q)) cuts.push(q);
+    const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y;
+    cuts.sort((m, n) => (m.x - s.a.x) * dx + (m.y - s.a.y) * dy - ((n.x - s.a.x) * dx + (n.y - s.a.y) * dy));
     for (let i = 0; i < cuts.length - 1; i++) link(cuts[i], cuts[i + 1]);
   }
   const src = key(from), dst = key(to);
