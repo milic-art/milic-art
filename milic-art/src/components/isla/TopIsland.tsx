@@ -9,6 +9,7 @@ import atGira from "./atlas/girasoles.json";
 import atMece from "./atlas/mecen.json";
 import atBich from "./atlas/bichitos.json";
 import atPuesto from "./atlas/puesto.json";
+import atLuces from "./atlas/luces.json";
 
 type Meta = { x: number; y: number; w: number; h: number; frames?: { x: number; y: number }[]; ms?: number };
 type Atlas = { spr: Spr; meta: Record<string, Meta> };
@@ -56,9 +57,9 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const imgs = await Promise.all(names.map(loadImage));
   const A: Record<string, HTMLImageElement | null> = {};
   Object.keys(ASSETS).forEach((k, i) => (A[k] = imgs[i]));
-  const [aNat, aDeco, aJar, aFlor, aGira, aMece, aBich, aPuesto] = await Promise.all([
+  const [aNat, aDeco, aJar, aFlor, aGira, aMece, aBich, aPuesto, aLuz] = await Promise.all([
     atlas("naturaleza_hoja_v2", atNat), atlas("deco_hoja_v2", atDeco), atlas("jardin_hoja", atJar), atlas("flores_hoja", atFlor),
-    atlas("girasoles_hoja", atGira), atlas("mecen_hoja", atMece), atlas("bichitos_hoja", atBich), atlas("puesto_papeleria_v2", atPuesto),
+    atlas("girasoles_hoja", atGira), atlas("mecen_hoja", atMece), atlas("bichitos_hoja", atBich), atlas("puesto_papeleria_v2", atPuesto), atlas("pasto_luces_hoja", atLuces),
   ]);
   const aSombra = { spr: toSpr(A.arbolSombra), meta: {} as Record<string, Meta> };
   void aSombra;
@@ -109,6 +110,22 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     g.globalAlpha = 1;
   }
 
+  // luces nocturnas: sprite con sus colores de día (no pasa por el filtro de noche) + halo suave
+  const lit = (m: Meta, fi: number, cx: number, by: number, st: State, halo: number) => {
+    const fr = m.frames![fi % m.frames!.length];
+    const dx = Math.round(cx - m.w / 2), dy = Math.round(by - m.h);
+    const a = Math.min(1, (st.n - 0.5) * 2);
+    g.globalAlpha = 0.16 * a;
+    g.fillStyle = "#ffd36b";
+    for (let r = -halo; r <= halo; r++) {
+      const w = Math.round(halo * 1.5 * Math.sqrt(1 - (r / (halo + 0.5)) ** 2));
+      g.fillRect(Math.round(cx - w), Math.round(by - m.h / 2) + r, w * 2, 1);
+    }
+    g.globalAlpha = a;
+    g.drawImage(aLuz.spr.day, fr.x, fr.y, m.w, m.h, dx, dy, m.w, m.h);
+    g.globalAlpha = 1;
+  };
+
   /* --- objetos ordenados por y (ancla = centro abajo del sprite) --- */
   const objects: Draw[] = [];
   const drawM = (at: Atlas, m: Meta, fi: number, cx: number, by: number, st: State) => {
@@ -127,7 +144,10 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     if (!f) continue;
     const ph = rnd() * 8;
     const mece = aMece.meta[`${p.k}_mece`];
+    const hm = /^hongos_(\d)$/.exec(p.k);
+    const luz = hm ? aLuz.meta[`hongos_brillo_${[1, 1, 2, 2, 3, 3][+hm[1] - 1]}`] : null;
     objects.push({ x: p.x, y: p.y, fn: (_g, st) => {
+      if (luz && st.n > 0.5) { lit(luz, still ? 0 : frameAt(luz, st.t, ph), p.x, p.y, st, 5); return; }
       if (mece && !still) drawM(aMece, mece, frameAt(mece, st.t, ph), p.x, p.y, st);
       else drawM(f[0], f[1], 0, p.x, p.y, st);
     } });
@@ -148,7 +168,12 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   }
   for (const fl of D.flores as { x: number; y: number; k: string }[]) {
     const m = aFlor.meta[fl.k];
-    if (m) objects.push({ x: fl.x, y: fl.y, fn: (_g, st) => drawM(aFlor, m, 0, fl.x, fl.y, st) });
+    const luz = fl.k === "margarita" ? aLuz.meta["luciernaga_flor_blanca"] : fl.k === "dalia" ? aLuz.meta["luciernaga_flor_rosa"] : null;
+    const lph = (fl.x * 7 + fl.y * 3) % 5;
+    if (m) objects.push({ x: fl.x, y: fl.y, fn: (_g, st) => {
+      if (luz && st.n > 0.5) lit(luz, still ? 0 : frameAt(luz, st.t, lph), fl.x, fl.y, st, 5);
+      else drawM(aFlor, m, 0, fl.x, fl.y, st);
+    } });
   }
   (D.girasoles as { x: number; y: number; g: string }[]).forEach((s2, k) => {
     const m = aGira.meta[s2.g] ?? aGira.meta["girasol_grande"];
