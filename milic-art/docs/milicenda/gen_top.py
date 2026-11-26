@@ -95,6 +95,28 @@ def ellipse(m, cx, cy, rx, ry, val=True):
 PASTO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "public", "milicenda-assets", "code")
 
 
+_SH = {}
+
+
+def sheet(n):
+    if n not in _SH:
+        _SH[n] = (np.array(Image.open(os.path.join(PASTO, n + ".png")).convert("RGBA")), json.load(open(os.path.join(PASTO, n + ".json"))))
+    return _SH[n]
+
+
+def stamp(img, ok, n, name, x, y):
+    """Pega una pieza de las hojas de pasto con su esquina sup-izq en (x, y), solo donde `ok`."""
+    im_, js = sheet(n)
+    d = js[name]
+    sp = im_[d["y"]:d["y"] + d["h"], d["x"]:d["x"] + d["w"]]
+    lh, lw = ok.shape
+    for j in range(d["h"]):
+        for i in range(d["w"]):
+            yy, xx = y + j, x + i
+            if sp[j, i, 3] and 0 <= yy < lh and 0 <= xx < lw and ok[yy, xx]:
+                img[yy, xx, :3] = sp[j, i, :3]
+
+
 def build(key, cfg):
     lw, lh = cfg["lw"], cfg["lh"]
     ix, iy, iw, ih = cfg["isl"]
@@ -277,6 +299,21 @@ def build(key, cfg):
     bank &= T & ~Wm
     put(bank & ~P, "#587a35")
     put(bank & P, "#bf8444")
+    # manchas con relieve, pasto pisado en las puertas y juncos en la orilla
+    okg = T & ~Pin & ~Wm
+    rr2 = random.Random(404 + ord(key))
+    for nm, cnt in (("mancha_relieve_l", int(lw * lh / 160000) + 1), ("mancha_relieve_m", int(lw * lh / 60000) + 1), ("mancha_relieve_s", int(lw * lh / 35000) + 1)):
+        for _ in range(cnt):
+            x = rr2.randrange(ix + 4, ix + iw - 50); y = rr2.randrange(iy + 4, iy + ih - 24)
+            stamp(img, okg, "pasto_extra_hoja", nm, x, y)
+    for id_, (bx, by_) in cfg["casas"].items():
+        dxp = bx - 32 + PUERTA[id_]
+        stamp(img, okg, "pasto_extra_hoja", "pasto_pisado_1", dxp - 27, by_ - 1)
+        stamp(img, okg, "pasto_extra_hoja", "pasto_pisado_3", dxp + 7, by_ + 1)
+    bk = np.argwhere(bank & ~Pin & ~Wm)
+    for _ in range(7):
+        y_, x_ = bk[rr2.randrange(len(bk))]
+        stamp(img, okg, "pasto_extra_hoja", "juncos", int(x_) - 6, int(y_) - 14)
     # borde claro de pasto sobre el banco (arriba)
     # agua (se pinta por cuadro)
     Wedge = Wm & ~(np.roll(Wm, 1, 0) & np.roll(Wm, -1, 0) & np.roll(Wm, 1, 1) & np.roll(Wm, -1, 1))
@@ -418,23 +455,22 @@ def build(key, cfg):
     lip = T & ~np.roll(T, -1, 0)
     for y, x in np.argwhere(lip):
         img[y, x, :3] = rgb("#587a35")
+    # flequillo de pasto y musgo (piezas de Code), siguiendo el labio de cada columna
     x = ix
     while x < ix + iw:
-        if yb[x] < 0:
-            x += 1
-            continue
-        w = rr.choice((1, 2, 2, 3))
-        L = rr.choice((2, 3, 3, 4, 5, 6)) if rr.random() < 0.75 else rr.randint(7, 10)
-        for xx in range(x, min(x + w, ix + iw)):
-            if yb[xx] < 0:
+        nm = "flequillo_isla_%d" % rr.randint(1, 6)
+        im_, js = sheet("pasto_extra_hoja")
+        d = js[nm]
+        sp = im_[d["y"]:d["y"] + d["h"], d["x"]:d["x"] + d["w"]]
+        for i in range(d["w"]):
+            xx = x + i
+            if xx >= lw or yb[xx] < 0:
                 continue
-            for k in range(1, L - (1 if xx > x else 0) + 1):
-                yy = yb[xx] + k
-                if yy < lh and BODY[yy, xx]:
-                    img[yy, xx, :3] = rgb("#587a35" if k < L - 1 else "#35563a")
-                    if k == 1:
-                        img[yy, xx, :3] = rgb("#8aa23a")
-        x += w + rr.choice((0, 1, 2, 3, 4))
+            for j in range(d["h"]):
+                yy = yb[xx] + 1 + j
+                if sp[j, i, 3] and yy < lh and BODY[yy, xx]:
+                    img[yy, xx, :3] = sp[j, i, :3]
+        x += d["w"]
     # luz arriba-izquierda: borde claro de la superficie
     topl = T & (~np.roll(T, 1, 0) | ~np.roll(T, 1, 1))
     put(topl, "#e2d870")
@@ -639,6 +675,17 @@ def main():
         objs = [(a["x"] + sombra_de(a["k"])[0], a["y"] + sombra_de(a["k"])[1], sombra_de(a["k"])[2], sombra_de(a["k"])[3]) for a in pob["props"]]
         objs += [(a["x"], a["y"], 4, 2) for a in pob["girasoles"]]
         objs += [(d["x"], d["y"] - 1, max(1, d.get("rx", 9)), 3) for d in cfg["deco"] if d["k"] not in ("puente", "puente_nat")]
+        okm = g["T"] & ~g["P"] & ~g["Wm"]
+        rm = random.Random(808 + ord(key))
+        for a_ in pob["props"]:
+            if a_["k"] in ("alamo", "arbol_frutal", "arbol_grande_puerta", "arbol_paraguas", "arbol_redondo", "pino"):
+                nm = "anillo_base_arbol_%d" % (3 if a_["k"] == "pino" else (2 if a_["k"] == "arbol_grande_puerta" else rm.choice((1, 3))))
+                d_ = sheet("pasto_medianas_hoja")[1][nm]
+                stamp(g["img"], okm, "pasto_medianas_hoja", nm, int(a_["x"] - d_["w"] / 2), int(a_["y"] - d_["h"] + 4))
+        for id_, (bx, by_) in cfg["casas"].items():
+            for sd, nm in ((-1, "mata_pared_2"), (1, "mata_pared_1")):
+                d_ = sheet("pasto_extra_hoja")[1][nm]
+                stamp(g["img"], okm, "pasto_extra_hoja", nm, bx + (-36 if sd < 0 else 12), by_ - d_["h"] + 1)
         hornear_sombras(g, objs, list(cfg["casas"].values()))
         lh, lw = cfg["lh"], cfg["lw"]
         for f in range(NF):
