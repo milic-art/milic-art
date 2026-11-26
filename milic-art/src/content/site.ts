@@ -1,6 +1,7 @@
 import halloweenOc from "../assets/halloween-oc.jpg";
 import minccinoImg from "../assets/minccino.jpg";
 import chibiImg from "../assets/chibi.jpg";
+import yujinImg from "../assets/yujin.jpg";
 /**
  * ============================================================
  *  milic_art. TODO el contenido del sitio vive en este archivo.
@@ -229,6 +230,17 @@ export const site = {
         link: "",
       },
       {
+        title: "Web de Somos Consultoras",
+        kind: "Web de una sola página",
+        fields: [
+          { label: "Qué es", value: "La web de un círculo de seis consultoras de Mar del Plata, con secciones, formulario de contacto y página del primer evento." },
+          { label: "Mi rol", value: "[Mi rol: diseño, textos, código]" },
+          { label: "Hecho con", value: "[Herramientas]" },
+          { label: "Qué aprendí", value: "[Qué aprendí y qué cambiaría]" },
+        ],
+        link: "https://somosconsultoras.com.ar",
+      },
+      {
         title: "Kit para armar páginas (zip)",
         kind: "Producto digital · próximamente",
         fields: [
@@ -281,13 +293,23 @@ export const site = {
         variant: "windowsill" as const,
       },
       {
-        id: "chibi",
-        title: "Chibi",
+        id: "tashiro",
+        title: "Tashiro",
         year: "[Año]",
         medium: "Digital, Krita",
-        blurb: "Estilo chibi.",
-        description: "[Para quién o para qué lo hice.]",
+        blurb: "Chibi con fondo y sin fondo.",
+        description: "Chibi de Tashiro. Lo hago con fondo y también sin fondo, para usar como avatar o sticker.",
         image: chibiImg,
+        variant: "windowsill" as const,
+      },
+      {
+        id: "yujin",
+        title: "Yujin",
+        year: "[Año]",
+        medium: "Digital, Krita",
+        blurb: "Retrato a partir de una foto.",
+        description: "Retrato en línea y color plano, hecho a partir de una foto de referencia.",
+        image: yujinImg,
         variant: "windowsill" as const,
       },
     ],
