@@ -260,106 +260,159 @@ def build(key, cfg):
     Wedge = Wm & ~(np.roll(Wm, 1, 0) & np.roll(Wm, -1, 0) & np.roll(Wm, 1, 1) & np.roll(Wm, -1, 1))
     Win = Wm & ~Wedge
 
-    # ---- acantilado, roca y contorno
-    soil_rows = CLIFF + 6
-    # bandas de tierra
-    cliff_top = np.zeros(lw, int)
+    # ---- panza: tierra + roca con luz arriba-izquierda
+    def nz(seed, cell):
+        r = random.Random(seed)
+        gh, gw = lh // cell + 3, lw // cell + 3
+        grid = np.array([[r.random() for _ in range(gw)] for _ in range(gh)])
+        yy, xx = np.mgrid[:lh, :lw]
+        gy, gx = yy / cell, xx / cell
+        y0, x0 = gy.astype(int), gx.astype(int)
+        fy, fx = gy - y0, gx - x0
+        fy, fx = fy * fy * (3 - 2 * fy), fx * fx * (3 - 2 * fx)
+        return (grid[y0, x0] * (1 - fx) + grid[y0, x0 + 1] * fx) * (1 - fy) + (grid[y0 + 1, x0] * (1 - fx) + grid[y0 + 1, x0 + 1] * fx) * fy
+    n1, n2 = nz(71, 9), nz(72, 5)
+    BODY = C | B
+    # espesor de la tierra por columna (ondulado)
+    soilT = np.zeros(lw)
     for x in range(lw):
-        cliff_top[x] = yb[x] + 1
-    # transición tierra-roca irregular
-    trans = {}
-    x = 0
-    cur = 5
-    while x < lw:
-        seg = rnd.randint(6, 13)
-        cur = max(2, min(12, cur + rnd.randint(-4, 4)))
-        for k in range(seg):
-            trans[x + k] = cur
-        x += seg
-    rb1 = blobs(26, (8, 18), (3, 8), 31, C | B)
-    rb2 = blobs(26, (8, 18), (3, 8), 32, C | B)
+        soilT[x] = CLIFF + 11 + 4 * math.sin(x / 23.0) + 3 * math.sin(x / 7.3 + 1)
+    SOIL = ["#f2bd6e", "#dc9544", "#b96d32", "#8a4e2a", "#5a3322", "#4a2c1f"]
+    ROCK = ["#d6cbb0", "#a8a08e", "#77707c", "#463f4a"]
+    colbot = np.full(lw, 0)
+    for x in range(lw):
+        ys_ = np.where(BODY[:, x])[0]
+        if len(ys_):
+            colbot[x] = ys_.max()
     for y in range(lh):
         for x in range(lw):
-            if not (C[y, x] or B[y, x]):
+            if not BODY[y, x]:
                 continue
-            d = y - cliff_top[x]
-            zx = (x + 0.9 * d - cx0) / (iw * 0.22)
-            zone = 0 if zx < -1 else (1 if zx < 1 else 2)
-            soil = d < CLIFF + trans.get(x, 6)
-            if soil:
-                pal = ["#f2bd6e", "#dc9544", "#b96d32", "#8a4e2a", "#5a3322", "#4a2c1f"]
-                t = 2
-                if d < 3:
-                    t -= 1
-                if rb1[y, x] and d > 3:
-                    t -= 1
-                if rb2[y, x] and d > 5:
+            d = y - (yb[x] + 1)
+            u = (x - cx0) / (iw / 2)
+            tot = max(1, colbot[x] - yb[x])
+            v = d / tot
+            sh = (u + 0.5) * 1.4 + (n1[y, x] - 0.5) * 0.9      # 0 = iluminado, sube hacia la derecha
+            if d < soilT[x] + (n2[y, x] - 0.5) * 3:
+                # capas de tierra con vetas onduladas
+                strat = int((d + 2.2 * math.sin(x / 5.0)) // 5)
+                t = 1 + max(0, min(2, int(sh))) + (1 if strat % 3 == 2 else 0)
+                if d < 2:
+                    t += 2          # sombra bajo el labio de pasto
+                elif d < 4:
                     t += 1
-                if d > CLIFF - 3 and d <= CLIFF + trans.get(x, 6):
-                    t += 1
-                col = pal[max(0, min(5, t + zone - (1 if zone else 0) * 0))]
+                col = SOIL[max(0, min(5, t))]
             else:
-                pal = ["#d6cbb0", "#a8a08e", "#77707c", "#463f4a", "#463f4a"]
-                t = 1
-                rd = d - (CLIFF + trans.get(x, 6))
-                if rd < 2:
-                    t = 0
-                if rb1[y, x] and rd > 3:
-                    t -= 1
-                if rb2[y, x] and rd > 3:
-                    t += 1
-                if y - (yb[x] + CLIFF) > U * 0.6:
-                    t += 1
-                col = pal[max(0, min(4, t + (1 if zone else 0) + (1 if zone == 2 else 0) * 0))]
+                t = 1 + max(0, min(1, int(sh + 0.15))) + (1 if v > 0.5 + (n2[y, x] - 0.5) * 0.3 else 0)
+                if d < soilT[x] + 3:
+                    t += 1          # sombra de la tierra sobre la roca
+                col = ROCK[max(0, min(3, t))]
             img[y, x, :3] = rgb(col)
             img[y, x, 3] = 255
-    # piedritas y raíces en la tierra
-    for _ in range(40):
-        x = rnd.randrange(ix, ix + iw)
+    # rocas con relieve: luz arriba-izquierda, sombra abajo-derecha
+    def roca(cx, cy, rx, ry, base):
+        m = np.zeros((lh, lw), bool)
+        ellipse(m, cx, cy, rx, ry)
+        m &= BODY
+        up = np.roll(m, 1, 0); lf = np.roll(m, 1, 1)
+        dn = np.roll(m, -1, 0); rt = np.roll(m, -1, 1)
+        hi = m & (~up | ~lf)
+        lo = m & (~dn | ~rt) & ~hi
+        pr = ROCK if base == "r" else SOIL
+        k = 2 if base == "r" else 2
+        for mk, off in ((m, 0), (hi, -1), (lo, 1)):
+            idx = max(0, min(len(pr) - 1, k + off))
+            img[mk, :3] = rgb(pr[idx])
+    rr = random.Random(77)
+    for _ in range(int(iw / 11)):
+        x = rr.randrange(ix + 6, ix + iw - 6)
         if yb[x] < 0:
             continue
-        y = yb[x] + 1 + rnd.randrange(1, CLIFF - 2)
-        if C[y, x] and C[y + 1, x + 2]:
-            for dx in range(3):
-                img[y, x + dx, :3] = rgb("#a8a08e" if x < cx0 else "#77707c")
-            img[y + 1, x + 1, :3] = rgb("#5a3322")
-    for _ in range(14):
-        x = rnd.randrange(ix + 6, ix + iw - 6)
+        d0 = soilT[x] + 3 + rr.randrange(0, max(2, colbot[x] - yb[x] - int(soilT[x]) - 6))
+        roca(x, yb[x] + d0, rr.randint(3, 7), rr.randint(2, 4), "r")
+    for _ in range(int(iw / 14)):
+        x = rr.randrange(ix + 6, ix + iw - 6)
         if yb[x] < 0:
             continue
-        L = rnd.randint(7, 12)
+        roca(x, yb[x] + rr.randint(4, int(soilT[x]) - 2), rr.randint(2, 4), rr.randint(1, 2), "s")
+    # luz de borde: izquierda clara, derecha oscura (volumen del cuerpo)
+    lfe = BODY & ~np.roll(BODY, 1, 1)
+    rte = BODY & ~np.roll(BODY, -1, 1)
+    for y, x in np.argwhere(lfe):
+        for k in range(2):
+            if x + k < lw and BODY[y, x + k]:
+                c0 = tuple(img[y, x + k, :3])
+                for pal in (SOIL, ROCK):
+                    for i, hx in enumerate(pal):
+                        if rgb(hx) == c0 and i > 0:
+                            img[y, x + k, :3] = rgb(pal[i - 1]); break
+    for y, x in np.argwhere(rte):
+        c0 = tuple(img[y, x, :3])
+        for pal in (SOIL, ROCK):
+            for i, hx in enumerate(pal):
+                if rgb(hx) == c0 and i < len(pal) - 1:
+                    img[y, x, :3] = rgb(pal[i + 1]); break
+    # raíces que cuelgan de la tierra, con ramitas
+    for _ in range(int(iw / 30)):
+        x = rr.randrange(ix + 8, ix + iw - 8)
+        if yb[x] < 0:
+            continue
+        L = rr.randint(9, 18)
         xx = x
         for k in range(L):
-            y = yb[x] + 2 + k
-            if y < lh and C[y, xx]:
-                img[y, xx, :3] = rgb("#4a2c1f")
-            if k % 3 == 2:
-                xx += rnd.choice((-1, 1))
-    # grietas en la roca
-    for _ in range(16):
-        x = rnd.randrange(ix + 8, ix + iw - 8)
+            y = yb[x] + 3 + k
+            if y < lh and BODY[y, xx]:
+                img[y, xx, :3] = rgb("#4a2c1f" if k % 4 else "#5a3322")
+            if k % 4 == 3:
+                xx += rr.choice((-1, 1))
+            if k in (5, 9) and rr.random() < 0.7:
+                bx = xx + rr.choice((-1, 1))
+                for j in range(1, 4):
+                    if 0 <= y + j // 2 < lh and BODY[y + j // 2, bx + j * (1 if bx > xx else -1)]:
+                        img[y + j // 2, bx + j * (1 if bx > xx else -1), :3] = rgb("#4a2c1f")
+    # huesitos y piedritas claras en la tierra
+    for _ in range(int(iw / 25)):
+        x = rr.randrange(ix + 6, ix + iw - 6)
         if yb[x] < 0:
             continue
-        y = yb[x] + CLIFF + 8 + rnd.randrange(0, 10)
-        for k in range(rnd.randint(6, 11)):
+        y = yb[x] + rr.randint(5, int(soilT[x]) - 3)
+        if BODY[y, x + 3] and BODY[y + 1, x + 3]:
+            for dx in range(4):
+                img[y, x + dx, :3] = rgb("#fbf3e4")
+            img[y + 1, x, :3] = rgb("#d6cbb0"); img[y + 1, x + 3, :3] = rgb("#d6cbb0")
+    # grietas en la roca
+    for _ in range(int(iw / 30)):
+        x = rr.randrange(ix + 8, ix + iw - 8)
+        if yb[x] < 0:
+            continue
+        y = yb[x] + int(soilT[x]) + 4 + rr.randrange(0, 8)
+        for k in range(rr.randint(6, 12)):
             if 0 <= y < lh and B[y, x]:
-                img[y, x, :3] = rgb("#35303a" if False else "#463f4a")
+                img[y, x, :3] = rgb("#463f4a")
             y += 1
             if k % 2:
-                x += rnd.choice((-1, 1))
-    # labio de pasto: sombra y mechones colgando
+                x += rr.choice((-1, 1))
+    # flequillo de pasto y musgo que cuelga del labio
     lip = T & ~np.roll(T, -1, 0)
     for y, x in np.argwhere(lip):
-        for k in range(0, 2):
-            if y - k >= 0 and T[y - k, x]:
-                img[y - k, x, :3] = rgb("#587a35" if k == 0 else "#587a35")
-    for x in range(ix, ix + iw):
+        img[y, x, :3] = rgb("#587a35")
+    x = ix
+    while x < ix + iw:
         if yb[x] < 0:
+            x += 1
             continue
-        if (x * 7 + 3) % 9 in (0, 1, 2):
-            for k in range(1, 3 + (x % 3)):
-                if C[yb[x] + k, x]:
-                    img[yb[x] + k, x, :3] = rgb("#587a35" if k > 1 else "#8aa23a")
+        w = rr.choice((1, 2, 2, 3))
+        L = rr.choice((2, 3, 3, 4, 5, 6)) if rr.random() < 0.75 else rr.randint(7, 10)
+        for xx in range(x, min(x + w, ix + iw)):
+            if yb[xx] < 0:
+                continue
+            for k in range(1, L - (1 if xx > x else 0) + 1):
+                yy = yb[xx] + k
+                if yy < lh and BODY[yy, xx]:
+                    img[yy, xx, :3] = rgb("#587a35" if k < L - 1 else "#35563a")
+                    if k == 1:
+                        img[yy, xx, :3] = rgb("#8aa23a")
+        x += w + rr.choice((0, 1, 2, 3, 4))
     # luz arriba-izquierda: borde claro de la superficie
     topl = T & (~np.roll(T, 1, 0) | ~np.roll(T, 1, 1))
     put(topl, "#e2d870")
