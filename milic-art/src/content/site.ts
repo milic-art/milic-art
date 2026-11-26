@@ -44,7 +44,10 @@ export type Discipline = {
   journal?: {
     label: string;
     intro: string;
-    items: { title: string; date: string; summary: string }[];
+    openLabel: string;
+    backLabel: string;
+    listLabel: string;
+    items: { title: string; date: string; tag: string; summary: string; body: string[]; link?: string }[];
     subscribe: string;
   };
   ctaLabel: string;
@@ -149,11 +152,26 @@ export const site = {
     testimonialsLabel: "Qué dicen",
     testimonials: sampleTestimonials,
     journal: {
-      label: "Diario",
-      intro: "[Una frase sobre qué vas a contar acá: novedades, procesos, lo que estás investigando.]",
+      label: "Blog y newsletter",
+      intro: "Acá publico mis textos: las ediciones del newsletter de OLA Productiva y mis propias entradas.",
+      openLabel: "Abrir el blog",
+      backLabel: "Volver a Redacción",
+      listLabel: "Todas las entradas",
       items: [
-        { title: "[Título de la entrada]", date: "[Fecha]", summary: "[Resumen de una línea]" },
-        { title: "[Título de la entrada]", date: "[Fecha]", summary: "[Resumen de una línea]" },
+        {
+          title: "Regenerar futuro: por dónde empezar",
+          date: "29 de septiembre de 2026",
+          tag: "Newsletter · OLA Productiva · Edición 01",
+          summary: "Primera edición del newsletter de OLA. Qué es regenerar y por dónde puede empezar una pyme.",
+          body: ["[Pegá acá el texto de la edición 01: título, dos subtítulos y el cuerpo.]"],
+        },
+        {
+          title: "[Título de tu primera entrada]",
+          date: "[Fecha]",
+          tag: "[Tema o categoría]",
+          summary: "[Resumen de una línea]",
+          body: ["[Primer párrafo.]", "[Segundo párrafo.]"],
+        },
       ],
       subscribe: "[Enlace para suscribirte al newsletter]",
     },

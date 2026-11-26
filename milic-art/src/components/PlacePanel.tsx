@@ -553,6 +553,81 @@ function ContactBody({ preset }: { preset: string | null }) {
 
 /* --------------------------------------------------------- disciplinas */
 
+function BlogView({
+  journal,
+  onBack,
+}: {
+  journal: NonNullable<Discipline["journal"]>;
+  onBack: () => void;
+}) {
+  const [open, setOpen] = useState<number | null>(null);
+  const top = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    top.current?.scrollIntoView({ block: "start" });
+  }, [open]);
+  const entry = open === null ? null : journal.items[open];
+  return (
+    <div ref={top} className="space-y-4">
+      <button
+        type="button"
+        onClick={entry ? () => setOpen(null) : onBack}
+        className="inline-flex min-h-[44px] items-center gap-1.5 font-display text-[14px] font-bold text-orange-deep underline underline-offset-4"
+      >
+        <span aria-hidden="true">←</span>
+        {entry ? journal.listLabel : journal.backLabel}
+      </button>
+      {entry ? (
+        <article className="space-y-3">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+            <Txt>{entry.tag}</Txt> · <Txt>{entry.date}</Txt>
+          </p>
+          <h3 className="font-display text-2xl leading-tight text-ink">
+            <Txt>{entry.title}</Txt>
+          </h3>
+          {entry.body.map((paragraph, index) => (
+            <p key={index} className="max-w-[62ch] text-[15px] leading-relaxed text-ink">
+              <Txt>{paragraph}</Txt>
+            </p>
+          ))}
+          {entry.link && (
+            <a href={entry.link} target="_blank" rel="noreferrer noopener" className="inline-block font-display text-[14px] font-bold text-orange-deep underline underline-offset-4">
+              Leer la edición original
+            </a>
+          )}
+        </article>
+      ) : (
+        <>
+          <h3 className="font-display text-xl">{journal.label}</h3>
+          <ul className="space-y-2.5">
+            {journal.items.map((item, index) => (
+              <li key={index}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(index)}
+                  className="w-full rounded-xl border-2 border-ink/25 bg-chalk/70 px-3.5 py-3 text-left"
+                >
+                  <span className="block text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+                    <Txt>{item.tag}</Txt> · <Txt>{item.date}</Txt>
+                  </span>
+                  <span className="mt-0.5 block font-display text-[16px] font-bold leading-tight text-ink">
+                    <Txt>{item.title}</Txt>
+                  </span>
+                  <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">
+                    <Txt>{item.summary}</Txt>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[13px] font-semibold text-ink">
+            <Txt>{journal.subscribe}</Txt>
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
 function DisciplineBody({
   data,
   onContact,
@@ -562,6 +637,8 @@ function DisciplineBody({
   onContact: (preset: string) => void;
   presetId: string;
 }) {
+  const [blog, setBlog] = useState(false);
+  if (blog && data.journal) return <BlogView journal={data.journal} onBack={() => setBlog(false)} />;
   return (
     <div className="space-y-6">
       <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink">
@@ -676,24 +753,16 @@ function DisciplineBody({
           <p className="mt-1 text-[13.5px] leading-relaxed text-ink-soft">
             <Txt>{data.journal.intro}</Txt>
           </p>
-          <ul className="mt-3 space-y-2">
-            {data.journal.items.map((entry, index) => (
-              <li key={index} className="rounded-xl border border-ink/20 bg-paper px-3 py-2">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">
-                  <Txt>{entry.date}</Txt>
-                </p>
-                <p className="font-display text-[14.5px] font-bold leading-tight text-ink">
-                  <Txt>{entry.title}</Txt>
-                </p>
-                <p className="text-[12.5px] leading-snug text-ink-soft">
-                  <Txt>{entry.summary}</Txt>
-                </p>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-[13px] font-semibold text-ink">
-            <Txt>{data.journal.subscribe}</Txt>
-          </p>
+          <button
+            type="button"
+            onClick={() => setBlog(true)}
+            className="stamp-btn mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full border-2 border-ink bg-paper px-5 py-2.5 font-display text-[15px] font-bold text-ink shadow-[0_3px_0_rgba(75,58,42,0.85)]"
+          >
+            {data.journal.openLabel}
+            <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+              <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
         </section>
       )}
 
