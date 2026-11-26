@@ -597,7 +597,7 @@ def main():
             Image.fromarray(im, "RGBA").save(os.path.join(OUT, f"isla_{key}_{f}.png"))
         pcx, pcy, prx, pry = cfg["pond"]
         layout[key] = dict(lw=lw, lh=lh, isl=list(cfg["isl"]), casas={k: list(v) for k, v in cfg["casas"].items()},
-                           pond=list(cfg["pond"]), rest=list(cfg["rest"]), nf=NF, **pob)
+                           pond=list(cfg["pond"]), rest=list(cfg["rest"]), paths=[[list(pt) for pt in pth] for pth in cfg["paths"]], nf=NF, **pob)
         # vista previa
         prev = Image.open(os.path.join(OUT, f"isla_{key}_0.png"))
         bg = Image.new("RGBA", prev.size, (143, 210, 210, 255))

@@ -4,7 +4,8 @@ import { GuideCompanion, ListView, MobileDock, SiteHeader } from "./components/S
 import { MapStage } from "./components/MapStage";
 import { PlacePanel } from "./components/PlacePanel";
 import { useClocky } from "./components/useClocky";
-import { islaLayout } from "./components/isla/config";
+import { islaLayout, TOP } from "./components/isla/config";
+import { doorOf, routeTo, walkMs } from "./components/isla/route";
 
 const structuredData = JSON.stringify({
   "@context": "https://schema.org",
@@ -17,7 +18,7 @@ const structuredData = JSON.stringify({
   sameAs: site.contact.links.filter((link) => Boolean(link.url)).map((link) => link.url),
 });
 
-const WALK_MS = 950;
+
 
 function usePortrait() {
   const [portrait, setPortrait] = useState(() => window.innerWidth < window.innerHeight);
@@ -63,15 +64,17 @@ export default function App() {
         setActiveId(id);
         return;
       }
+      const D = TOP[portrait ? "v" : "h"];
+      const from = clockyAt ? doorOf(portrait, clockyAt) : { x: D.rest[0], y: D.rest[1] };
       setClockyAt(id);
       setWalking(true);
       walkTimer.current = window.setTimeout(() => {
         walkTimer.current = null;
         setWalking(false);
         setActiveId(id);
-      }, WALK_MS);
+      }, walkMs(routeTo(portrait, from, id).len));
     },
-    [activeId, clockyAt],
+    [activeId, clockyAt, portrait],
   );
 
   const openContact = useCallback(

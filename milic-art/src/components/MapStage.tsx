@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { site, type PlaceId } from "../content";
 import { LandmarkArt } from "./WorldArt";
 import { IsoIsland, type IslaControl, type IslaMode } from "./isla/IsoIsland";
 import { TopIsland } from "./isla/TopIsland";
 import { VISTA, islaLayout, TOP } from "./isla/config";
+import { doorOf, pointAt, routeTo, walkMs, type Pt } from "./isla/route";
 import { ClockyArt, type ClockyState } from "./ClockyArt";
 
 type View = { x: number; y: number; s: number };
@@ -27,6 +28,12 @@ type MapStageProps = {
  */
 export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, onPokeClocky }: MapStageProps) {
   const layout = useMemo(() => islaLayout(portrait), [portrait]);
+  // Clocky camina por los caminitos: posición en px lógicos, animada a mano a lo largo de la ruta
+  const walkerRef = useRef<HTMLButtonElement | null>(null);
+  const flipRef = useRef<HTMLSpanElement | null>(null);
+  const walkPos = useRef<Pt | null>(null);
+  const walkPrev = useRef<{ id: PlaceId | null; portrait: boolean } | null>(null);
+  const walkRaf = useRef<number | null>(null);
   const WORLD_W = layout.worldW;
   const WORLD_H = layout.worldH;
   const [mode, setMode] = useState<IslaMode>("auto");
@@ -80,6 +87,44 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       );
     }
   }, [WORLD_W, WORLD_H]);
+
+  useLayoutEffect(() => {
+    if (VISTA !== "cenital") return;
+    const el = walkerRef.current;
+    if (!el) return;
+    const D = TOP[portrait ? "v" : "h"];
+    const target: Pt = clockyAt ? doorOf(portrait, clockyAt) : { x: D.rest[0], y: D.rest[1] };
+    const off = (near: boolean) => (near ? layout.walker.dy : 0);
+    const put = (p: Pt, dy: number) => {
+      el.style.left = `${(p.x / D.lw) * 100}%`;
+      el.style.top = `calc(${(p.y / D.lh) * 100}% + ${dy}px)`;
+    };
+    if (walkRaf.current !== null) { cancelAnimationFrame(walkRaf.current); walkRaf.current = null; }
+    const prev = walkPrev.current;
+    walkPrev.current = { id: clockyAt, portrait };
+    const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!prev || prev.portrait !== portrait || !walkPos.current || clockyAt === null || reduce) {
+      walkPos.current = target;
+      put(target, off(clockyAt !== null));
+      return;
+    }
+    const from = walkPos.current;
+    const { pts, len } = routeTo(portrait, from, clockyAt);
+    if (len < 1) { put(target, off(true)); walkPos.current = target; return; }
+    const ms = walkMs(routeTo(portrait, prev.id ? doorOf(portrait, prev.id) : { x: D.rest[0], y: D.rest[1] }, clockyAt).len);
+    const dy0 = off(prev.id !== null), dy1 = off(true);
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / ms);
+      const { p, dx } = pointAt(pts, k); // velocidad pareja por el caminito
+      walkPos.current = p;
+      put(p, dy0 + (dy1 - dy0) * k);
+      if (flipRef.current && Math.abs(dx) > 0.5) flipRef.current.style.transform = dx < 0 ? "scaleX(-1)" : "none";
+      walkRaf.current = k < 1 ? requestAnimationFrame(tick) : null;
+    };
+    walkRaf.current = requestAnimationFrame(tick);
+    return () => { if (walkRaf.current !== null) cancelAnimationFrame(walkRaf.current); };
+  }, [clockyAt, portrait, layout]);
 
   const schedule = useCallback(() => {
     if (frame.current !== null) return;
@@ -428,21 +473,28 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
         {(() => {
           const spot = places.find((place) => place.id === clockyAt) ?? layout.rest;
           const near = clockyAt !== null;
+          const cen = VISTA === "cenital";
           return (
             <button
+              ref={walkerRef}
               type="button"
               onClick={onPokeClocky}
               aria-label={site.mascot.poke}
               className="clocky-walker absolute z-20 block w-[150px] cursor-pointer"
               data-walking={walking}
-              style={{
+              data-route={cen ? "1" : undefined}
+              style={cen ? {
+                transform: `translate(-50%, ${layout.walker.ty}%)`,
+              } : {
                 left: `calc(${spot.x}% + ${near ? layout.walker.dx : 0}px)`,
                 top: `calc(${spot.y}% + ${near ? layout.walker.dy : 0}px)`,
-                transform: `translate(-50%, ${VISTA === "cenital" ? layout.walker.ty : -50}%)`,
+                transform: `translate(-50%, -50%)`,
               }}
             >
-              <span className="clocky-walk-inner block aspect-[220/200] w-full">
-                <ClockyArt state={walking ? "stand" : clockyState} />
+              <span ref={flipRef} className="block">
+                <span className="clocky-walk-inner block aspect-[220/200] w-full">
+                  <ClockyArt state={walking ? "stand" : clockyState} />
+                </span>
               </span>
             </button>
           );
