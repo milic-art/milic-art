@@ -633,6 +633,11 @@ def poblar(g, cfg):
             return False
         if Wm[max(0, y - 12):y + 8, max(0, x - 16 - margen):x + 16 + margen].any():
             return False
+        # la copa tapa lo que está arriba del pie: tampoco sobre el sendero
+        if tipo == "arbol" and P[max(0, y - 42):max(0, y - 2), max(0, x - 20):x + 20].any():
+            return False
+        if tipo == "arbusto" and margen == 0 and P[max(0, y - 14):max(0, y - 1), max(0, x - 9):x + 9].any():
+            return False
         return True
     out = {"props": [], "flores": [], "girasoles": [], "deco": cfg["deco"]}
     pts = [(d["x"], d["y"]) for d in cfg["deco"]]
@@ -667,8 +672,25 @@ def poblar(g, cfg):
         out["props"].append({"k": rnd.choice(["hongos_1", "hongos_2", "hongos_3", "hongos_4", "hongos_5", "hongos_6", "jardin:pasto_alto_1", "jardin:pasto_alto_2", "jardin:pasto_alto_3"]), "x": x, "y": y})
     for (x, y) in poisson(ng, 30, "arbusto"):
         out["girasoles"].append({"x": x, "y": y, "g": rnd.choice(["girasol_grande", "girasol_grande", "girasol_chico"])})
-    for (x, y) in poisson(nfl, 13, "arbusto", tries=12000):
-        out["flores"].append({"x": x, "y": y, "k": rnd.choice(["tulipan", "margarita", "lavanda", "jacinto", "dalia", "amapola", "lirio", "pensamiento"])})
+    # flores en grupitos (2 especies por ramo) y algunas sueltas
+    especies = ["tulipan", "margarita", "lavanda", "jacinto", "dalia", "amapola", "lirio", "pensamiento"]
+    for (cx_, cy_) in poisson(max(4, nfl // 6), 38, "arbusto", tries=9000):
+        ks = rnd.sample(especies, 2)
+        n_ = rnd.randint(3, 6)
+        puestos = []
+        for _ in range(60):
+            if len(puestos) >= n_:
+                break
+            a_ = rnd.uniform(0, 6.283); r_ = rnd.uniform(4, 15)
+            x = int(cx_ + math.cos(a_) * r_); y = int(cy_ + math.sin(a_) * r_ * 0.7)
+            if not libre(x, y, 0, "arbusto"):
+                continue
+            if all(math.hypot(x - a, y - b) >= 8 for a, b in pts):
+                puestos.append((x, y)); pts.append((x, y))
+        for (x, y) in puestos:
+            out["flores"].append({"x": x, "y": y, "k": rnd.choice(ks)})
+    for (x, y) in poisson(max(4, nfl // 5), 13, "arbusto", tries=9000):
+        out["flores"].append({"x": x, "y": y, "k": rnd.choice(especies)})
     return out
 
 
