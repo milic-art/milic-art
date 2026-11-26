@@ -209,7 +209,7 @@ def build(key, cfg):
         return v > thr
 
     # piso: texturas A/B/C de Code (256x256, encajan en cualquier orden), enmascaradas a la isla
-    texs = [np.array(Image.open(os.path.join(PASTO, "pasto_textura_%s.png" % k)).convert("RGB")) for k in "ABC"]
+    texs = [np.array(Image.open(os.path.join(PASTO, ("pasto_textura_celu_%s.png" if key == "v" else "pasto_textura_%s.png") % k)).convert("RGB")) for k in "ABC"]
     rt = random.Random(5 + ord(key))
     for yy0 in range(0, lh, 256):
         for xx0 in range(0, lw, 256):
@@ -265,6 +265,37 @@ def build(key, cfg):
     put(P & ((xs // 5 + ys // 4) % 5 == 0) & ~edge, "#f2bd6e")
     put(P & ((xs * 3 + ys * 5) % 29 == 0) & ~edge, "#bf8444")
     put(edge, "#bf8444")
+    # tiras de pasto sobre el borde del camino (piezas de Code): la línea oscura de la tira reemplaza el borde del camino
+    BJ = sheet("pasto_bordes_hoja")
+    def tira(nm):
+        im_, js = BJ
+        d = js[nm]
+        return im_[d["y"]:d["y"] + d["h"], d["x"]:d["x"] + d["w"]]
+    Pu = np.roll(Pin, 1, 0); Pd = np.roll(Pin, -1, 0); Pl = np.roll(Pin, 1, 1); Pr = np.roll(Pin, -1, 1)
+    for y_, x_ in np.argwhere(Pin & ~Pu):               # borde de arriba: pasto arriba, tierra abajo
+        sp = tira("borde_tierra_recta_pasto_arriba")
+        for r in range(1, sp.shape[0]):
+            yy = y_ + r - 1
+            if sp[r, x_ % 16, 3] and yy < lh and (r == 1 or Pin[yy, x_]):
+                img[yy, x_, :3] = sp[r, x_ % 16, :3]
+    for y_, x_ in np.argwhere(Pin & ~Pd & Pu):          # borde de abajo
+        sp = tira("borde_tierra_recta_pasto_abajo")
+        for r in range(2, 5):
+            yy = y_ - (4 - r)
+            if sp[r, x_ % 16, 3] and (r == 4 or Pin[yy, x_]):
+                img[yy, x_, :3] = sp[r, x_ % 16, :3]
+    for y_, x_ in np.argwhere(Pin & ~Pl & Pu & Pd):     # borde izquierdo
+        sp = tira("borde_tierra_recta_pasto_izq")
+        for c in (1, 2):
+            xx = x_ + c - 1
+            if sp[y_ % 16, c, 3] and (c == 1 or Pin[y_, xx]):
+                img[y_, xx, :3] = sp[y_ % 16, c, :3]
+    for y_, x_ in np.argwhere(Pin & ~Pr & Pu & Pd):     # borde derecho
+        sp = tira("borde_tierra_recta_pasto_der")
+        for c in (3, 4):
+            xx = x_ - (4 - c)
+            if sp[y_ % 16, c, 3] and (c == 4 or Pin[y_, xx]):
+                img[y_, xx, :3] = sp[y_ % 16, c, :3]
     # matas altas pegadas al borde de los caminitos (rompen la línea recta)
     PX = SHEET[X][0]; PJ = SHEET[X][1]
     pe = np.argwhere(edge)
@@ -326,7 +357,10 @@ def build(key, cfg):
     bk = np.argwhere(bank & ~Pin & ~Wm)
     for _ in range(7):
         y_, x_ = bk[rr2.randrange(len(bk))]
-        stamp(img, okg, "pasto_extra_hoja", "juncos", int(x_) - 6, int(y_) - 14)
+        stamp(img, okg, "pasto_bordes_hoja", "juncos_%d" % rr2.randint(1, 3), int(x_) - 4, int(y_) - 13)
+    for _ in range(9):
+        y_, x_ = bk[rr2.randrange(len(bk))]
+        stamp(img, okg, "pasto_bordes_hoja", "piedrita_%d" % rr2.randint(1, 4), int(x_) - 3, int(y_) - 3)
     # borde claro de pasto sobre el banco (arriba)
     # agua (se pinta por cuadro)
     Wedge = Wm & ~(np.roll(Wm, 1, 0) & np.roll(Wm, -1, 0) & np.roll(Wm, 1, 1) & np.roll(Wm, -1, 1))
@@ -494,6 +528,33 @@ def build(key, cfg):
     # luz arriba-izquierda: borde claro de la superficie
     topl = T & (~np.roll(T, 1, 0) | ~np.roll(T, 1, 1))
     put(topl, "#e2d870")
+    # flequillo de pasto sobre el cielo (piezas de Code): hojitas hacia afuera en el contorno de arriba, izquierda y derecha
+    blade = np.zeros((lh, lw), bool)
+    sky = ~(T | C | B)
+    for y_, x_ in np.argwhere(T):
+        if y_ < 1 or x_ < 1 or x_ >= lw - 1:
+            continue
+        if sky[y_ - 1, x_]:
+            sp = tira("flequillo_cielo_arriba")
+            for r in range(0, 8):
+                yy = y_ - (7 - r)
+                if yy >= 0 and sp[r, x_ % 16, 3] and (sky[yy, x_] or r == 7):
+                    img[yy, x_, :3] = sp[r, x_ % 16, :3]; img[yy, x_, 3] = 255
+                    if r < 7: blade[yy, x_] = True
+        elif sky[y_, x_ - 1]:
+            sp = tira("flequillo_cielo_izq")
+            for c in range(0, 8):
+                xx = x_ - (7 - c)
+                if xx >= 0 and sp[y_ % 16, c, 3] and (sky[y_, xx] or c == 7):
+                    img[y_, xx, :3] = sp[y_ % 16, c, :3]; img[y_, xx, 3] = 255
+                    if c < 7: blade[y_, xx] = True
+        elif sky[y_, x_ + 1]:
+            sp = tira("flequillo_cielo_der")
+            for c in range(2, 6):
+                xx = x_ + (c - 2) + 0
+                if xx < lw and sp[y_ % 16, c, 3] and (sky[y_, xx] or c == 2):
+                    img[y_, xx, :3] = sp[y_ % 16, c, :3]; img[y_, xx, 3] = 255
+                    if c > 2: blade[y_, xx] = True
     # sombras de casas y árboles se hornean después (ver abajo)
     solid2 = T | C | B
     # contorno exterior
@@ -501,6 +562,7 @@ def build(key, cfg):
     for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
         outline |= np.roll(np.roll(solid2, dy, 0), dx, 1) & ~solid2
     outline[0, :] = False
+    outline &= ~blade
     # la parte de arriba no lleva sombra: el contorno completo es #2e1b14
     return dict(exit_x=exit_x, img=img, T=T, C=C, B=B, P=Pin, Wm=Wm, Win=Win, Wedge=Wedge, outline=outline, yb=yb, bank=bank, cfg=cfg, rnd=rnd, lip=lip)
 
