@@ -29,11 +29,11 @@ def _h():
         paths.append([(d[k], c[k][1] + 2), (d[k], BT)])
     return dict(lw=760, lh=580, isl=(40, 34, 680, 436), p=3.2, under=74, casas=c, pond=(380, 322, 28, 13), rest=(380, 276), paths=paths,
                 n=(22, 20, 9, 12, 75), deco=[dict(k="pozo_balde_arriba", x=470, y=246, rx=11), dict(k="banco_derecha", x=296, y=248, rx=11), dict(k="cartel", x=338, y=246, rx=6),
-                      dict(k="farolito", x=230, y=246, rx=3), dict(k="farolito", x=530, y=246, rx=3), dict(k="puente", x=374, y=402, rx=0),
+                      dict(k="farolito", x=230, y=246, rx=3), dict(k="farolito", x=530, y=246, rx=3), 
                       dict(k="puesto", x=486, y=352, rx=14), dict(k="buzon_bandera_arriba", x=616, y=356, rx=4), dict(k="barril", x=236, y=352, rx=5),
-                      dict(k="jardin:maceta_tulipanes", x=300, y=396, rx=4), dict(k="jardin:maceta_margaritas", x=330, y=396, rx=4),
-                      dict(k="jardin:maceta_lavanda", x=436, y=396, rx=4), dict(k="jardin:maceta_cempasuchil", x=466, y=396, rx=4),
-                      dict(k="jardin:enrejado", x=650, y=350, rx=8), dict(k="cerca_baja_derecha", x=96, y=330, rx=0)], hub=(380, TR), stream=dict(amp=9, per=70))
+                      dict(k="jardin:maceta_tulipanes", x=300, y=384, rx=4), dict(k="jardin:maceta_margaritas", x=330, y=384, rx=4),
+                      dict(k="jardin:maceta_lavanda", x=436, y=384, rx=4), dict(k="jardin:maceta_cempasuchil", x=466, y=384, rx=4),
+                      dict(k="jardin:enrejado", x=630, y=350, rx=8), dict(k="cerca_baja_derecha", x=128, y=334, rx=0)], hub=(380, TR), bridge_y=BT, stream=dict(amp=9, per=70))
 
 
 def _v():
@@ -475,6 +475,36 @@ def pintar_agua(g, frame):
                 c = "#2c9488"
             img[y, x, :3] = rgb(c)
             img[y, x, 3] = 255
+    # puente de tablones que cruza el arroyo por el caminito (cenital, alineado)
+    by = g["cfg"].get("bridge_y")
+    if by is not None:
+        H = 5
+        rows = Wm[by - H:by + H + 1]
+        cols = np.where(rows.any(0))[0]
+        x0, x1 = int(cols.min()) - 9, int(cols.max()) + 9
+        for y in range(by - H, by + H + 1):
+            for x in range(x0, x1 + 1):
+                if y in (by - H, by + H):
+                    c = "#2e1b14"
+                elif y in (by - H + 1, by + H - 1):
+                    c = "#8a4e2a" if y == by + H - 1 else "#b96d32"
+                elif False:
+                    c = "#5a3322"
+                else:
+                    c = "#e0b070" if ((x - x0) // 3 + (y - by) // 3) % 2 == 0 else "#bf8444"
+                    if (x - x0) % 3 == 2:
+                        c = "#8a4e2a"
+                if x in (x0, x1) and abs(y - by) <= H:
+                    c = "#2e1b14"
+                img[y, x, :3] = rgb(c)
+                img[y, x, 3] = 255
+        for px_ in (x0 + 1, x0 + 2, x1 - 2, x1 - 1):
+            for y in (by - H + 1, by + H - 1):
+                img[y, px_, :3] = rgb("#5a3322")
+        # sombra del puente sobre el agua
+        for x in range(x0 + 2, x1 - 1):
+            if Wm[by + H + 1, x]:
+                img[by + H + 1, x, :3] = rgb("#1b5f66")
     # el borde del arroyo
     return img
 
