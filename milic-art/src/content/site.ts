@@ -1,3 +1,6 @@
+import halloweenOc from "../assets/halloween-oc.jpg";
+import minccinoImg from "../assets/minccino.jpg";
+import chibiImg from "../assets/chibi.jpg";
 /**
  * ============================================================
  *  milic_art. TODO el contenido del sitio vive en este archivo.
@@ -173,7 +176,17 @@ export const site = {
     forWhom: "[Marcas, emprendimientos u organizaciones con las que trabajo.]",
     projectsLabel: "Casos de redes y diseño",
     projects: [
-      pendingProject("caso", ["Cliente o cuenta", "Objetivo", "Qué hice", "Resultado"]),
+      {
+        title: "Somos Consultoras",
+        kind: "Web y redes de un círculo de seis consultoras",
+        fields: [
+          { label: "Cliente o cuenta", value: "Somos Consultoras, Mar del Plata · Instagram @somos_consultoras" },
+          { label: "Objetivo", value: "Presentar al círculo y su primer evento: un desayuno de networking en Argentina Climate Week 2026." },
+          { label: "Qué hice", value: "Estrategia de comunicación, branding, redes, campañas y contenido. [Detalle de mi parte en la web]" },
+          { label: "Resultado", value: "[Resultado: asistentes, alcance, consultas]" },
+        ],
+        link: "https://somosconsultoras.com.ar",
+      },
       pendingProject("caso", ["Cliente o cuenta", "Objetivo", "Qué hice", "Resultado"]),
       pendingProject("caso", ["Cliente o cuenta", "Objetivo", "Qué hice", "Resultado"]),
     ] as Project[],
@@ -254,7 +267,7 @@ export const site = {
         medium: "Digital, Krita",
         blurb: "Personaje original de Halloween.",
         description: "Hecho para un concurso de gachapon de Halloween en un servidor de Discord.",
-        image: "",
+        image: halloweenOc,
         variant: "lantern" as const,
       },
       {
@@ -263,8 +276,18 @@ export const site = {
         year: "2026",
         medium: "Digital, Krita",
         blurb: "Fanart de Pokémon.",
-        description: "Fanart de Minccino.",
-        image: "",
+        description: "Fanart de Minccino leyendo en el living. Tengo la versión animada, que pasa de día a noche.",
+        image: minccinoImg,
+        variant: "windowsill" as const,
+      },
+      {
+        id: "chibi",
+        title: "Chibi",
+        year: "[Año]",
+        medium: "Digital, Krita",
+        blurb: "Estilo chibi.",
+        description: "[Para quién o para qué lo hice.]",
+        image: chibiImg,
         variant: "windowsill" as const,
       },
     ],
