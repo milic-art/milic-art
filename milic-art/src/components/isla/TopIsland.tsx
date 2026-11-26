@@ -269,8 +269,8 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     for (const c of clouds) {
       if (!c.far) continue;
       const span = lw + c.spr.w + 40;
-      const x = ((c.x + t * c.sp) % span) - c.spr.w - 10 + px * c.k * 8;
-      put(c.spr, 0, 0, c.spr.w, c.spr.h, x, c.y + py * c.k * 4, st);
+      const x = ((c.x + t * c.sp) % span) - c.spr.w - 10 + px * c.k * 4;
+      put(c.spr, 0, 0, c.spr.w, c.spr.h, x, c.y + py * c.k * 2, st);
     }
     // pajaritos (de día)
     if (nn < 0.7) {
@@ -287,7 +287,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
       }
     }
     // isla (sube y baja suavemente)
-    const bob = still ? 0 : Math.round(2.4 * Math.sin((t / 6) * Math.PI * 2));
+    const bob = still ? 0 : Math.round(1.1 * Math.sin((t / 8) * Math.PI * 2));
     const cxI = ix + iw / 2;
     // sombra de la isla (se achica cuando sube)
     g.globalAlpha = 0.18;
@@ -300,7 +300,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     g.globalAlpha = 1;
 
     g.save();
-    g.translate(Math.round(px * -1.5), bob + Math.round(py * -1));
+    g.translate(0, bob); // la isla no se corre con el parallax: queda alineada con carteles y Clocky
     const fi = still ? 0 : (((Math.floor(t * 4) % sueloS.length) + sueloS.length) % sueloS.length);
     put(sueloS[fi], 0, 0, lw, lh, 0, 0, st);
     for (const o of objects) o.fn(g, st);
@@ -319,7 +319,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     if (nn > 0.3) {
       for (const f of flies) {
         const a = t * f.sp + f.ph;
-        const x = Math.round(f.x + Math.cos(a) * 14 + Math.sin(a * 0.6) * 8 - px * 1.5);
+        const x = Math.round(f.x + Math.cos(a) * 14 + Math.sin(a * 0.6) * 8);
         const y = Math.round(f.y + Math.sin(a * 1.3) * 8 + bob);
         const on = (Math.floor(t * 3 + f.k) % 4) !== 0;
         g.globalAlpha = Math.min(1, (nn - 0.3) * 2);
@@ -333,8 +333,8 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     for (const c of clouds) {
       if (c.far) continue;
       const span = lw + c.spr.w + 40;
-      const x = ((c.x + t * c.sp) % span) - c.spr.w - 10 + px * c.k * 8;
-      put(c.spr, 0, 0, c.spr.w, c.spr.h, x, c.y + py * c.k * 4, st);
+      const x = ((c.x + t * c.sp) % span) - c.spr.w - 10 + px * c.k * 4;
+      put(c.spr, 0, 0, c.spr.w, c.spr.h, x, c.y + py * c.k * 2, st);
     }
   }
 
