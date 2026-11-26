@@ -1,0 +1,107 @@
+{
+ "mancha_mediana_clara_1": {
+  "x": 0,
+  "y": 0,
+  "w": 23,
+  "h": 15,
+  "nota": "20-30 px, luz arriba-izq"
+ },
+ "mancha_mediana_clara_2": {
+  "x": 25,
+  "y": 0,
+  "w": 23,
+  "h": 17,
+  "nota": "20-30 px, luz arriba-izq"
+ },
+ "mancha_mediana_clara_3": {
+  "x": 50,
+  "y": 0,
+  "w": 23,
+  "h": 16,
+  "nota": "20-30 px, luz arriba-izq"
+ },
+ "mancha_mediana_oscura_4": {
+  "x": 75,
+  "y": 0,
+  "w": 25,
+  "h": 16,
+  "nota": "20-30 px, luz arriba-izq"
+ },
+ "mancha_mediana_oscura_5": {
+  "x": 102,
+  "y": 0,
+  "w": 26,
+  "h": 15,
+  "nota": "20-30 px, luz arriba-izq"
+ },
+ "mancha_mediana_oscura_6": {
+  "x": 130,
+  "y": 0,
+  "w": 21,
+  "h": 14,
+  "nota": "20-30 px, luz arriba-izq"
+ },
+ "mancha_mediana_mixta_7": {
+  "x": 153,
+  "y": 0,
+  "w": 25,
+  "h": 14,
+  "nota": "20-30 px, luz arriba-izq"
+ },
+ "mancha_mediana_mixta_8": {
+  "x": 0,
+  "y": 19,
+  "w": 24,
+  "h": 15,
+  "nota": "20-30 px, luz arriba-izq"
+ },
+ "claro_de_luz_1": {
+  "x": 26,
+  "y": 19,
+  "w": 45,
+  "h": 29,
+  "nota": "zona clara en diagonal con destellos"
+ },
+ "claro_de_luz_2": {
+  "x": 73,
+  "y": 19,
+  "w": 56,
+  "h": 30,
+  "nota": "zona clara en diagonal con destellos"
+ },
+ "claro_de_luz_3": {
+  "x": 131,
+  "y": 19,
+  "w": 60,
+  "h": 30,
+  "nota": "zona clara en diagonal con destellos"
+ },
+ "claro_de_luz_4": {
+  "x": 0,
+  "y": 51,
+  "w": 45,
+  "h": 22,
+  "nota": "zona clara en diagonal con destellos"
+ },
+ "anillo_base_arbol_1": {
+  "x": 47,
+  "y": 51,
+  "w": 25,
+  "h": 13,
+  "nota": "matas alrededor del pie de un arbol; el centro queda libre para el tronco"
+ },
+ "anillo_base_arbol_2": {
+  "x": 74,
+  "y": 51,
+  "w": 31,
+  "h": 15,
+  "nota": "matas alrededor del pie de un arbol; el centro queda libre para el tronco"
+ },
+ "anillo_base_arbol_3": {
+  "x": 107,
+  "y": 51,
+  "w": 21,
+  "h": 11,
+  "nota": "matas alrededor del pie de un arbol; el centro queda libre para el tronco"
+ }
+}

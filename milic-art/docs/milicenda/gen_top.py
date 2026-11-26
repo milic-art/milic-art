@@ -92,6 +92,9 @@ def ellipse(m, cx, cy, rx, ry, val=True):
     m[((xs + .5 - cx) / rx) ** 2 + ((ys + .5 - cy) / ry) ** 2 <= 1] = val
 
 
+PASTO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "public", "milicenda-assets", "code")
+
+
 def build(key, cfg):
     lw, lh = cfg["lw"], cfg["lh"]
     ix, iy, iw, ih = cfg["isl"]
@@ -170,35 +173,42 @@ def build(key, cfg):
         v = (grid[y0, x0] * (1 - fx) + grid[y0, x0 + 1] * fx) * (1 - fy) + (grid[y0 + 1, x0] * (1 - fx) + grid[y0 + 1, x0 + 1] * fx) * fy
         return v > thr
 
-    light = vnoise(41, 46, 0.64, 4) & T
-    dark = vnoise(42, 38, 0.75, 4) & T
-    pale = vnoise(43, 24, 0.76, 4) & light & T
-    put(light, "#bcc046")
-    put(dark & ~light, "#587a35")
-    put(pale, "#e2d870")
-    # matitas: grupos de 2 a 4 hojitas en V, más densas en las zonas oscuras
-    for _ in range(int(lw * lh / 260)):
-        y = rnd.randrange(iy + 4, iy + ih - 8)
-        x = rnd.randrange(ix + 4, ix + iw - 8)
-        if not (T[y, x] and T[y + 2, x + 6] and T[y, x + 6]):
-            continue
-        bg_dark = dark[y, x] and not light[y, x]
-        col = "#35563a" if bg_dark and rnd.random() < 0.6 else ("#587a35" if not bg_dark else "#8aa23a")
-        hi = "#e2d870" if (light[y, x] and rnd.random() < 0.5) else ("#bcc046" if bg_dark else "#8aa23a")
-        n = rnd.choice((1, 2, 2, 3))
-        for k in range(n):
-            ox_ = k * 3
-            for dx, dy in ((0, 0), (2, 0), (1, 1)):
-                img[y + dy, x + ox_ + dx, :3] = rgb(col)
-            if rnd.random() < 0.5:
-                img[y - 1, x + ox_ + 1, :3] = rgb(hi)
-    # florcitas blancas sueltas sobre el pasto
-    for _ in range(int(lw * lh / 1500)):
-        y = rnd.randrange(iy + 4, iy + ih - 8)
-        x = rnd.randrange(ix + 4, ix + iw - 8)
-        if T[y, x] and T[y + 1, x + 1]:
-            img[y, x, :3] = rgb("#fffdf7")
-            img[y, x + 1, :3] = rgb("#f9e07a") if rnd.random() < 0.5 else rgb("#fffdf7")
+    # piso: texturas A/B/C de Code (256x256, encajan en cualquier orden), enmascaradas a la isla
+    texs = [np.array(Image.open(os.path.join(PASTO, "pasto_textura_%s.png" % k)).convert("RGB")) for k in "ABC"]
+    rt = random.Random(5 + ord(key))
+    for yy0 in range(0, lh, 256):
+        for xx0 in range(0, lw, 256):
+            t = rt.choice(texs)
+            hh, ww = min(256, lh - yy0), min(256, lw - xx0)
+            blk = img[yy0:yy0 + hh, xx0:xx0 + ww]
+            m = T[yy0:yy0 + hh, xx0:xx0 + ww]
+            blk[m, :3] = t[:hh, :ww][m]
+            blk[m, 3] = 255
+    dark = np.zeros((lh, lw), bool)
+    light = dark
+    SHEET = {n: (np.array(Image.open(os.path.join(PASTO, n + ".png")).convert("RGBA")), json.load(open(os.path.join(PASTO, n + ".json")))) for n in ("pasto_medianas_hoja", "pasto_extra_hoja")}
+    def decal(sheet, name, x, y):
+        im_, js = SHEET[sheet]
+        d = js[name]
+        sp = im_[d["y"]:d["y"] + d["h"], d["x"]:d["x"] + d["w"]]
+        if not (0 <= y and y + d["h"] < lh and 0 <= x and x + d["w"] < lw):
+            return
+        if not (T[y, x] and T[y, x + d["w"] - 1] and T[y + d["h"] - 1, x] and T[y + d["h"] - 1, x + d["w"] - 1]):
+            return
+        m = sp[:, :, 3] > 0
+        img[y:y + d["h"], x:x + d["w"]][m, :3] = sp[m, :3]
+    def sprinkle(sheet, names, n, dist=0):
+        for _ in range(n):
+            nm = rnd.choice(names)
+            x = rnd.randrange(ix + 3, ix + iw - 3)
+            y = rnd.randrange(iy + 3, iy + ih - 3)
+            decal(sheet, nm, x, y)
+    M = "pasto_medianas_hoja"; X = "pasto_extra_hoja"
+    sprinkle(M, [f"mancha_mediana_clara_{i}" for i in (1, 2, 3)] + [f"mancha_mediana_oscura_{i}" for i in (4, 5, 6)] + ["mancha_mediana_mixta_7", "mancha_mediana_mixta_8"], int(lw * lh / 7000))
+    sprinkle(M, [f"claro_de_luz_{i}" for i in (1, 2, 3, 4)], int(lw * lh / 70000))
+    sprinkle(X, [f"mata_alta_{i}" for i in range(1, 7)], int(lw * lh / 12000))
+    sprinkle(X, [f"mechon_{i}" for i in range(1, 7)], int(lw * lh / 4000))
+    sprinkle(X, ["flor_azul_1", "flor_azul_2", "flor_violeta_1", "flor_violeta_2", "trebol_1", "trebol_2", "hojas_caidas_1", "hojas_caidas_2", "hojas_caidas_3"], int(lw * lh / 5000))
 
     # ---- camino
     P = np.zeros((lh, lw), bool)
@@ -220,6 +230,18 @@ def build(key, cfg):
     put(P & ((xs // 5 + ys // 4) % 5 == 0) & ~edge, "#f2bd6e")
     put(P & ((xs * 3 + ys * 5) % 29 == 0) & ~edge, "#bf8444")
     put(edge, "#bf8444")
+    # matas altas pegadas al borde de los caminitos (rompen la línea recta)
+    PX = SHEET[X][0]; PJ = SHEET[X][1]
+    pe = np.argwhere(edge)
+    for _ in range(int(len(pe) / 70)):
+        yy_, xx_ = pe[rnd.randrange(len(pe))]
+        nm = "mata_alta_%d" % rnd.randint(1, 6)
+        d_ = PJ[nm]
+        ox = xx_ + rnd.choice((-d_["w"] - 1, 2)); oy = yy_ - d_["h"] + rnd.randint(0, 3)
+        if 0 <= ox and ox + d_["w"] < lw and 0 <= oy and oy + d_["h"] < lh and T[oy:oy + d_["h"], ox:ox + d_["w"]].all() and not P[oy:oy + d_["h"], ox:ox + d_["w"]].any():
+            sp = PX[d_["y"]:d_["y"] + d_["h"], d_["x"]:d_["x"] + d_["w"]]
+            mm = sp[:, :, 3] > 0
+            img[oy:oy + d_["h"], ox:ox + d_["w"]][mm, :3] = sp[mm, :3]
     # piedritas
     for _ in range(30):
         y, x = rnd.randrange(lh), rnd.randrange(lw)
