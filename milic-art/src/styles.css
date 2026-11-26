@@ -551,3 +551,8 @@
   opacity: 0.35;
   pointer-events: none;
 }
+
+/* Isla pixel art: nombres de lugares */
+.place-label { transition: opacity 180ms ease, background-color 200ms ease; }
+.map-stage[data-far="true"] .place-label[data-on="false"] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .place-label { transition: none; } }

@@ -4,6 +4,7 @@ import { GuideCompanion, ListView, MobileDock, SiteHeader } from "./components/S
 import { MapStage } from "./components/MapStage";
 import { PlacePanel } from "./components/PlacePanel";
 import { useClocky } from "./components/useClocky";
+import { isoLayout } from "./components/isla/config";
 
 const structuredData = JSON.stringify({
   "@context": "https://schema.org",
@@ -43,7 +44,11 @@ export default function App() {
   const walkTimer = useRef<number | null>(null);
 
   const mapPlaces = useMemo(
-    () => site.map.places.map((place) => ({ ...place, x: portrait ? place.px : place.x, y: portrait ? place.py : place.y })),
+    () => {
+      // Las casitas viven sobre la isla: su lugar sale de la grilla isométrica (src/components/isla/config.ts).
+      const layout = isoLayout(portrait);
+      return site.map.places.map((place) => ({ ...place, x: layout.places[place.id].x, y: layout.places[place.id].y }));
+    },
     [portrait],
   );
 

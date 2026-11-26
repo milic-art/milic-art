@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { site, type PlaceId } from "../content";
 import { LandmarkArt } from "./WorldArt";
-import { PixelBackdrop } from "./PixelBackdrop";
+import { IsoIsland, type IslaControl, type IslaMode } from "./isla/IsoIsland";
+import { isoLayout } from "./isla/config";
 import { ClockyArt, type ClockyState } from "./ClockyArt";
-
-const WORLD_W = 1600;
-const WORLD_H = 1000;
 
 type View = { x: number; y: number; s: number };
 
@@ -27,6 +25,17 @@ type MapStageProps = {
  * pinch, and the round zoom pegs for people who would rather not drag.
  */
 export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, onPokeClocky }: MapStageProps) {
+  const layout = isoLayout(portrait);
+  const WORLD_W = layout.worldW;
+  const WORLD_H = layout.worldH;
+  const [mode, setMode] = useState<IslaMode>("auto");
+  const [nightShown, setNightShown] = useState(() => {
+    const h = new Date().getHours();
+    return h >= 19 || h < 6;
+  });
+  const [music, setMusic] = useState(false);
+  const isla = useRef<IslaControl | null>(null);
+  const pointerPar = useRef({ x: 0, y: 0 });
   const stageRef = useRef<HTMLDivElement | null>(null);
   const layerRef = useRef<HTMLDivElement | null>(null);
   const labelRefs = useRef<Array<HTMLSpanElement | null>>([]);
@@ -49,6 +58,8 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     const { x, y, s } = view.current;
     el.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${s})`;
     el.style.opacity = "1";
+    // Alejado, los nombres se esconden (tapan las casitas) salvo el del lugar tocado.
+    stageRef.current?.setAttribute("data-far", s < 0.62 ? "true" : "false");
     // Place names stay readable at every zoom level.
     const counter = Math.min(2.6, Math.max(0.42, 1 / s));
     for (const label of labelRefs.current) {
@@ -57,7 +68,17 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     if (zoomLabelRef.current) {
       zoomLabelRef.current.textContent = `${Math.round(s * 100)}%`;
     }
-  }, []);
+    // Parallax: hacia dónde se está mirando (centro de pantalla respecto del centro del mundo).
+    const stage = stageRef.current;
+    if (stage && isla.current) {
+      const cxw = (stage.clientWidth / 2 - x) / s;
+      const cyw = (stage.clientHeight / 2 - y) / s;
+      isla.current.setParallax(
+        (cxw - WORLD_W / 2) / (WORLD_W / 2) * 2 + pointerPar.current.x * 0.5,
+        (cyw - WORLD_H / 2) / (WORLD_H / 2) * 2 + pointerPar.current.y * 0.5,
+      );
+    }
+  }, [WORLD_W, WORLD_H]);
 
   const schedule = useCallback(() => {
     if (frame.current !== null) return;
@@ -78,7 +99,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     next.x = worldW <= w ? (w - worldW) / 2 : Math.min(0, Math.max(w - worldW, next.x));
     next.y = worldH <= h ? (h - worldH) / 2 : Math.min(0, Math.max(h - worldH, next.y));
     return next;
-  }, []);
+  }, [WORLD_W, WORLD_H]);
 
   const setView = useCallback(
     (next: View) => {
@@ -112,7 +133,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     const fitAll = Math.min(w / WORLD_W, h / WORLD_H);
     const cover = Math.max(w / WORLD_W, h / WORLD_H);
     return { fitAll, cover };
-  }, []);
+  }, [WORLD_W, WORLD_H]);
 
   /** Frames the sheet: full bleed on wide screens, a paper map with margins on tall ones. */
   const welcomeView = useCallback(
@@ -122,16 +143,17 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       const w = stage.clientWidth;
       const h = stage.clientHeight;
       if (w < 2 || h < 2) return;
-      const { fitAll, cover } = limits();
-      void fitAll;
+      const { cover } = limits();
       minScale.current = cover;
-      maxScale.current = Math.max(cover * 2, 1.2);
-      const s = Math.min(maxScale.current, Math.max(minScale.current, cover * 1.02));
+      maxScale.current = Math.max(cover * 2.2, 1.4);
+      // La isla entera entra en pantalla (con aire arriba para el menú).
+      const fit = Math.min((w * 0.98) / (layout.islaW * layout.z), (h * 0.86) / (layout.islaH * layout.z));
+      const s = Math.min(maxScale.current, Math.max(minScale.current, fit));
 
       const next = clamp({
         s,
-        x: w / 2 - (WORLD_W * s) / 2,
-        y: h / 2 - (WORLD_H * s) / 2,
+        x: w / 2 - layout.focus.x * s,
+        y: h / 2 + Math.min(34, h * 0.04) - layout.focus.y * s,
       });
 
       if (animate && layerRef.current) {
@@ -144,7 +166,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       interacted.current = false;
       paint();
     },
-    [clamp, limits, paint],
+    [clamp, limits, paint, layout],
   );
 
   useEffect(() => {
@@ -226,6 +248,11 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
   };
 
   const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse") {
+      const r = event.currentTarget.getBoundingClientRect();
+      pointerPar.current = { x: ((event.clientX - r.left) / r.width - 0.5) * 2, y: ((event.clientY - r.top) / r.height - 0.5) * 2 };
+      schedule();
+    }
     if (!pointers.current.has(event.pointerId)) return;
     const rect = event.currentTarget.getBoundingClientRect();
     const px = event.clientX - rect.left;
@@ -298,8 +325,15 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
         className="absolute left-0 top-0 origin-top-left"
         style={{ width: WORLD_W, height: WORLD_H, willChange: "transform", opacity: 0 }}
       >
-        <PixelBackdrop places={places} portrait={portrait} />
-        <div aria-hidden="true" className="map-grain absolute inset-0" />
+        <IsoIsland
+          portrait={portrait}
+          mode={mode}
+          hoverId={hoveredId ?? activeId}
+          onReady={(api) => {
+            isla.current = api;
+            schedule();
+          }}
+        />
 
         {places.map((place, index) => {
           const isActive = activeId === place.id;
@@ -311,6 +345,9 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
               onClick={() => {
                 if (dragMoved.current) return;
                 onOpen(place.id);
+              }}
+              onPointerDown={(event) => {
+                if (event.pointerType !== "mouse") setHoveredId(place.id);
               }}
               onPointerEnter={(event) => {
                 if (event.pointerType !== "mouse") return;
@@ -332,48 +369,18 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
               }}
               aria-haspopup="dialog"
               aria-label={`${place.name}. ${place.blurb}.`}
-              className="group absolute z-10 block w-[172px] cursor-pointer text-center"
-              style={{ left: `${place.x}%`, top: `${place.y}%`, transform: "translate(-50%, -92%)" }}
+              className="group absolute z-10 block h-[186px] w-[186px] cursor-pointer text-center focus-visible:outline-none"
+              style={{ left: `${place.x}%`, top: `${place.y}%`, transform: "translate(-50%, -100%)" }}
             >
-              <span
-                aria-hidden="true"
-                className={`pointer-events-none absolute left-1/2 top-[46%] z-0 h-[190px] w-[190px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(232,135,74,0.55),rgba(232,135,74,0)_68%)] transition-opacity duration-200 ${
-                  isActive || isHovered ? "opacity-100" : "opacity-0"
-                }`}
-              />
-              <span
-                className={`relative z-10 block transition-transform duration-200 ${
-                  isActive ? "scale-[1.07]" : isHovered ? "scale-[1.05]" : "scale-100"
-                }`}
-              >
-                {place.image ? (
-                  <img
-                    src={place.image}
-                    alt=""
-                    draggable={false}
-                    className={`sticker h-[156px] w-full object-contain transition-[filter] duration-200 ${
-                      isActive ? "sticker-glow" : "group-hover:sticker-glow group-focus-visible:sticker-glow"
-                    }`}
-                  />
-                ) : (
-                  <span
-                    style={{ animationDelay: `${index * 0.9}s` }}
-                    className={`landmark-idle sticker block h-[156px] w-full transition-[filter] duration-200 ${
-                      isActive ? "sticker-glow" : "group-hover:sticker-glow group-focus-visible:sticker-glow"
-                    }`}
-                  >
-                    <LandmarkArt id={place.id} />
-                  </span>
-                )}
-              </span>
               <span
                 ref={(node) => {
                   labelRefs.current[index] = node;
                 }}
                 style={{ transformOrigin: "top center", willChange: "transform" }}
-                className={`relative z-10 mt-1 inline-flex items-center gap-1 rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
-                  isActive ? "bg-orange-deep text-chalk" : "bg-chalk text-ink"
-                }`}
+                data-on={isActive || isHovered}
+                className={`place-label absolute left-1/2 top-[calc(100%-2px)] z-10 inline-flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
+                  isActive || isHovered ? "bg-orange-deep text-chalk" : "bg-chalk text-ink"
+                } group-focus-visible:ring-4 group-focus-visible:ring-orange/60`}
               >
                 {place.name}
               </span>
@@ -451,6 +458,43 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
               strokeLinejoin="round"
               fill="none"
             />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const next: IslaMode = nightShown ? "day" : "night";
+            setMode(next);
+            setNightShown(next === "night");
+          }}
+          className="zoom-peg flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink bg-chalk text-ink shadow-[0_3px_0_rgba(75,58,42,0.8)]"
+          aria-label={nightShown ? "Cambiar a día" : "Cambiar a noche"}
+          aria-pressed={nightShown}
+        >
+          {nightShown ? (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.2" fill="currentColor" />
+              <path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M5.6 18.4l1.7-1.7M16.7 7.3l1.7-1.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+              <path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z" fill="currentColor" />
+            </svg>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => setMusic((m) => !m)}
+          className="zoom-peg flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink bg-paper text-ink shadow-[0_3px_0_rgba(75,58,42,0.8)]"
+          aria-label={music ? "Música: encendida (todavía sin audio)" : "Música: apagada"}
+          aria-pressed={music}
+          title="Música lofi: próximamente"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+            <path d="M9 18V6l10-2v12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <circle cx="6.5" cy="18" r="2.6" fill="currentColor" />
+            <circle cx="16.5" cy="16" r="2.6" fill="currentColor" />
+            {!music && <path d="M3 21 21 3" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />}
           </svg>
         </button>
         <span
