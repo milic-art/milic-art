@@ -81,7 +81,7 @@ export const site = {
     role: "periodista investigadora, diseñadora, dibujante y programadora",
     mapName: "Milicenda",
     mapNote: "El mapa de todo lo que hago",
-    footerNote: "Todas las obras pertenecen a milic_art. Por favor, no las repostees sin dar crédito.",
+    footerNote: "Los dibujos, diseños y textos propios pertenecen a milic_art. Los newsletters pertenecen a OLA Productiva. Por favor, no los repostees sin dar crédito.",
     builtNote: "Dibujado y armado de a poquito.",
   },
 
@@ -211,6 +211,7 @@ export const site = {
           { label: "Cliente o cuenta", value: "Somos Consultoras, Mar del Plata · Instagram @somos_consultoras" },
           { label: "Objetivo", value: "Presentar al círculo y su primer evento: un desayuno de networking en Argentina Climate Week 2026." },
           { label: "Qué hice", value: "Estrategia de comunicación, branding, redes, campañas y contenido. [Detalle de mi parte en la web]" },
+          { label: "Animación para stories", value: "[Archivo de la animación del logo, pendiente]" },
           { label: "Resultado", value: "[Resultado: asistentes, alcance, consultas]" },
         ],
         link: "https://somosconsultoras.com.ar",
@@ -429,7 +430,7 @@ export const site = {
     heading: "Contacto",
     kicker: "El buzón",
     intro:
-      "Escribime por encargos, colaboraciones o para saludar. Hablo español e inglés. Mi horario es el de Argentina.",
+      "Escribime por encargos, colaboraciones o para saludar. Hablo español e inglés. Mi horario es el de Argentina. Cobro en pesos por MercadoPago o Cuenta DNI.",
     pickLabel: "¿Qué necesitás?",
     pickHint: "Elegí una opción. Armo un mensaje que podés copiar y enviarme por Discord.",
     messageLabel: "Tu mensaje",
