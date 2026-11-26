@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { site, type PlaceId } from "../content";
-import { LandmarkArt, WorldBackdrop } from "./WorldArt";
+import { LandmarkArt } from "./WorldArt";
+import { PixelBackdrop } from "./PixelBackdrop";
 import { ClockyArt, type ClockyState } from "./ClockyArt";
 
 const WORLD_W = 1600;
@@ -297,7 +298,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
         className="absolute left-0 top-0 origin-top-left"
         style={{ width: WORLD_W, height: WORLD_H, willChange: "transform", opacity: 0 }}
       >
-        <WorldBackdrop places={places} portrait={portrait} />
+        <PixelBackdrop places={places} portrait={portrait} />
         <div aria-hidden="true" className="map-grain absolute inset-0" />
 
         {places.map((place, index) => {
