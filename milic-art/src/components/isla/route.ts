@@ -15,7 +15,7 @@ export function walkMs(len: number) {
 
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
 
-function segmentsOf(portrait: boolean): Seg[] {
+export function segmentsOf(portrait: boolean): Seg[] {
   const paths = (TOP[portrait ? "v" : "h"] as any).paths as number[][][];
   const out: Seg[] = [];
   for (const pth of paths) for (let i = 0; i < pth.length - 1; i++) out.push({ a: { x: pth[i][0], y: pth[i][1] }, b: { x: pth[i + 1][0], y: pth[i + 1][1] } });
@@ -23,7 +23,7 @@ function segmentsOf(portrait: boolean): Seg[] {
 }
 
 /** Punto más cercano de la red de caminitos. */
-function snap(segs: Seg[], p: Pt): Pt {
+export function snap(segs: Seg[], p: Pt): Pt {
   let best = segs[0].a, bd = Infinity;
   for (const { a, b } of segs) {
     const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy || 1;
@@ -38,7 +38,7 @@ function snap(segs: Seg[], p: Pt): Pt {
 const key = (p: Pt) => `${Math.round(p.x * 2)}_${Math.round(p.y * 2)}`;
 
 /** Camino más corto por los caminitos (segmentos horizontales y verticales que se cruzan). */
-function graphRoute(segs: Seg[], from: Pt, to: Pt): Pt[] {
+export function graphRoute(segs: Seg[], from: Pt, to: Pt): Pt[] {
   // puntos de corte por segmento: extremos, cruces con otros segmentos, y los puntos de partida/llegada
   const nodes = new Map<string, Pt>();
   const edges = new Map<string, Map<string, number>>();

@@ -6,6 +6,7 @@ import { IsoIsland, type IslaControl, type IslaMode } from "./isla/IsoIsland";
 import { TopIsland } from "./isla/TopIsland";
 import { VISTA, islaLayout, TOP } from "./isla/config";
 import { doorOf, pointAt, routeTo, walkMs, type Pt } from "./isla/route";
+import { installMil } from "./isla/mil";
 import { ClockyArt, type ClockyState } from "./ClockyArt";
 
 type View = { x: number; y: number; s: number };
@@ -49,6 +50,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
     if (lofi.current.isOn()) { lofi.current.stop(); setMusic(false); } else { lofi.current.start(); setMusic(true); }
   };
   useEffect(() => () => lofi.current?.stop(), []);
+  useEffect(() => { if (VISTA === "cenital") installMil(); }, []);
   const isla = useRef<IslaControl | null>(null);
   const pointerPar = useRef({ x: 0, y: 0 });
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -201,7 +203,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       maxScale.current = Math.max(cover * 2.2, 1.4);
       // La isla entera entra en pantalla (con aire arriba para el menú).
       const fit = Math.min((w * (portrait ? (VISTA === "cenital" ? 0.97 : 1.2) : 0.94)) / (layout.islaW * layout.z), (h * 0.74) / (layout.islaH * layout.z));
-      const s = VISTA === "cenital" ? Math.min(maxScale.current, Math.max(minScale.current, portrait ? 0.5 : 0.7)) : Math.min(maxScale.current, Math.max(minScale.current, fit));
+      const s = VISTA === "cenital" ? Math.min(maxScale.current, Math.max(minScale.current, portrait ? 0.65 : Math.min(1.6, Math.max(0.85, w / 1250)))) : Math.min(maxScale.current, Math.max(minScale.current, fit));
 
       const next = clamp({
         s,

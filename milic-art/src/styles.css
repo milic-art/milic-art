@@ -557,3 +557,8 @@
 .place-label { transition: opacity 180ms ease, background-color 200ms ease; }
 .map-stage[data-far="true"] .place-label[data-on="false"] { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .place-label { transition: none; } }
+
+/* v34: halo claro alrededor de Clocky para que se lea sobre el bosque */
+.clocky-walker {
+  filter: drop-shadow(0 0 2px rgba(255, 250, 225, 0.95)) drop-shadow(0 0 5px rgba(255, 250, 225, 0.55)) drop-shadow(0 4px 0 rgba(75, 58, 42, 0.18));
+}

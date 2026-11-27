@@ -1,15 +1,17 @@
 import { useEffect, useRef } from "react";
 import type { PlaceId } from "../../content";
 import { ASSETS, CASITAS_TOP, TOP, topLayout } from "./config";
-import atNat from "./atlas/naturaleza.json";
-import atDeco from "./atlas/deco.json";
-import atJar from "./atlas/jardin.json";
-import atFlor from "./atlas/flores.json";
+import atNat from "./atlas/naturaleza_hoja_v2_mix.json";
+import atDeco from "./atlas/deco_hoja_v2_mix.json";
+import atJar from "./atlas/jardin_hoja_mix.json";
+import atFlor from "./atlas/flores_hoja_mix.json";
 import atGira from "./atlas/girasoles.json";
-import atMece from "./atlas/mecen.json";
-import atBich from "./atlas/bichitos.json";
+import atMece from "./atlas/mecen_hoja_mix.json";
+import atBich from "./atlas/bichitos_hoja_mix.json";
 import atPuesto from "./atlas/puesto.json";
 import atLuces from "./atlas/luces.json";
+import atBosque from "./atlas/bosque_arboles.json";
+import atCasEx from "./atlas/casitas_extras.json";
 
 type Meta = { x: number; y: number; w: number; h: number; frames?: { x: number; y: number }[]; ms?: number };
 type Atlas = { spr: Spr; meta: Record<string, Meta> };
@@ -85,9 +87,10 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const imgs = await Promise.all(names.map(loadImage));
   const A: Record<string, HTMLImageElement | null> = {};
   Object.keys(ASSETS).forEach((k, i) => (A[k] = imgs[i]));
-  const [aNat, aDeco, aJar, aFlor, aGira, aMece, aBich, aPuesto, aLuz] = await Promise.all([
-    atlas("naturaleza_hoja_v2", atNat), atlas("deco_hoja_v2", atDeco), atlas("jardin_hoja", atJar), atlas("flores_hoja", atFlor),
-    atlas("girasoles_hoja", atGira), atlas("mecen_hoja", atMece), atlas("bichitos_hoja", atBich), atlas("puesto_papeleria_v2", atPuesto), atlas("pasto_luces_hoja", atLuces),
+  const [aNat, aDeco, aJar, aFlor, aGira, aMece, aBich, aPuesto, aLuz, aBq, aCasEx] = await Promise.all([
+    atlas("naturaleza_hoja_v2_mix", atNat), atlas("deco_hoja_v2_mix", atDeco), atlas("jardin_hoja_mix", atJar), atlas("flores_hoja_mix", atFlor),
+    atlas("girasoles_hoja", atGira), atlas("mecen_hoja_mix", atMece), atlas("bichitos_hoja_mix", atBich), atlas("puesto_papeleria_v2", atPuesto), atlas("pasto_luces_hoja", atLuces),
+    atlas("bosque_arboles_hoja", atBosque), atlas("casitas_extras_hoja", atCasEx),
   ]);
   const treeVar = (at: Atlas): Atlas[] => [at, shiftAtlas(at, -1), shiftAtlas(at, 1)];
   const natV = treeVar(aNat), meceV = treeVar(aMece);
@@ -170,6 +173,25 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     return null;
   };
   for (const p of D.props as { k: string; x: number; y: number }[]) {
+    if (p.k.startsWith("bq_")) {
+      // árbol grande del bosque: sombra (y=-2, bajo todo), helecho al pie, tronco + copa (el sauce mece la copa)
+      const q = "arbol_" + p.k.slice(3);
+      const c = aBq.meta[`${q}_copa`], t = aBq.meta[`${q}_tronco`], h = aBq.meta[`${q}_sombra`], mm = aBq.meta[`${q}_copa_mece`];
+      if (!c || !t) continue;
+      const X = Math.round(p.x - 32), Y0 = Math.round(p.y - 78), ph = Math.abs(Math.round(p.x * 3 + p.y)) % 8;
+      if (h) objects.push({ x: p.x, y: -2, fn: (_g, st) => { const ox = (h as Meta & { ox?: number }).ox ?? 0, oy = (h as Meta & { oy?: number }).oy ?? 0; put(aBq.spr, h.x, h.y, h.w, h.h, X + ox, Y0 + oy, st); } });
+      if (ph % 2 === 0) {
+        const hf = aBq.meta[`helecho_${1 + (ph % 3)}`];
+        const fx = Math.round(p.x + (ph % 4 ? 13 : -13)), fy = Math.round(p.y + 2);
+        if (hf) objects.push({ x: fx, y: fy, fn: (_g, st) => put(aBq.spr, hf.x, hf.y, hf.w, hf.h, fx - hf.w / 2, fy - hf.h, st) });
+      }
+      objects.push({ x: p.x, y: p.y, fn: (_g, st) => {
+        const fr = mm && mm.frames && !still ? mm.frames[(Math.floor((st.t * 1000) / (mm.ms || 220)) + ph) % mm.frames.length] : c;
+        put(aBq.spr, t.x, t.y, t.w, t.h, X, Y0, st);
+        put(aBq.spr, fr.x, fr.y, c.w, c.h, X, Y0, st);
+      } });
+      continue;
+    }
     const f = findAt(p.k);
     if (!f) continue;
     const ph = rnd() * 8;
@@ -214,6 +236,8 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   for (const h of casas) {
     const [bx, by] = h.pos;
     const x0 = bx - 32, y0 = by - h.c.base;
+    const shM = aCasEx.meta[`sombra_${({ periodismo: "redaccion", diseno: "estudio", dibujo: "taller", programacion: "laboratorio", casita: "casita" } as Record<string, string>)[h.id] ?? ""}`] as (Meta & { ox: number; oy: number }) | undefined;
+    if (shM) objects.push({ x: bx, y: -2, fn: (_g, st) => put(aCasEx.spr, shM.x, shM.y, shM.w, shM.h, x0 + shM.ox, y0 + shM.oy, st) });
     objects.push({ x: bx, y: by, fn: (gg, st) => {
       const fr = Math.floor((st.t * 1000) / h.c.ms) % h.c.frames;
       const hov = st.hover === h.id;
@@ -346,10 +370,10 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
       }
     }
     // isla (sube y baja suavemente)
-    const bob = still ? 0 : Math.round(1.1 * Math.sin((t / 8) * Math.PI * 2));
+    const bob = 0; // v34: el terreno no se mece
     const cxI = ix + iw / 2;
     // sombra de la isla (se achica cuando sube)
-    g.globalAlpha = 0.18;
+    g.globalAlpha = 0; // v34: sin sombra de isla
     g.fillStyle = "#1b5f66";
     const shW = iw * 0.55 - bob * 3, shY = Math.min(lh - 8, iy + ih + 78);
     for (let r = -5; r <= 5; r++) {
@@ -407,7 +431,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     }
     // nubes de adelante
     for (const c of clouds) {
-      if (c.far) continue;
+      if (c.far || true) continue;
       const span = lw + c.spr.w + 40;
       const x = ((c.x + t * c.sp) % span) - c.spr.w - 10 + px * c.k * 4;
       put(c.spr, 0, 0, c.spr.w, c.spr.h, x, c.y + py * c.k * 2, st);

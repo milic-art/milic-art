@@ -96,7 +96,12 @@ export function toSpr(img: HTMLImageElement | null, nightImg?: HTMLImageElement 
     n.width = nightImg.width;
     n.height = nightImg.height;
     n.getContext("2d")!.drawImage(nightImg, 0, 0);
-  } else n = aNoche(c);
+  } else {
+    n = aNoche(c);
+    // noche más clara: 30 % del sprite de día mezclado encima
+    const ng = n.getContext("2d")!;
+    ng.globalAlpha = 0.3; ng.drawImage(c, 0, 0); ng.globalAlpha = 1;
+  }
   return { day: c, night: n, w: c.width, h: c.height };
 }
 
