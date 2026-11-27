@@ -204,6 +204,7 @@ export default function App() {
         clockyState={clocky.state}
         walking={walking}
         visited={visited}
+        found={secrets}
         onPokeClocky={pokeClocky}
       />
 

@@ -351,17 +351,18 @@
     var p = isP();
     if (cacheKey === p) return cache;
     var lay = L(), out = [];
+    var S = lay.secretos || {};
     (lay.props || []).forEach(function (o) {
       var k = o.k;
       if (k === "arbol_grande_puerta") out.push({ kind: "puerta", x: o.x, y: o.y, hw: 20, h: 60 });
       else if (k.indexOf("bq_") === 0) {
         var ch = /_chico$/.test(k), sp = k.split("_")[1];
-        if (sp !== "seco") out.push({ kind: sp === "frutal" ? "frutal" : "arbol", x: o.x, y: o.y, hw: ch ? 12 : 18, h: ch ? 46 : 66, big: !ch });
-      } else if (/^(tronco|tocon)/.test(k)) out.push({ kind: "tronco", x: o.x, y: o.y, hw: 12, h: 14 });
-      else if (/flores|maceta/.test(k)) out.push({ kind: "flor", x: o.x, y: o.y, hw: 9, h: 16 });
+        var sec = S.frutal && S.frutal[0] === k && S.frutal[1] === o.x && S.frutal[2] === o.y;
+        if (sec) out.push({ kind: "frutal", x: o.x, y: o.y, hw: 22, h: 70, big: true });
+        else if (sp !== "seco") out.push({ kind: "arbol", x: o.x, y: o.y, hw: ch ? 12 : 18, h: ch ? 46 : 66, big: !ch });
+      } else if (S.tronco && S.tronco[0] === k && S.tronco[1] === o.x && S.tronco[2] === o.y) out.push({ kind: "tronco", x: o.x, y: o.y, hw: 15, h: 18 });
     });
-    (lay.flores || []).forEach(function (o) { out.push({ kind: "flor", x: o.x, y: o.y, hw: 7, h: 13 }); });
-    (lay.girasoles || []).forEach(function (o) { var g = /grande/.test(o.g || ""); out.push({ kind: "flor", sun: true, x: o.x, y: o.y, hw: 7, h: g ? 30 : 20 }); });
+    if (S.flor) out.push({ kind: "flor", sun: true, x: S.flor[1], y: S.flor[2], hw: 10, h: 32 });
     cacheKey = p;
     cache = out;
     return out;

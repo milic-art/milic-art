@@ -61,6 +61,7 @@ type Props = {
   mode: IslaMode;
   hoverId: PlaceId | null;
   visited?: PlaceId[];
+  found?: string[];
   onReady?: (api: IslaControl) => void;
 };
 
@@ -70,6 +71,7 @@ type Engine = {
   setMode: (m: IslaMode) => void;
   setHover: (id: PlaceId | null) => void;
   setVisited: (ids: PlaceId[]) => void;
+  setFound: (ids: string[]) => void;
   setParallax: (x: number, y: number) => void;
   stop: () => void;
 };
@@ -129,6 +131,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   let n = nTarget;
   let hover: PlaceId | null = initial.hover;
   let visitedSet = new Set<PlaceId>();
+  let foundSet = new Set<string>();
   let par = { x: 0, y: 0 };
   const setMode = (m: IslaMode) => {
     nTarget = m === "day" ? 0 : m === "night" ? 1 : nightFactorFromClock();
@@ -275,6 +278,54 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     objects.push({ x: bx, y: by + BH, fn: (_g, st) => put(bspr, 0, 0, BW, BH, bx, by, st) });
     // sombra del puente sobre el agua
     objects.push({ x: bx, y: by + BH, fn: (gg, st) => { gg.globalAlpha = 0.35; gg.fillStyle = st.n > 0.5 ? "#10284a" : "#1b5f66"; gg.fillRect(bx + 3, by + BH, BW - 6, 2); gg.globalAlpha = 1; } });
+  }
+  // secretos: cada uno tiene un lugar fijo y un borde blanco que titila hasta que se encuentra
+  {
+    const S = (D as unknown as { secretos?: { frutal: [string, number, number]; tronco: [string, number, number]; flor: [string, number, number] } }).secretos;
+    const glow = (id: string, y: number, x: number, draw: (gg: CanvasRenderingContext2D, a: number) => void) => {
+      objects.push({ x, y: y - 0.01, fn: (gg, st) => {
+        if (foundSet.has(id)) return;
+        draw(gg, still ? 0.85 : 0.5 + 0.5 * Math.abs(Math.sin(st.t * 2.4)));
+      } });
+    };
+    const rim = (gg: CanvasRenderingContext2D, c: HTMLCanvasElement, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, a: number) => {
+      const sil = silueta(c, sx, sy, sw, sh, "#ffffff");
+      gg.globalAlpha = a;
+      for (const [ox, oy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]]) gg.drawImage(sil, Math.round(dx) + ox, Math.round(dy) + oy);
+      gg.globalAlpha = 1;
+    };
+    if (S) {
+      const [fk, fx, fy] = S.frutal;
+      const q = "arbol_" + fk.slice(3), fc = aBq.meta[`${q}_copa`], ft = aBq.meta[`${q}_tronco`];
+      if (fc && ft) glow("frutal", fy, fx, (gg, a) => { rim(gg, aBq.spr.day, ft.x, ft.y, ft.w, ft.h, fx - 32, fy - 78, a); rim(gg, aBq.spr.day, fc.x, fc.y, fc.w, fc.h, fx - 32, fy - 78, a); });
+      const [tk, tx, ty] = S.tronco, tf = findAt(tk);
+      if (tf) glow("tronco", ty, tx, (gg, a) => rim(gg, tf[0].spr.day, tf[1].x, tf[1].y, tf[1].w, tf[1].h, tx - tf[1].w / 2, ty - tf[1].h, a));
+      const [gk, gx, gy] = S.flor, gm = aGira.meta[gk];
+      const gi = (D.girasoles as { x: number; y: number; g: string }[]).findIndex((o) => o.x === gx && o.y === gy);
+      if (gm) glow("flor", gy, gx, (gg, a) => {
+        const fr = gm.frames ? gm.frames[still ? 0 : (Math.floor(Math.floor(((performance.now() - t0) / 1000) * 2.5 + gi) % 2) % gm.frames.length)] : gm;
+        rim(gg, aGira.spr.day, fr.x, fr.y, gm.w, gm.h, gx - gm.w / 2, gy - gm.h, a);
+      });
+    }
+    // puerta del jueguito
+    const pu = (D.props as { k: string; x: number; y: number }[]).find((q) => q.k === "arbol_grande_puerta"), PT = aD3.meta["arbol_puerta"];
+    if (pu && PT) glow("puerta", pu.y, pu.x, (gg, a) => rim(gg, aD3.spr.day, PT.x, PT.y, PT.w, PT.h, pu.x - PT.w / 2, pu.y - 90, a));
+    // estanque: destellos blancos alrededor de la orilla
+    const [wcx, wcy, wrx, wry] = D.pond as number[];
+    objects.push({ x: wcx, y: wcy + 30, fn: (gg, st) => {
+      if (foundSet.has("estanque")) return;
+      const a = still ? 0.85 : 1;
+      for (let i = 0; i < 10; i++) {
+        const ang = (i / 10) * Math.PI * 2 + (still ? 0 : st.t * 0.25);
+        if (!still && Math.sin(st.t * 2.4 + i * 1.9) < 0) continue;
+        const sx = Math.round(wcx + Math.cos(ang) * (wrx + 3)), sy = Math.round(wcy + Math.sin(ang) * (wry + 2));
+        gg.globalAlpha = a;
+        gg.fillStyle = "#ffffff";
+        gg.fillRect(sx, sy, 1, 1);
+        gg.fillRect(sx - 1, sy, 3, 1); gg.fillRect(sx, sy - 1, 1, 3);
+        gg.globalAlpha = 1;
+      }
+    } });
   }
   // rayos de luz entre copas (solo de día), sobre algunos árboles grandes
   (D.props as { k: string; x: number; y: number }[]).filter((q) => q.k.startsWith("bq_") && !q.k.endsWith("_chico")).filter((_, i) => i % 9 === 4).forEach((q, i) => {
@@ -560,6 +611,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     setMode,
     setHover: (id) => { hover = id; request(); },
     setVisited: (ids) => { visitedSet = new Set(ids); request(); },
+    setFound: (ids) => { foundSet = new Set(ids); request(); },
     setParallax: (x, y) => { par = { x: Math.max(-1, Math.min(1, x)) * 6, y: Math.max(-1, Math.min(1, y)) * 4 }; request(); },
     stop: () => { stopped = true; cancelAnimationFrame(raf); },
   };
@@ -567,11 +619,11 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
 
 /* ------------------------------------------------------------------ componente */
 
-export function TopIsland({ portrait, mode, hoverId, visited, onReady }: Props) {
+export function TopIsland({ portrait, mode, hoverId, visited, found, onReady }: Props) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const engine = useRef<Engine | null>(null);
-  const live = useRef({ mode, hoverId, visited });
-  live.current = { mode, hoverId, visited };
+  const live = useRef({ mode, hoverId, visited, found });
+  live.current = { mode, hoverId, visited, found };
 
   useEffect(() => {
     const canvas = ref.current;
@@ -583,6 +635,7 @@ export function TopIsland({ portrait, mode, hoverId, visited, onReady }: Props) 
       e.setMode(live.current.mode);
       e.setHover(live.current.hoverId);
       e.setVisited(live.current.visited ?? []);
+      e.setFound(live.current.found ?? []);
       onReady?.({ setParallax: e.setParallax });
     });
     return () => {
@@ -596,6 +649,7 @@ export function TopIsland({ portrait, mode, hoverId, visited, onReady }: Props) 
   useEffect(() => { engine.current?.setMode(mode); }, [mode]);
   useEffect(() => { engine.current?.setHover(hoverId); }, [hoverId]);
   useEffect(() => { engine.current?.setVisited(visited ?? []); }, [visited]);
+  useEffect(() => { engine.current?.setFound(found ?? []); }, [found]);
 
   const L = topLayout(portrait);
   return (

@@ -22,6 +22,7 @@ type MapStageProps = {
   clockyState: ClockyState;
   walking: boolean;
   visited?: PlaceId[];
+  found?: string[];
   onPokeClocky: () => void;
 };
 
@@ -29,7 +30,7 @@ type MapStageProps = {
  * The illustrated map. Custom pan and zoom: pointer drag, wheel, two finger
  * pinch, and the round zoom pegs for people who would rather not drag.
  */
-export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, visited, onPokeClocky }: MapStageProps) {
+export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, visited, found, onPokeClocky }: MapStageProps) {
   const layout = useMemo(() => islaLayout(portrait), [portrait]);
   // Clocky camina por los caminitos: posición en px lógicos, animada a mano a lo largo de la ruta
   const walkerRef = useRef<HTMLButtonElement | null>(null);
@@ -478,7 +479,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
             schedule();
           };
           return VISTA === "cenital" ? (
-            <TopIsland portrait={portrait} mode={mode} hoverId={hoveredId ?? activeId} visited={visited} onReady={onReady} />
+            <TopIsland portrait={portrait} mode={mode} hoverId={hoveredId ?? activeId} visited={visited} found={found} onReady={onReady} />
           ) : (
             <IsoIsland portrait={portrait} mode={mode} hoverId={hoveredId ?? activeId} onReady={onReady} />
           );

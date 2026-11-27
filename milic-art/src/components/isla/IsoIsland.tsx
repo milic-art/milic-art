@@ -106,9 +106,9 @@ export function toSpr(img: HTMLImageElement | null, nightImg?: HTMLImageElement 
 }
 
 const siluetas = new Map<HTMLCanvasElement, HTMLCanvasElement>();
-export function silueta(c: HTMLCanvasElement, sx: number, sy: number, sw: number, sh: number): HTMLCanvasElement {
+export function silueta(c: HTMLCanvasElement, sx: number, sy: number, sw: number, sh: number, color = "#fff1a8"): HTMLCanvasElement {
   const key = c;
-  const cacheKey = `${sx},${sy},${sw},${sh}`;
+  const cacheKey = `${sx},${sy},${sw},${sh},${color}`;
   let sub = (siluetas as unknown as Map<HTMLCanvasElement, Record<string, HTMLCanvasElement>>) as Map<HTMLCanvasElement, any>;
   let rec = sub.get(key);
   if (!rec) { rec = {}; sub.set(key, rec); }
@@ -118,7 +118,7 @@ export function silueta(c: HTMLCanvasElement, sx: number, sy: number, sw: number
   const ctx = o.getContext("2d")!;
   ctx.drawImage(c, sx, sy, sw, sh, 0, 0, sw, sh);
   ctx.globalCompositeOperation = "source-in";
-  ctx.fillStyle = "#fff1a8";
+  ctx.fillStyle = color;
   ctx.fillRect(0, 0, sw, sh);
   rec[cacheKey] = o;
   return o;
