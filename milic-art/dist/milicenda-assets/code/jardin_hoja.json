@@ -1,0 +1,68 @@
+{
+ "maceta_tulipanes": {
+  "x": 0,
+  "y": 0,
+  "w": 14,
+  "h": 18
+ },
+ "maceta_margaritas": {
+  "x": 16,
+  "y": 0,
+  "w": 14,
+  "h": 18
+ },
+ "maceta_lavanda": {
+  "x": 32,
+  "y": 0,
+  "w": 14,
+  "h": 18
+ },
+ "maceta_cempasuchil": {
+  "x": 48,
+  "y": 0,
+  "w": 14,
+  "h": 18
+ },
+ "arbusto_flores_rosas": {
+  "x": 64,
+  "y": 0,
+  "w": 16,
+  "h": 12
+ },
+ "arbusto_flores_blancas": {
+  "x": 82,
+  "y": 0,
+  "w": 20,
+  "h": 14
+ },
+ "arbusto_flores_amarillas": {
+  "x": 104,
+  "y": 0,
+  "w": 24,
+  "h": 16
+ },
+ "enrejado": {
+  "x": 130,
+  "y": 0,
+  "w": 24,
+  "h": 40
+ },
+ "pasto_alto_1": {
+  "x": 156,
+  "y": 0,
+  "w": 12,
+  "h": 12
+ },
+ "pasto_alto_2": {
+  "x": 170,
+  "y": 0,
+  "w": 14,
+  "h": 15
+ },
+ "pasto_alto_3": {
+  "x": 0,
+  "y": 42,
+  "w": 16,
+  "h": 18
+ }
+}

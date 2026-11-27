@@ -3,6 +3,8 @@ import type { PlaceId } from "../../content";
 import { ASSETS, CASITAS_TOP, TOP, topLayout } from "./config";
 import atNat from "./atlas/naturaleza_hoja_v2_mix.json";
 import atDeco from "./atlas/deco_hoja_v2_mix.json";
+import atNat3 from "./atlas/naturaleza_v3.json";
+import atDeco3 from "./atlas/deco_v3.json";
 import atJar from "./atlas/jardin_hoja_mix.json";
 import atFlor from "./atlas/flores_hoja_mix.json";
 import atGira from "./atlas/girasoles.json";
@@ -87,10 +89,12 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const imgs = await Promise.all(names.map(loadImage));
   const A: Record<string, HTMLImageElement | null> = {};
   Object.keys(ASSETS).forEach((k, i) => (A[k] = imgs[i]));
-  const [aNat, aDeco, aJar, aFlor, aGira, aMece, aBich, aPuesto, aLuz, aBq, aCasEx] = await Promise.all([
+  const atlasN = async (file: string, meta: unknown): Promise<Atlas> => ({ spr: toSpr(await loadImage(`code/${file}.png`), await loadImage(`code/${file}_noche.png`)), meta: meta as Record<string, Meta> });
+  const [aNat, aDeco, aJar, aFlor, aGira, aMece, aBich, aPuesto, aLuz, aBq, aCasEx, aN3, aD3] = await Promise.all([
     atlas("naturaleza_hoja_v2_mix", atNat), atlas("deco_hoja_v2_mix", atDeco), atlas("jardin_hoja_mix", atJar), atlas("flores_hoja_mix", atFlor),
     atlas("girasoles_hoja", atGira), atlas("mecen_hoja_mix", atMece), atlas("bichitos_hoja_mix", atBich), atlas("puesto_papeleria_v2", atPuesto), atlas("pasto_luces_hoja", atLuces),
     atlas("bosque_arboles_hoja", atBosque), atlas("casitas_extras_hoja", atCasEx),
+    atlasN("naturaleza_v3_hoja", atNat3), atlasN("deco_v3_hoja", atDeco3),
   ]);
   const treeVar = (at: Atlas): Atlas[] => [at, shiftAtlas(at, -1), shiftAtlas(at, 1)];
   const natV = treeVar(aNat), meceV = treeVar(aMece);
@@ -166,7 +170,17 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     put(at.spr, fr.x, fr.y, m.w, m.h, cx - m.w / 2, by - m.h, st);
   };
   const frameAt = (m: Meta, t: number, ph = 0) => (m.frames ? Math.floor((t * 1000) / (m.ms ?? 300) + ph) % m.frames.length : 0);
+  const HONGO3 = ["rojo", "beige", "violeta", "marron", "blanco", "amarillo"];
+  const ALIAS3: Record<string, string> = { arbusto_4_alto: "arbusto_4", arbusto_5_bayas: "arbusto_5", "jardin:arbusto_flores_blancas": "arbusto_flores_blanca", "jardin:arbusto_flores_amarillas": "arbusto_flores_amarilla", "jardin:pasto_alto_1": "pasto_alto_1", "jardin:pasto_alto_2": "pasto_alto_2", "jardin:pasto_alto_3": "pasto_alto_3", banco_derecha: "banco_costado" };
+  const v3Key = (k: string): string => {
+    const hm = /^hongos_(\d)$/.exec(k);
+    if (hm) return `hongo_${hm[1]}_${HONGO3[+hm[1] - 1]}`;
+    return ALIAS3[k] ?? k;
+  };
   const findAt = (k: string): [Atlas, Meta] | null => {
+    const k3 = v3Key(k);
+    if (aN3.meta[k3] && !k3.startsWith("sombra_")) return [aN3, aN3.meta[k3]];
+    if (aD3.meta[k3] && k3 !== "farolito_halo") return [aD3, aD3.meta[k3]];
     if (k.startsWith("jardin:")) { const m = aJar.meta[k.slice(7)]; return m ? [aJar, m] : null; }
     if (aNat.meta[k]) return [aNat, aNat.meta[k]];
     if (aDeco.meta[k]) return [aDeco, aDeco.meta[k]];
@@ -195,6 +209,10 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     const f = findAt(p.k);
     if (!f) continue;
     const ph = rnd() * 8;
+    if (f[0] === aN3) {
+      const sh = aN3.meta[`sombra_${v3Key(p.k)}`];
+      if (sh) objects.push({ x: p.x, y: -2, fn: (_g, st) => put(aN3.spr, sh.x, sh.y, sh.w, sh.h, p.x - f[1].w / 2 + 2, p.y - sh.h + 2, st) });
+    }
     const mece = aMece.meta[`${p.k}_mece`];
     const esArbol = /^(arbol|pino|sauce|alamo)/.test(p.k);
     const vi = esArbol ? Math.abs(Math.floor(p.x * 7 + p.y * 13)) % 3 : 0;
@@ -203,7 +221,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     objects.push({ x: p.x, y: p.y, fn: (_g, st) => {
       if (luz && st.n > 0.5) { lit(luz, still ? 0 : frameAt(luz, st.t, ph), p.x, p.y, st, 5); return; }
       if (mece && !still) drawM(meceV[vi], mece, frameAt(mece, st.t, ph), p.x, p.y, st);
-      else drawM(f[0] === aNat ? natV[vi] : f[0], f[1], 0, p.x, p.y, st);
+      else drawM(f[0] === aNat ? natV[vi] : f[0], f[1], f[1].frames && !still ? frameAt(f[1], st.t, ph) : 0, p.x, p.y, st);
     } });
   }
   for (const d of D.deco as { k: string; x: number; y: number }[]) {
@@ -214,12 +232,21 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     }
     const f = findAt(d.k);
     if (!f) continue;
+    if (d.k === "farolito") {
+      const hl = aD3.meta["farolito_halo"];
+      objects.push({ x: d.x, y: d.y + 40, fn: (_g, st) => { if (st.n > 0.05) put(aD3.spr, hl.x, hl.y, hl.w, hl.h, d.x - hl.w / 2, d.y - 22 - hl.h / 2, st, st.n); } });
+    }
     const isBridge = d.k === "puente";
     objects.push({ x: d.x, y: isBridge ? -1 : d.y, fn: (_g, st) => {
       const alt = d.k === "pozo_balde_arriba" && !still && Math.floor(st.t / 2.2) % 2 === 1 ? aDeco.meta["pozo_balde_abajo"] : f[1];
-      drawM(f[0], alt, 0, d.x, d.y, st);
+      drawM(f[0], alt, alt.frames && !still ? frameAt(alt, st.t) : 0, d.x, d.y, st);
     } });
   }
+  // rayos de luz entre copas (solo de día), sobre algunos árboles grandes
+  (D.props as { k: string; x: number; y: number }[]).filter((q) => q.k.startsWith("bq_") && !q.k.endsWith("_chico")).filter((_, i) => i % 9 === 4).forEach((q, i) => {
+    const m = aD3.meta[`rayos_luz_${1 + (i % 2)}`];
+    objects.push({ x: q.x, y: q.y + 200, fn: (_g, st) => { if (st.n < 0.95) put(aD3.spr, m.frames ? m.frames[still ? 0 : frameAt(m, st.t, i)].x : m.x, m.frames ? m.frames[still ? 0 : frameAt(m, st.t, i)].y : m.y, m.w, m.h, q.x - m.w / 2 + 6, q.y - 62, st, 0.9 * (1 - st.n)); } });
+  });
   for (const fl of D.flores as { x: number; y: number; k: string }[]) {
     const m = aFlor.meta[fl.k];
     const luz = fl.k === "margarita" ? aLuz.meta["luciernaga_flor_blanca"] : fl.k === "dalia" ? aLuz.meta["luciernaga_flor_rosa"] : null;

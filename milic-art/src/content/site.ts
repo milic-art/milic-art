@@ -131,13 +131,13 @@ export const site = {
     heading: "Redacción",
     kicker: "Periodismo e investigación",
     intro:
-      "Soy comunicadora y periodista investigadora. Acá están mis notas e investigaciones. [Temas que cubro y cómo trabajo.]",
+      "Soy comunicadora y periodista investigadora. Acá están mis notas e investigaciones y los newsletters que escribo para OLA Productiva, sobre sostenibilidad y negocios de triple impacto.",
     does: [
-      "Investigo y verifico información sobre [temas o áreas].",
-      "Escribo notas y reportajes para [medios o formatos].",
-      "Redacto textos de comunicación: [tipo de textos o contenidos].",
+      "Investigo y verifico información sobre sostenibilidad, economía local y comunidad.",
+      "Escribo notas, newsletters y textos para la web.",
+      "Planifico y produzco contenidos editoriales para organizaciones: calendario, textos y redes.",
     ],
-    forWhom: "[Medios, organizaciones o proyectos para los que escribo.]",
+    forWhom: "Organizaciones y proyectos que quieren comunicar con claridad, como OLA Productiva.",
     projectsLabel: "Notas e investigaciones",
     projects: [
       pendingProject("nota o investigación", ["Dónde se publicó", "Fecha", "De qué trata", "Qué descubrió o cambió"]),
@@ -146,7 +146,7 @@ export const site = {
     ] as Project[],
     tools: ["[Herramientas de investigación]", "[Herramientas de edición]"],
     extraLabel: "Formación y reconocimientos",
-    extra: ["[Estudios]", "[Premios, becas o menciones]", "[Medios donde publiqué]"],
+    extra: ["Licenciatura en Comunicación Social, Universidad FASTA (cursé un año y medio)", "Tecnicatura en Comunicación Audiovisual, UNMdP (empiezo en marzo)", "Newsletters de OLA Productiva (ediciones 03 y 04)"],
     pricesLabel: "Colaboraciones y precios base",
     prices: samplePrices("[Nota o artículo]", "[Investigación a pedido]", "[Asesoría de comunicación]"),
     testimonialsLabel: "Qué dicen",
@@ -194,14 +194,14 @@ export const site = {
     heading: "Estudio",
     kicker: "Diseño y redes sociales",
     intro:
-      "Diseño piezas gráficas y gestiono redes sociales como community manager. [Estilo y tipo de marcas con las que trabajo.]",
+      "Diseño piezas gráficas y gestiono redes sociales como community manager. Trabajo con consultoras, organizaciones y emprendimientos que quieren comunicar mejor.",
     does: [
-      "Diseño piezas para redes: [posteos, historias, banners].",
-      "Gestiono cuentas: [planificación, publicación, respuesta a la comunidad].",
-      "Armo identidades visuales: [logos, paletas, guías].",
-      "Edito videos cortos: [reels, clips].",
+      "Diseño piezas para redes: posteos, carruseles, historias y banners.",
+      "Gestiono cuentas: estrategia de contenidos, publicación, community management, métricas y reportes.",
+      "Armo identidades visuales y campañas de comunicación institucional.",
+      "Edito videos cortos para reels y stories.",
     ],
-    forWhom: "[Marcas, emprendimientos u organizaciones con las que trabajo.]",
+    forWhom: "Consultoras, organizaciones y emprendimientos.",
     projectsLabel: "Casos de redes y diseño",
     projects: [
       {
@@ -210,7 +210,7 @@ export const site = {
         fields: [
           { label: "Cliente o cuenta", value: "Somos Consultoras, Mar del Plata · Instagram @somos_consultoras" },
           { label: "Objetivo", value: "Presentar al círculo y su primer evento: un desayuno de networking en Argentina Climate Week 2026." },
-          { label: "Qué hice", value: "Estrategia de comunicación, branding, redes, campañas y contenido. [Detalle de mi parte en la web]" },
+          { label: "Qué hice", value: "Estrategia de comunicación, branding, gestión de redes, planificación de campañas, creación de contenido y comunicación institucional, trabajando directamente con las consultoras." },
           { label: "Animación para stories", value: "[Archivo de la animación del logo, pendiente]" },
           { label: "Resultado", value: "[Resultado: asistentes, alcance, consultas]" },
         ],
@@ -221,7 +221,7 @@ export const site = {
     ] as Project[],
     tools: ["Canva", "Figma", "Photopea", "CapCut"],
     extraLabel: "Cómo trabajo",
-    extra: ["[Paso 1: diagnóstico de la cuenta]", "[Paso 2: propuesta]", "[Paso 3: producción y seguimiento]"],
+    extra: ["1. Primera reunión por Zoom o Meet para hacer el diagnóstico.", "2. Propuesta con plan y presupuesto.", "3. Producción, gestión y reportes."],
     pricesLabel: "Servicios y precios base",
     prices: samplePrices("[Pack de piezas para redes]", "[Gestión mensual de redes]", "[Identidad visual]"),
     testimonialsLabel: "Qué dicen",
@@ -236,14 +236,15 @@ export const site = {
     heading: "Laboratorio",
     kicker: "Webs, juegos y UI/UX",
     intro:
-      "Programo webs y webjuegos y diseño interfaces (UI/UX). Esta página es uno de mis proyectos. [Qué me gusta construir.]",
+      "Programo webs y webjuegos y diseño interfaces (UI/UX). Esta página es uno de mis proyectos. Me gusta construir cosas con personalidad: mapas, mascotas, cursores y juegos chiquitos.",
     does: [
-      "Programo webs: [portfolios, sitios para emprendimientos].",
-      "Desarrollo webjuegos: [tipos de juegos o prototipos].",
-      "Diseño interfaces UI/UX: [pantallas, flujos, prototipos en Figma].",
+      "Programo webs: portfolios y sitios para emprendimientos.",
+      "Desarrollo webjuegos y prototipos con Godot.",
+      "Diseño interfaces UI/UX: pantallas, flujos y prototipos en Figma.",
+      "Hago cursores, íconos y mascotas de escritorio en pixel art, a pedido.",
       "Armo kits para crear páginas: un zip con el código y una guía paso a paso, para personalizar sin programar.",
     ],
-    forWhom: "[Proyectos propios, clientes o game jams para los que programo.]",
+    forWhom: "Proyectos propios y clientes que quieren algo con identidad.",
     projectsLabel: "Proyectos",
     projects: [
       {
@@ -252,7 +253,7 @@ export const site = {
         fields: [
           { label: "Qué es", value: "Mi portfolio, dibujado como un mapa para recorrer." },
           { label: "Hecho con", value: "React, Vite, TypeScript y Tailwind." },
-          { label: "Mi rol", value: "[Mi rol: diseño, dibujo y código]" },
+          { label: "Mi rol", value: "Diseño, dibujo y programación." },
           { label: "Qué aprendí", value: "[Qué aprendí y qué cambiaría]" },
         ],
         link: "",
@@ -262,7 +263,7 @@ export const site = {
         kind: "Web de una sola página",
         fields: [
           { label: "Qué es", value: "La web de un círculo de seis consultoras de Mar del Plata, con secciones, formulario de contacto y página del primer evento." },
-          { label: "Mi rol", value: "[Mi rol: diseño, textos, código]" },
+          { label: "Mi rol", value: "Diseño y armado de la web." },
           { label: "Hecho con", value: "[Herramientas]" },
           { label: "Qué aprendí", value: "[Qué aprendí y qué cambiaría]" },
         ],
@@ -282,7 +283,7 @@ export const site = {
       pendingProject("webjuego o prototipo", ["Rol", "Herramientas", "Problema que resuelve", "Resultado"]),
       pendingProject("proyecto de UI/UX", ["Rol", "Herramientas", "Problema que resuelve", "Resultado"]),
     ] as Project[],
-    tools: ["Figma", "React", "TypeScript", "[Motor de juegos]"],
+    tools: ["Figma", "React", "TypeScript", "Godot"],
     extraLabel: "Cómo trabajo un proyecto",
     extra: ["[Paso 1: idea y alcance]", "[Paso 2: prototipo]", "[Paso 3: prueba con gente real]"],
     pricesLabel: "Servicios y precios base",
@@ -368,7 +369,7 @@ export const site = {
       { name: "Medio cuerpo", price: "[Precio]", detail: "De la cintura para arriba.", time: "[Tiempo]" },
       { name: "Emotes y GIFs simples", price: "[Precio]", detail: "Chiquitos y expresivos.", time: "[Tiempo]" },
     ],
-    notDrawing: ["[Qué no dibujo]"],
+    notDrawing: ["Lo consulto caso por caso. Escribime y te cuento."],
     availability: "Cerrado por ahora. Abro cuando el portfolio esté listo.",
     ctaLabel: "Saludame por Discord",
     ctaNote: "Podés escribirme aunque el tablón esté cerrado.",
@@ -409,7 +410,7 @@ export const site = {
       "Estoy armando este portfolio. Por eso los encargos están cerrados. Cuando esté listo, los abro y publico las reglas y los precios.",
     ],
     nowLabel: "Novedades",
-    now: ["[Fecha]: [en qué estoy trabajando]", "[Fecha]: [qué estoy aprendiendo]"],
+    now: ["Noviembre de 2026: armando este portfolio y dibujando a Clocky.", "Noviembre de 2026: aprendiendo Figma y pixel art."],
     tools: [
       { name: "Krita", note: "dibujo la mayoría de mis obras" },
       { name: "Photopea", note: "ediciones y arreglos rápidos" },
@@ -420,6 +421,7 @@ export const site = {
     facts: [
       "Me encantan los perros y los pingüinos.",
       "Me encanta jugar.",
+      "Clocky, el cocodrilo de este mapa, es mi mascota: le gustan los girasoles.",
       "Sigo aprendiendo Figma. Este mapa es parte de la práctica.",
     ],
     portrait: "",
