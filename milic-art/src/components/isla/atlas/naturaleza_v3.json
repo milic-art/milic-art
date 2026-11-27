@@ -1,0 +1,374 @@
+{
+ "arbusto_1": {
+  "x": 0,
+  "y": 0,
+  "w": 24,
+  "h": 18,
+  "nota": "luz arriba-izq; pie en la ultima fila"
+ },
+ "arbusto_2": {
+  "x": 26,
+  "y": 0,
+  "w": 28,
+  "h": 20,
+  "nota": "luz arriba-izq; pie en la ultima fila"
+ },
+ "arbusto_3": {
+  "x": 56,
+  "y": 0,
+  "w": 32,
+  "h": 22,
+  "nota": "luz arriba-izq; pie en la ultima fila"
+ },
+ "arbusto_4": {
+  "x": 90,
+  "y": 0,
+  "w": 36,
+  "h": 24,
+  "nota": "luz arriba-izq; pie en la ultima fila"
+ },
+ "arbusto_5": {
+  "x": 128,
+  "y": 0,
+  "w": 26,
+  "h": 24,
+  "nota": "luz arriba-izq; pie en la ultima fila"
+ },
+ "arbusto_flores_rosa": {
+  "x": 156,
+  "y": 0,
+  "w": 28,
+  "h": 20,
+  "nota": "luz arriba-izq; pie en la ultima fila"
+ },
+ "arbusto_flores_blanca": {
+  "x": 186,
+  "y": 0,
+  "w": 32,
+  "h": 22,
+  "nota": "luz arriba-izq; pie en la ultima fila"
+ },
+ "arbusto_flores_amarilla": {
+  "x": 0,
+  "y": 26,
+  "w": 36,
+  "h": 24,
+  "nota": "luz arriba-izq; pie en la ultima fila"
+ },
+ "pasto_alto_1": {
+  "x": 38,
+  "y": 26,
+  "w": 16,
+  "h": 18,
+  "frames": [
+   {
+    "x": 38,
+    "y": 26
+   },
+   {
+    "x": 56,
+    "y": 26
+   },
+   {
+    "x": 74,
+    "y": 26
+   },
+   {
+    "x": 92,
+    "y": 26
+   }
+  ],
+  "ms": 260,
+  "nota": "se mece (4 cuadros)"
+ },
+ "pasto_alto_2": {
+  "x": 110,
+  "y": 26,
+  "w": 16,
+  "h": 18,
+  "frames": [
+   {
+    "x": 110,
+    "y": 26
+   },
+   {
+    "x": 128,
+    "y": 26
+   },
+   {
+    "x": 146,
+    "y": 26
+   },
+   {
+    "x": 164,
+    "y": 26
+   }
+  ],
+  "ms": 260,
+  "nota": "se mece (4 cuadros)"
+ },
+ "pasto_alto_3": {
+  "x": 0,
+  "y": 52,
+  "w": 16,
+  "h": 18,
+  "frames": [
+   {
+    "x": 0,
+    "y": 52
+   },
+   {
+    "x": 18,
+    "y": 52
+   },
+   {
+    "x": 36,
+    "y": 52
+   },
+   {
+    "x": 54,
+    "y": 52
+   }
+  ],
+  "ms": 260,
+  "nota": "se mece (4 cuadros)"
+ },
+ "roca_1": {
+  "x": 72,
+  "y": 52,
+  "w": 14,
+  "h": 11
+ },
+ "roca_2": {
+  "x": 88,
+  "y": 52,
+  "w": 18,
+  "h": 13
+ },
+ "roca_3": {
+  "x": 108,
+  "y": 52,
+  "w": 22,
+  "h": 15
+ },
+ "roca_4_apilada": {
+  "x": 132,
+  "y": 52,
+  "w": 26,
+  "h": 19
+ },
+ "tronco_1": {
+  "x": 160,
+  "y": 52,
+  "w": 30,
+  "h": 12
+ },
+ "tronco_2": {
+  "x": 192,
+  "y": 52,
+  "w": 24,
+  "h": 11
+ },
+ "tocon_1": {
+  "x": 218,
+  "y": 52,
+  "w": 18,
+  "h": 16
+ },
+ "tocon_2": {
+  "x": 0,
+  "y": 73,
+  "w": 14,
+  "h": 13
+ },
+ "hongo_1_rojo": {
+  "x": 16,
+  "y": 73,
+  "w": 14,
+  "h": 12
+ },
+ "hongo_2_beige": {
+  "x": 32,
+  "y": 73,
+  "w": 14,
+  "h": 12
+ },
+ "hongo_3_violeta": {
+  "x": 48,
+  "y": 73,
+  "w": 14,
+  "h": 12
+ },
+ "hongo_4_marron": {
+  "x": 64,
+  "y": 73,
+  "w": 14,
+  "h": 12
+ },
+ "hongo_5_blanco": {
+  "x": 80,
+  "y": 73,
+  "w": 14,
+  "h": 12
+ },
+ "hongo_6_amarillo": {
+  "x": 96,
+  "y": 73,
+  "w": 14,
+  "h": 12
+ },
+ "sombra_arbusto_1": {
+  "x": 112,
+  "y": 73,
+  "w": 28,
+  "h": 7,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_arbusto_2": {
+  "x": 142,
+  "y": 73,
+  "w": 32,
+  "h": 7,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_arbusto_3": {
+  "x": 176,
+  "y": 73,
+  "w": 36,
+  "h": 8,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_arbusto_4": {
+  "x": 0,
+  "y": 88,
+  "w": 40,
+  "h": 9,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_arbusto_5": {
+  "x": 42,
+  "y": 88,
+  "w": 30,
+  "h": 9,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_arbusto_flores_rosa": {
+  "x": 74,
+  "y": 88,
+  "w": 32,
+  "h": 7,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_arbusto_flores_blanca": {
+  "x": 108,
+  "y": 88,
+  "w": 36,
+  "h": 8,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_arbusto_flores_amarilla": {
+  "x": 146,
+  "y": 88,
+  "w": 40,
+  "h": 9,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_roca_1": {
+  "x": 188,
+  "y": 88,
+  "w": 18,
+  "h": 4,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_roca_2": {
+  "x": 208,
+  "y": 88,
+  "w": 22,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_roca_3": {
+  "x": 0,
+  "y": 99,
+  "w": 26,
+  "h": 6,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_roca_4_apilada": {
+  "x": 28,
+  "y": 99,
+  "w": 30,
+  "h": 7,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_tronco_1": {
+  "x": 60,
+  "y": 99,
+  "w": 34,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_tronco_2": {
+  "x": 96,
+  "y": 99,
+  "w": 28,
+  "h": 4,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_tocon_1": {
+  "x": 126,
+  "y": 99,
+  "w": 22,
+  "h": 6,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_tocon_2": {
+  "x": 150,
+  "y": 99,
+  "w": 18,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_hongo_1_rojo": {
+  "x": 170,
+  "y": 99,
+  "w": 18,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_hongo_2_beige": {
+  "x": 190,
+  "y": 99,
+  "w": 18,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_hongo_3_violeta": {
+  "x": 210,
+  "y": 99,
+  "w": 18,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_hongo_4_marron": {
+  "x": 0,
+  "y": 108,
+  "w": 18,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_hongo_5_blanco": {
+  "x": 20,
+  "y": 108,
+  "w": 18,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ },
+ "sombra_hongo_6_amarillo": {
+  "x": 40,
+  "y": 108,
+  "w": 18,
+  "h": 5,
+  "nota": "un color; debajo y corrida a la derecha"
+ }
+}

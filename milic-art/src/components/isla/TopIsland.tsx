@@ -238,6 +238,10 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     const x0 = bx - 32, y0 = by - h.c.base;
     const shM = aCasEx.meta[`sombra_${({ periodismo: "redaccion", diseno: "estudio", dibujo: "taller", programacion: "laboratorio", casita: "casita" } as Record<string, string>)[h.id] ?? ""}`] as (Meta & { ox: number; oy: number }) | undefined;
     if (shM) objects.push({ x: bx, y: -2, fn: (_g, st) => put(aCasEx.spr, shM.x, shM.y, shM.w, shM.h, x0 + shM.ox, y0 + shM.oy, st) });
+    const sen = aCasEx.meta[`senda_piedras_${1 + (ids.indexOf(h.id) % 2)}`], fel = aCasEx.meta["felpudo"];
+    const dX = x0 + h.c.puerta;
+    if (sen) objects.push({ x: bx, y: -1, fn: (_g, st) => put(aCasEx.spr, sen.x, sen.y, sen.w, sen.h, dX - sen.w / 2, by - 2, st) });
+    if (fel) objects.push({ x: bx, y: by + 1, fn: (_g, st) => put(aCasEx.spr, fel.x, fel.y, fel.w, fel.h, dX - fel.w / 2, by - 3, st) });
     objects.push({ x: bx, y: by, fn: (gg, st) => {
       const fr = Math.floor((st.t * 1000) / h.c.ms) % h.c.frames;
       const hov = st.hover === h.id;

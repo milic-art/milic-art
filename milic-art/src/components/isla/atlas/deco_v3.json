@@ -1,0 +1,164 @@
+{
+ "banco_frente": {
+  "x": 0,
+  "y": 0,
+  "w": 28,
+  "h": 18,
+  "nota": "madera 2 tonos, patas de hierro"
+ },
+ "banco_costado": {
+  "x": 30,
+  "y": 0,
+  "w": 14,
+  "h": 20
+ },
+ "cerca_tramo": {
+  "x": 46,
+  "y": 0,
+  "w": 16,
+  "h": 14,
+  "nota": "16x14, tileable en x"
+ },
+ "cerca_poste": {
+  "x": 64,
+  "y": 0,
+  "w": 6,
+  "h": 16
+ },
+ "cerca_esquina": {
+  "x": 72,
+  "y": 0,
+  "w": 16,
+  "h": 16
+ },
+ "cerca_tranquera_cerrada": {
+  "x": 90,
+  "y": 0,
+  "w": 24,
+  "h": 16
+ },
+ "cerca_tranquera_abierta": {
+  "x": 116,
+  "y": 0,
+  "w": 24,
+  "h": 16
+ },
+ "farolito": {
+  "x": 142,
+  "y": 0,
+  "w": 10,
+  "h": 24,
+  "nota": "10x24; pie en y=22"
+ },
+ "farolito_halo": {
+  "x": 154,
+  "y": 0,
+  "w": 32,
+  "h": 32,
+  "nota": "solo de noche, detras del farolito (centro = cabeza del farol)"
+ },
+ "buzon": {
+  "x": 188,
+  "y": 0,
+  "w": 14,
+  "h": 22,
+  "frames": [
+   {
+    "x": 188,
+    "y": 0
+   },
+   {
+    "x": 204,
+    "y": 0
+   }
+  ],
+  "ms": 1200,
+  "nota": "cuadro 2: bandera alta y carta"
+ },
+ "puesto_toldo": {
+  "x": 0,
+  "y": 34,
+  "w": 40,
+  "h": 36,
+  "frames": [
+   {
+    "x": 0,
+    "y": 34
+   },
+   {
+    "x": 42,
+    "y": 34
+   },
+   {
+    "x": 84,
+    "y": 34
+   }
+  ],
+  "ms": 260,
+  "nota": "el toldo ondea"
+ },
+ "arbol_puerta": {
+  "x": 126,
+  "y": 34,
+  "w": 80,
+  "h": 96,
+  "nota": "80x96; puerta centrada en x=40, base y=90"
+ },
+ "arbol_puerta_luz": {
+  "x": 0,
+  "y": 132,
+  "w": 80,
+  "h": 96,
+  "nota": "ventana y farol encendidos (usar de noche)"
+ },
+ "anillo_pisado_1": {
+  "x": 82,
+  "y": 132,
+  "w": 40,
+  "h": 18,
+  "nota": "pie de arbol: pasto pisado, raices y hojas"
+ },
+ "anillo_pisado_2": {
+  "x": 124,
+  "y": 132,
+  "w": 40,
+  "h": 18,
+  "nota": "pie de arbol: pasto pisado, raices y hojas"
+ },
+ "rayos_luz_1": {
+  "x": 166,
+  "y": 132,
+  "w": 40,
+  "h": 56,
+  "frames": [
+   {
+    "x": 166,
+    "y": 132
+   },
+   {
+    "x": 208,
+    "y": 132
+   }
+  ],
+  "ms": 500,
+  "nota": "rayos entre copas con polvito"
+ },
+ "rayos_luz_2": {
+  "x": 0,
+  "y": 230,
+  "w": 40,
+  "h": 56,
+  "frames": [
+   {
+    "x": 0,
+    "y": 230
+   },
+   {
+    "x": 42,
+    "y": 230
+   }
+  ],
+  "ms": 500,
+  "nota": "rayos entre copas con polvito"
+ }
+}
