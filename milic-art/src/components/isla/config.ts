@@ -62,8 +62,8 @@ export const ASSETS_TOP = {
 };
 
 /** Casitas vistas desde arriba: hoja de 2 cuadros de 64x72, base (puerta) en la fila 68. humo = punto de la chimenea. */
-export const CASITAS_TOP: Record<PlaceId, { file: string; fileNoche: string; fw: number; fh: number; base: number; frames: number; ms: number; humo: [number, number] | null; puerta: number }> = {
-  periodismo: { file: "generados/casat_redaccion.png", fileNoche: "generados/casat_redaccion_noche.png", fw: 128, fh: 190, base: 170, frames: 2, ms: 500, humo: [117, 92], puerta: 60 },
+export const CASITAS_TOP: Record<PlaceId, { file: string; fileNoche: string; fw: number; fh: number; base: number; frames: number; ms: number; humo: [number, number] | null; puerta: number; ancla?: number }> = {
+  periodismo: { file: "generados/casat_redaccion.png", fileNoche: "generados/casat_redaccion_noche.png", fw: 66, fh: 128, base: 120, frames: 4, ms: 250, humo: [21, 79], puerta: 38, ancla: 38 },
   diseno: { file: "generados/casat_estudio.png", fileNoche: "generados/casat_estudio_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: null, puerta: 45 },
   dibujo: { file: "generados/casat_taller.png", fileNoche: "generados/casat_taller_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: null, puerta: 31 },
   programacion: { file: "generados/casat_laboratorio.png", fileNoche: "generados/casat_laboratorio_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: [49, 36], puerta: 31 },
@@ -134,3 +134,19 @@ export function topLayout(portrait: boolean): Layout {
 export function islaLayout(portrait: boolean): Layout {
   return VISTA === "cenital" ? topLayout(portrait) : isoLayout(portrait);
 }
+
+/** Datos de la torre de la Redacción (coordenadas dentro del cuadro de 66x128). Ver docs/milicenda/extra.json. */
+export const REDACCION = {
+  reloj: { x: 38, y: 40, r: 5.4 },
+  papeles: [23, 109] as [number, number],
+  chapita: [23, 104] as [number, number],
+  ventana: { x: 5, y: 101, w: 17, h: 11 },
+  pajaros: { w: 7, h: 4, posaderos: [[26, 30], [55, 27]] as [number, number][] },
+  globito: { w: 9, h: 8, x: 52, y: 34 },
+  files: {
+    sombra: "generados/redaccion_sombra.png",
+    ventanaOn: "generados/redaccion_ventana_on.png",
+    pajaros: "generados/redaccion_pajaros.png",
+    globitos: "generados/redaccion_globitos.png",
+  },
+};

@@ -101,7 +101,8 @@ export function graphRoute(segs: Seg[], from: Pt, to: Pt): Pt[] {
 export function doorOf(portrait: boolean, id: PlaceId): Pt {
   const D = TOP[portrait ? "v" : "h"];
   const [x, y] = D.casas[id];
-  return { x: x - CASITAS_TOP[id].fw / 2 + CASITAS_TOP[id].puerta, y };
+  const c = CASITAS_TOP[id];
+  return { x: x - (c.ancla ?? c.fw / 2) + c.puerta, y };
 }
 
 /** Ruta completa desde un punto cualquiera hasta la puerta de una casita, siguiendo los caminitos. */

@@ -1,0 +1,166 @@
+{
+ "agujas": {
+  "hora": {
+   "color": "#7a2e26",
+   "largo": 3
+  },
+  "minutos": {
+   "color": "#2e1b14",
+   "largo": 5
+  },
+  "grosor": 1
+ },
+ "sombra": {
+  "archivo": "redaccion_torre_sombra.png",
+  "nota": "mismo tamaño que el cuadro; #2e1b14 al 35 %; se dibuja antes que el edificio"
+ },
+ "hover": {
+  "x": 5,
+  "y": 101,
+  "w": 17,
+  "h": 11,
+  "encendida": "ventana_hover_encendida.png",
+  "apagada": "ventana_hover_apagada.png"
+ },
+ "chapita_visitado": [
+  23,
+  104
+ ],
+ "pajaros": {
+  "archivo": "pajaros_hoja.png",
+  "w": 7,
+  "h": 4,
+  "aleteo": [
+   [
+    0,
+    0
+   ],
+   [
+    8,
+    0
+   ]
+  ],
+  "posado": [
+   16,
+   0
+  ],
+  "ms": 400,
+  "posaderos": [
+   [
+    26,
+    30
+   ],
+   [
+    55,
+    27
+   ]
+  ]
+ },
+ "engranajes_eje": [
+  {
+   "cx": 36.8,
+   "cy": 62.5,
+   "dientes": 10
+  },
+  {
+   "cx": 42.2,
+   "cy": 70.2,
+   "dientes": 7
+  },
+  {
+   "cx": 36.8,
+   "cy": 78.0,
+   "dientes": 10
+  }
+ ],
+ "colores": [
+  "#1b5f66",
+  "#2c9488",
+  "#2e1b14",
+  "#35563a",
+  "#463f4a",
+  "#4a2c1f",
+  "#587a35",
+  "#58cc9f",
+  "#5a3322",
+  "#77707c",
+  "#7a2e26",
+  "#8a4e2a",
+  "#8fd2d2",
+  "#a8a08e",
+  "#b84a2c",
+  "#b96d32",
+  "#c8ecdc",
+  "#c94b64",
+  "#d6cbb0",
+  "#d99a1c",
+  "#e8874a",
+  "#effbe6",
+  "#f092a4",
+  "#f2c230",
+  "#f9e07a",
+  "#fbf3e4",
+  "#fffdf7"
+ ],
+ "globitos": {
+  "w": 9,
+  "h": 8,
+  "frames": 6,
+  "orden": {
+   "puntos": [
+    0,
+    1
+   ],
+   "exclamacion": [
+    2,
+    3
+   ],
+   "pregunta": [
+    4,
+    5
+   ]
+  },
+  "ms": 300,
+  "nota": "cuadro 0 aparece, cuadro 1 queda; sin personas",
+  "donde": [
+   52,
+   34
+  ]
+ },
+ "puerta_abre": {
+  "w": 11,
+  "h": 17,
+  "frames": 4,
+  "x": 33,
+  "y": 104,
+  "ms": 120,
+  "nota": "al entrar: 0 cerrada -> 3 abierta"
+ },
+ "hover_3": {
+  "w": 17,
+  "h": 11,
+  "frames": 3,
+  "x": 5,
+  "y": 101,
+  "ms": 160,
+  "nota": "hover: 0 apagada, 1 tibia, 2 encendida; el humo más fuerte y el rebote de 1 px los hace la web"
+ },
+ "variantes": {
+  "w": 12,
+  "h": 9,
+  "frames": 6,
+  "orden": {
+   "banquito_a": 0,
+   "banquito_b": 1,
+   "buzon_a": 2,
+   "buzon_b": 3,
+   "maceta_a": 4,
+   "maceta_b": 5
+  }
+ },
+ "sonidos": {
+  "hover": "sonidos/campana.wav",
+  "entrar": "sonidos/maquina.wav",
+  "reglas": "apagados por defecto, botón de silencio, solo después de que el visitante interactúe"
+ }
+}

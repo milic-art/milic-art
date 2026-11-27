@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { PlaceId } from "../../content";
-import { ASSETS, CASITAS_TOP, TOP, topLayout } from "./config";
+import { ASSETS, CASITAS_TOP, REDACCION, TOP, topLayout } from "./config";
 import atNat from "./atlas/naturaleza_hoja_v2_mix.json";
 import atDeco from "./atlas/deco_hoja_v2_mix.json";
 import atNat3 from "./atlas/naturaleza_v3.json";
@@ -105,6 +105,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const aSombra = { spr: toSpr(A.arbolSombra), meta: {} as Record<string, Meta> };
   void aSombra;
   const suelo = await Promise.all(Array.from({ length: D.nf as number }, (_, f) => loadImage(`generados/isla_${key}_${f}.png`)));
+  const [redSombra, redVentana, redPajaros, redGlobitos] = await Promise.all([REDACCION.files.sombra, REDACCION.files.ventanaOn, REDACCION.files.pajaros, REDACCION.files.globitos].map((f) => loadImage(f)));
   const casaImgs = await Promise.all(ids.flatMap((id) => [loadImage(CASITAS_TOP[id].file), loadImage(CASITAS_TOP[id].fileNoche)]));
 
   const S = {
@@ -347,8 +348,9 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   });
   for (const h of casas) {
     const [bx, by] = h.pos;
-    const x0 = bx - h.c.fw / 2, y0 = by - h.c.base;
+    const x0 = bx - (h.c.ancla ?? h.c.fw / 2), y0 = by - h.c.base;
     const shM = aCasEx.meta[`sombra_${({ periodismo: "redaccion", diseno: "estudio", dibujo: "taller", programacion: "laboratorio", casita: "casita" } as Record<string, string>)[h.id] ?? ""}`] as (Meta & { ox: number; oy: number }) | undefined;
+    if (h.id === "periodismo") objects.push({ x: bx, y: -2, fn: (gg) => { gg.drawImage(redSombra, x0, y0); } });
     if (shM && h.c.fw === 64) objects.push({ x: bx, y: -2, fn: (_g, st) => put(aCasEx.spr, shM.x, shM.y, shM.w, shM.h, x0 + shM.ox, y0 + shM.oy, st) });
     const sen = aCasEx.meta[`senda_piedras_${1 + (ids.indexOf(h.id) % 2)}`], fel = aCasEx.meta["felpudo"];
     const dX = x0 + h.c.puerta;
@@ -380,21 +382,40 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
         const now = new Date(), mi = now.getMinutes() + now.getSeconds() / 60, ho = (now.getHours() % 12) + mi / 60;
         const hand = (ang: number, len: number, col: string) => {
           gg.fillStyle = col;
-          for (let k = 0; k <= len; k++) gg.fillRect(Math.round(x0 + 66 + Math.sin(ang) * k), Math.round(y0 + 82 - Math.cos(ang) * k + bounce), 1, 1);
+          for (let k = 0; k <= len; k++) gg.fillRect(Math.round(x0 + REDACCION.reloj.x + Math.sin(ang) * k), Math.round(y0 + REDACCION.reloj.y - Math.cos(ang) * k + bounce), 1, 1);
         };
-        hand((mi / 60) * Math.PI * 2, 8, "#2e1b14");
-        hand((ho / 12) * Math.PI * 2, 5, "#7a2e26");
-        gg.fillStyle = "#2e1b14"; gg.fillRect(x0 + 66, y0 + 82 + bounce, 1, 1);
+        hand((mi / 60) * Math.PI * 2, 5, "#2e1b14");
+        hand((ho / 12) * Math.PI * 2, 3, "#7a2e26");
+        gg.fillStyle = "#2e1b14"; gg.fillRect(x0 + REDACCION.reloj.x, y0 + REDACCION.reloj.y + bounce, 1, 1);
         // papeles que vuelan desde el puesto de diarios
         if (!st.still) {
           for (let p = 0; p < 5; p++) {
             const life = ((st.t * 0.22 + p * 0.2) % 1);
-            const px = x0 + 14 + life * 26 + Math.sin(life * 9 + p * 2) * 5;
-            const py = y0 + 148 - life * 60 + Math.cos(life * 7 + p) * 2;
+            const px = x0 + REDACCION.papeles[0] + life * 18 + Math.sin(life * 9 + p * 2) * 5;
+            const py = y0 + REDACCION.papeles[1] - life * 46 + Math.cos(life * 7 + p) * 2;
             gg.globalAlpha = Math.min(1, (1 - life) * 2.2);
             gg.fillStyle = "#fffdf7"; gg.fillRect(Math.round(px), Math.round(py), 3, 2);
             gg.fillStyle = "#d6cbb0"; gg.fillRect(Math.round(px), Math.round(py) + 1, 3, 1);
             gg.globalAlpha = 1;
+          }
+        }
+      }
+      if (h.id === "periodismo") {
+        // ventana de la imprenta: se enciende al pasar el mouse
+        if (hov) gg.drawImage(redVentana, Math.round(x0 + REDACCION.ventana.x), Math.round(y0 + REDACCION.ventana.y + bounce));
+        // pájaros en el alero: posados casi siempre; de a ratos uno aletea
+        REDACCION.pajaros.posaderos.forEach(([qx, qy], i) => {
+          const fl = !st.still && ((st.t + i * 3.7) % 9) < 0.7;
+          const sx = fl ? (Math.floor(st.t * 5) % 2) * 8 : 16;
+          gg.drawImage(redPajaros, sx, 0, 7, 4, Math.round(x0 + qx), Math.round(y0 + qy + bounce - (fl ? 1 : 0)), 7, 4);
+        });
+        // globito de charla sin personas: aparece cada tanto (…, !, ?)
+        if (!st.still) {
+          const ciclo = (st.t + 2) % 14;
+          if (ciclo < 3.2) {
+            const sim = Math.floor((st.t + 2) / 14) % 3;
+            const cuadro = sim * 2 + (ciclo < 0.35 ? 0 : 1);
+            gg.drawImage(redGlobitos, cuadro * 9, 0, 9, 8, Math.round(x0 + REDACCION.globito.x), Math.round(y0 + REDACCION.globito.y - ciclo * 1.2 + bounce), 9, 8);
           }
         }
       }
@@ -411,7 +432,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
       }
       if (vis) {
         // sello de "visitado": chapita verde con tilde, junto a la puerta
-        const cx = Math.round(x0 + h.c.puerta + 24), cy = by - 6;
+        const cx = h.id === "periodismo" ? Math.round(x0 + REDACCION.chapita[0]) : Math.round(x0 + h.c.puerta + 24), cy = h.id === "periodismo" ? Math.round(y0 + REDACCION.chapita[1]) : by - 6;
         gg.fillStyle = "#2e1b14";
         gg.fillRect(cx - 4, cy - 3, 9, 7); gg.fillRect(cx - 3, cy - 4, 7, 9);
         gg.fillStyle = "#587a35";
