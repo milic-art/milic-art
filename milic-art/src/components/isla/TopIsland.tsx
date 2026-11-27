@@ -80,7 +80,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   canvas.height = lh;
   const g = canvas.getContext("2d")!;
   g.imageSmoothingEnabled = false;
-  const still = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const still = (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches) || /[?&]sin-movimiento/.test(window.location.search);
 
   const ids = Object.keys(CASITAS_TOP) as PlaceId[];
   const names = Object.values(ASSETS);

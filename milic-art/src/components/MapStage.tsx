@@ -38,7 +38,9 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
   const walkRaf = useRef<number | null>(null);
   const WORLD_W = layout.worldW;
   const WORLD_H = layout.worldH;
-  const [mode, setMode] = useState<IslaMode>("auto");
+  const [mode, setMode] = useState<IslaMode>(() => {
+    try { const m = new URLSearchParams(window.location.search).get("modo"); return m === "noche" ? "night" : m === "dia" ? "day" : "auto"; } catch { return "auto"; }
+  });
   const [nightShown, setNightShown] = useState(() => {
     const h = new Date().getHours();
     return h >= 19 || h < 6;
