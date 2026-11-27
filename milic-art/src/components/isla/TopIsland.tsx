@@ -206,6 +206,16 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
       } });
       continue;
     }
+    if (p.k === "arbol_grande_puerta") {
+      // árbol con puertita (entrada al jueguito): pie pisado, árbol y luz de noche
+      const T = aD3.meta["arbol_puerta"], TL = aD3.meta["arbol_puerta_luz"], R = aD3.meta["anillo_pisado_1"];
+      objects.push({ x: p.x, y: -1, fn: (_g, st) => put(aD3.spr, R.x, R.y, R.w, R.h, p.x - R.w / 2, p.y - R.h + 8, st) });
+      objects.push({ x: p.x, y: p.y, fn: (_g, st) => {
+        put(aD3.spr, T.x, T.y, T.w, T.h, p.x - T.w / 2, p.y - 90, st);
+        if (st.n > 0.05) put(aD3.spr, TL.x, TL.y, TL.w, TL.h, p.x - TL.w / 2, p.y - 90, st, st.n);
+      } });
+      continue;
+    }
     const f = findAt(p.k);
     if (!f) continue;
     const ph = rnd() * 8;
