@@ -1,0 +1,149 @@
+{
+ "recto_h_1": {
+  "x": 0,
+  "y": 0,
+  "w": 32,
+  "h": 32,
+  "nota": "32x32; camino 24 px (y 4..27)"
+ },
+ "recto_h_2": {
+  "x": 34,
+  "y": 0,
+  "w": 32,
+  "h": 32
+ },
+ "recto_v_1": {
+  "x": 68,
+  "y": 0,
+  "w": 32,
+  "h": 32,
+  "nota": "camino 24 px (x 4..27)"
+ },
+ "recto_v_2": {
+  "x": 102,
+  "y": 0,
+  "w": 32,
+  "h": 32
+ },
+ "curva_arriba_der": {
+  "x": 136,
+  "y": 0,
+  "w": 32,
+  "h": 32,
+  "nota": "curva redondeada"
+ },
+ "curva_arriba_izq": {
+  "x": 170,
+  "y": 0,
+  "w": 32,
+  "h": 32,
+  "nota": "curva redondeada"
+ },
+ "curva_abajo_der": {
+  "x": 204,
+  "y": 0,
+  "w": 32,
+  "h": 32,
+  "nota": "curva redondeada"
+ },
+ "curva_abajo_izq": {
+  "x": 0,
+  "y": 34,
+  "w": 32,
+  "h": 32,
+  "nota": "curva redondeada"
+ },
+ "cruce": {
+  "x": 34,
+  "y": 34,
+  "w": 32,
+  "h": 32
+ },
+ "T_sin_arriba": {
+  "x": 68,
+  "y": 34,
+  "w": 32,
+  "h": 32
+ },
+ "T_sin_abajo": {
+  "x": 102,
+  "y": 34,
+  "w": 32,
+  "h": 32
+ },
+ "T_sin_izq": {
+  "x": 136,
+  "y": 34,
+  "w": 32,
+  "h": 32
+ },
+ "T_sin_der": {
+  "x": 170,
+  "y": 34,
+  "w": 32,
+  "h": 32
+ },
+ "fin_arriba": {
+  "x": 204,
+  "y": 34,
+  "w": 32,
+  "h": 32,
+  "nota": "punta redondeada (el camino entra por el lado opuesto)"
+ },
+ "fin_abajo": {
+  "x": 0,
+  "y": 68,
+  "w": 32,
+  "h": 32,
+  "nota": "punta redondeada (el camino entra por el lado opuesto)"
+ },
+ "fin_izq": {
+  "x": 34,
+  "y": 68,
+  "w": 32,
+  "h": 32,
+  "nota": "punta redondeada (el camino entra por el lado opuesto)"
+ },
+ "fin_der": {
+  "x": 68,
+  "y": 68,
+  "w": 32,
+  "h": 32,
+  "nota": "punta redondeada (el camino entra por el lado opuesto)"
+ },
+ "placita_piedra": {
+  "x": 102,
+  "y": 68,
+  "w": 64,
+  "h": 64,
+  "nota": "64x64; placita central donde descansa Clocky"
+ },
+ "recto_h_bosque": {
+  "x": 168,
+  "y": 68,
+  "w": 32,
+  "h": 32,
+  "nota": "bajo arboles: sombra de copas y hojas"
+ },
+ "recto_v_bosque": {
+  "x": 202,
+  "y": 68,
+  "w": 32,
+  "h": 32,
+  "nota": "bajo arboles"
+ },
+ "curva_abajo_der_bosque": {
+  "x": 0,
+  "y": 134,
+  "w": 32,
+  "h": 32,
+  "nota": "bajo arboles"
+ },
+ "curva_arriba_izq_bosque": {
+  "x": 34,
+  "y": 134,
+  "w": 32,
+  "h": 32,
+  "nota": "bajo arboles"
+ }
+}
