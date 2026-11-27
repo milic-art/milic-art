@@ -76,6 +76,11 @@ La imagen es una torre de reloj de madera con engranajes de vidrio. Qué hace bi
 ## Qué tiene que adjuntar ella al pasarle esto a Code
 Las referencias no están en el repo (son de terceros, solo inspiración): adjuntar en el chat de Code la imagen de la torre de reloj de madera, y la hoja de engranajes `engranajes.png` que se hizo en esta sesión. Mis scripts (`assets_engranajes.py`, etc.) están sin commitear: pedir a Claude que los suba a la rama antes.
 
+## Animación (obligatoria)
+- **Los engranajes del eje de vidrio tienen que girar de verdad**, también los del sótano/bajo tierra del edificito. Usar `assets_engranajes.py`: vecinos giran en sentido contrario, un diente por ciclo para que el loop sea perfecto (360/N grados), y el último cuadro igual al primero.
+- Hoy los sprites tienen 2 cuadros a 500 ms (`frames: 2, ms: 500`). Para los engranajes alcanzan 4 cuadros (subir `frames` a 4 y ajustar `ms` a ~250 para que gire suave sin marear; ella pidió que **nada rote ni se mueva de forma marcante** porque se marea). Mantener el giro lento.
+- También se animan: bandera que flamea, papeles volando, pájaros, agujas del reloj (hora real). Todo se detiene con `?sin-movimiento` y para quien tenga reducción de movimiento.
+
 ## Entregables
 1. Torre de la Redacción (día) mostrada por partes y aprobada.
 2. Integración en el mapa (config, TopIsland, route, hit areas/silueta de hover/chapita de visitado en `interacciones.js`), Clocky caminando bien hasta la puerta.
