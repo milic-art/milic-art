@@ -81,6 +81,36 @@ Las referencias no están en el repo (son de terceros, solo inspiración): adjun
 - Hoy los sprites tienen 2 cuadros a 500 ms (`frames: 2, ms: 500`). Para los engranajes alcanzan 4 cuadros (subir `frames` a 4 y ajustar `ms` a ~250 para que gire suave sin marear; ella pidió que **nada rote ni se mueva de forma marcante** porque se marea). Mantener el giro lento.
 - También se animan: bandera que flamea, papeles volando, pájaros, agujas del reloj (hora real). Todo se detiene con `?sin-movimiento` y para quien tenga reducción de movimiento.
 
+## Paquete de entrega y animaciones (detalle completo)
+**Quién dibuja qué.** Lo que va por código NO se pinta en el sprite (si no, se ve doble).
+
+| Elemento | Quién lo dibuja | Cuadros / velocidad | Qué entregar |
+|---|---|---|---|
+| Agujas del reloj | la web (líneas de 1 px, hora real del visitante) | continuo | esfera LIMPIA sin agujas + centro (x,y) y radio. Hora `#7a2e26` ~3 px, minutero `#2e1b14` ~5 px |
+| Papeles volando | la web (5 papelitos que suben y se desvanecen) | continuo, lento | atril de diarios con pila de papeles + punto de origen (x,y) |
+| Engranajes del eje de vidrio y del sótano | sprite | 4 cuadros, ~250 ms, loop perfecto (1 diente por ciclo), vecinos en sentido contrario | tira de cuadros (o capas separadas por engranaje) |
+| Bandera del edificito | sprite | 2 cuadros, lento | dentro de la tira |
+| Veleta de pluma | sprite | 2 cuadros, movimiento mínimo | dentro de la tira |
+| Pájaros | la web mueve el sprite | aleteo de 2 cuadros + 1 posado | hoja aparte chica (~7×4 px por cuadro) |
+| Humo de la chimenea | la web | continuo | punto de salida (x,y) |
+| Hover (mouse encima) | la web: contorno claro + una ventana que se enciende | — | ventana encendida y apagada como PNG a tamaño de cuadro |
+| Visitado | la web: luz suave en la puerta + chapita con tilde | — | dejar lugar libre junto a la puerta |
+| Sombra proyectada | pieza aparte | estática | PNG del mismo tamaño, negro ~35% opacidad (el motor solo tiene sombras armadas para casitas de 64 px) |
+
+**Reglas de movimiento:** todo lento y suave, nada rota ni se mueve de forma marcante (ella se marea). Se frena con `?sin-movimiento` y con reducción de movimiento del sistema.
+
+**Anclaje:** la torre se ancla por la **puerta** (`x0 = bx - puerta`), no por el centro del cuadro. Entregar `puerta` (x del centro de la puerta) y `base` (y del piso). Clocky entra solo por la puerta de abajo; no sube la escalera por ahora.
+
+**Layout:** isla horizontal empieza en y=34 y base de la Redacción en [280,168]; vertical empieza en y=52 y base en [162,176]. Con ~118 px de alto entra. Árboles chicos alrededor (x 248–308, y 70–100) los quita/mueve el integrador, no tocar el layout.
+
+**Noche (después de aprobar el día), capas separadas del mismo tamaño que el cuadro, transparentes salvo la luz:** ventanas con luz cálida, faroles de la puerta, luz de escritorio. Luces `#ffd36b #fff1a8 #fff6d6 #fff3c4` no se oscurecen.
+
+**Más adelante (no ahora):** al "entrar" a la casita, panel con piel de portada de diario y sonido de máquina de escribir (audio apagado por defecto, solo tras interacción). Pensar que el atril, el buzón y la máquina de escribir de la galería sean piezas sueltas reutilizables.
+
+**Formato del zip:** PNG de día (tira de cuadros), PNG de sombra, PNG de pájaros, PNG de ventana encendida, vista ×8 para mirar, y un JSON simple:
+`{"fw":..,"fh":..,"base":..,"puerta":..,"frames":4,"ms":250,"reloj":{"x":..,"y":..,"r":..},"humo":[x,y],"papeles":[x,y]}`.
+Las casitas NO usan los JSON de `atlas/`: el integrador copia estos datos a la entrada de `CASITAS_TOP` en `config.ts`.
+
 ## Entregables
 1. Torre de la Redacción (día) mostrada por partes y aprobada.
 2. Integración en el mapa (config, TopIsland, route, hit areas/silueta de hover/chapita de visitado en `interacciones.js`), Clocky caminando bien hasta la puerta.
