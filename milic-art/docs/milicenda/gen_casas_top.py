@@ -270,7 +270,7 @@ def casita(fr, noche):
     return l, (13, 7)
 
 
-CASAS = [("casat_redaccion", redaccion), ("casat_estudio", estudio), ("casat_taller", taller), ("casat_laboratorio", laboratorio), ("casat_casita", casita)]
+CASAS = [("casat_estudio", estudio), ("casat_taller", taller), ("casat_laboratorio", laboratorio), ("casat_casita", casita)]
 
 
 def todo():

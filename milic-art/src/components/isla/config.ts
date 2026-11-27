@@ -63,7 +63,7 @@ export const ASSETS_TOP = {
 
 /** Casitas vistas desde arriba: hoja de 2 cuadros de 64x72, base (puerta) en la fila 68. humo = punto de la chimenea. */
 export const CASITAS_TOP: Record<PlaceId, { file: string; fileNoche: string; fw: number; fh: number; base: number; frames: number; ms: number; humo: [number, number] | null; puerta: number }> = {
-  periodismo: { file: "generados/casat_redaccion.png", fileNoche: "generados/casat_redaccion_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: [41, 5], puerta: 31 },
+  periodismo: { file: "generados/casat_redaccion.png", fileNoche: "generados/casat_redaccion_noche.png", fw: 128, fh: 190, base: 170, frames: 2, ms: 500, humo: [117, 92], puerta: 60 },
   diseno: { file: "generados/casat_estudio.png", fileNoche: "generados/casat_estudio_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: null, puerta: 45 },
   dibujo: { file: "generados/casat_taller.png", fileNoche: "generados/casat_taller_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: null, puerta: 31 },
   programacion: { file: "generados/casat_laboratorio.png", fileNoche: "generados/casat_laboratorio_noche.png", fw: 64, fh: 72, base: 68, frames: 2, ms: 500, humo: [49, 36], puerta: 31 },

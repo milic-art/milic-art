@@ -347,9 +347,9 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   });
   for (const h of casas) {
     const [bx, by] = h.pos;
-    const x0 = bx - 32, y0 = by - h.c.base;
+    const x0 = bx - h.c.fw / 2, y0 = by - h.c.base;
     const shM = aCasEx.meta[`sombra_${({ periodismo: "redaccion", diseno: "estudio", dibujo: "taller", programacion: "laboratorio", casita: "casita" } as Record<string, string>)[h.id] ?? ""}`] as (Meta & { ox: number; oy: number }) | undefined;
-    if (shM) objects.push({ x: bx, y: -2, fn: (_g, st) => put(aCasEx.spr, shM.x, shM.y, shM.w, shM.h, x0 + shM.ox, y0 + shM.oy, st) });
+    if (shM && h.c.fw === 64) objects.push({ x: bx, y: -2, fn: (_g, st) => put(aCasEx.spr, shM.x, shM.y, shM.w, shM.h, x0 + shM.ox, y0 + shM.oy, st) });
     const sen = aCasEx.meta[`senda_piedras_${1 + (ids.indexOf(h.id) % 2)}`], fel = aCasEx.meta["felpudo"];
     const dX = x0 + h.c.puerta;
     if (sen) objects.push({ x: bx, y: -1, fn: (_g, st) => put(aCasEx.spr, sen.x, sen.y, sen.w, sen.h, dX - sen.w / 2, by - 2, st) });
@@ -375,6 +375,29 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
         for (const [ddx, ddy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) gg.drawImage(sil, x0 + ddx, y0 + ddy + bounce);
       }
       put(h.spr, fr * h.c.fw, 0, h.c.fw, h.c.fh, x0, y0 + bounce, st);
+      if (h.id === "periodismo") {
+        // reloj con la hora real del visitante
+        const now = new Date(), mi = now.getMinutes() + now.getSeconds() / 60, ho = (now.getHours() % 12) + mi / 60;
+        const hand = (ang: number, len: number, col: string) => {
+          gg.fillStyle = col;
+          for (let k = 0; k <= len; k++) gg.fillRect(Math.round(x0 + 66 + Math.sin(ang) * k), Math.round(y0 + 82 - Math.cos(ang) * k + bounce), 1, 1);
+        };
+        hand((mi / 60) * Math.PI * 2, 8, "#2e1b14");
+        hand((ho / 12) * Math.PI * 2, 5, "#7a2e26");
+        gg.fillStyle = "#2e1b14"; gg.fillRect(x0 + 66, y0 + 82 + bounce, 1, 1);
+        // papeles que vuelan desde el puesto de diarios
+        if (!st.still) {
+          for (let p = 0; p < 5; p++) {
+            const life = ((st.t * 0.22 + p * 0.2) % 1);
+            const px = x0 + 14 + life * 26 + Math.sin(life * 9 + p * 2) * 5;
+            const py = y0 + 148 - life * 60 + Math.cos(life * 7 + p) * 2;
+            gg.globalAlpha = Math.min(1, (1 - life) * 2.2);
+            gg.fillStyle = "#fffdf7"; gg.fillRect(Math.round(px), Math.round(py), 3, 2);
+            gg.fillStyle = "#d6cbb0"; gg.fillRect(Math.round(px), Math.round(py) + 1, 3, 1);
+            gg.globalAlpha = 1;
+          }
+        }
+      }
       if (hov && !st.still) {
         // destellitos que titilan sobre el techo
         gg.fillStyle = "#fff1a8";
