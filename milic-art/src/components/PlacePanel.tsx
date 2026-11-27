@@ -639,6 +639,42 @@ function BlogView({
   );
 }
 
+function ProjectCard({ project }: { project: Discipline["projects"][number] }) {
+  const [more, setMore] = useState(false);
+  const LIMIT = 3;
+  const fields = more ? project.fields : project.fields.slice(0, LIMIT);
+  return (
+    <li className="rounded-xl border-2 border-ink/25 bg-chalk/70 px-3.5 py-3">
+      <p className="font-display text-[15px] font-bold leading-tight text-ink">
+        <Txt>{project.title}</Txt>
+      </p>
+      <p className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+        <Txt>{project.kind}</Txt>
+      </p>
+      <dl className="mt-2 space-y-1.5">
+        {fields.map((field) => (
+          <div key={field.label}>
+            <dt className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">{field.label}</dt>
+            <dd className="text-[13px] leading-snug text-ink">
+              <Txt>{field.value}</Txt>
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {project.fields.length > LIMIT && (
+        <button type="button" onClick={() => setMore((v) => !v)} className="mt-1 inline-flex min-h-[44px] items-center font-display text-[13px] font-bold text-orange-deep underline underline-offset-4">
+          {more ? "Ver menos" : "Ver más"}
+        </button>
+      )}
+      {project.link && (
+        <a href={project.link} target="_blank" rel="noreferrer noopener" className="mt-1 block font-display text-[13px] font-bold text-orange-deep underline underline-offset-4">
+          {site.labels.visit}
+        </a>
+      )}
+    </li>
+  );
+}
+
 function DisciplineBody({
   data,
   onContact,
@@ -649,6 +685,7 @@ function DisciplineBody({
   presetId: string;
 }) {
   const [blog, setBlog] = useState(false);
+  const [showAllProjects, setShowAllProjects] = useState(false);
   if (blog && data.journal) return <BlogView journal={data.journal} onBack={() => setBlog(false)} />;
   return (
     <div className="space-y-6">
@@ -679,37 +716,19 @@ function DisciplineBody({
       <section>
         <h3 className="font-display text-lg">{data.projectsLabel}</h3>
         <ul className="mt-2 grid gap-3 sm:grid-cols-2">
-          {data.projects.map((project, index) => (
-            <li key={index} className="rounded-xl border-2 border-ink/25 bg-chalk/70 px-3.5 py-3">
-              <p className="font-display text-[15px] font-bold leading-tight text-ink">
-                <Txt>{project.title}</Txt>
-              </p>
-              <p className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">
-                <Txt>{project.kind}</Txt>
-              </p>
-              <dl className="mt-2 space-y-1.5">
-                {project.fields.map((field) => (
-                  <div key={field.label}>
-                    <dt className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">{field.label}</dt>
-                    <dd className="text-[13px] leading-snug text-ink">
-                      <Txt>{field.value}</Txt>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              {project.link && (
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="mt-2 inline-block font-display text-[13px] font-bold text-orange-deep underline underline-offset-4"
-                >
-                  {site.labels.visit}
-                </a>
-              )}
-            </li>
+          {(showAllProjects ? data.projects : data.projects.slice(0, 1)).map((project, index) => (
+            <ProjectCard key={index} project={project} />
           ))}
         </ul>
+        {data.projects.length > 1 && (
+          <button
+            type="button"
+            onClick={() => setShowAllProjects((v) => !v)}
+            className="mt-2 inline-flex min-h-[44px] items-center font-display text-[14px] font-bold text-orange-deep underline underline-offset-4"
+          >
+            {showAllProjects ? "Ver menos" : `Ver más (${data.projects.length - 1})`}
+          </button>
+        )}
       </section>
 
       <div className="grid gap-3 sm:grid-cols-2">

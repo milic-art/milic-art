@@ -201,7 +201,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       const h = stage.clientHeight;
       if (w < 2 || h < 2) return;
       const { cover } = limits();
-      minScale.current = VISTA === "cenital" ? Math.min(cover, 0.3) : cover;
+      minScale.current = cover;
       maxScale.current = Math.max(cover * 2.2, 1.4);
       // La isla entera entra en pantalla (con aire arriba para el menú).
       const fit = Math.min((w * (portrait ? (VISTA === "cenital" ? 0.97 : 1.2) : 0.94)) / (layout.islaW * layout.z), (h * 0.74) / (layout.islaH * layout.z));
@@ -237,8 +237,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       const w = stage.clientWidth, h = stage.clientHeight;
       const [ix, iy, iw, ih] = (TOP[portrait ? "v" : "h"].isl as number[]);
       const sFit = Math.min(w / (iw + 30) / layout.z, h / (ih + 150) / layout.z);
-      const s = Math.min(maxScale.current, Math.max(sFit, 0.12));
-      minScale.current = Math.min(minScale.current, s);
+      const s = Math.min(maxScale.current, Math.max(sFit, minScale.current));
       if (layerRef.current) {
         layerRef.current.style.transition = "transform 420ms cubic-bezier(0.22, 1, 0.36, 1)";
         window.setTimeout(() => { if (layerRef.current) layerRef.current.style.transition = ""; }, 460);
@@ -257,7 +256,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       const box = stageRef.current;
       if (!box || box.clientWidth < 2 || box.clientHeight < 2) return;
       const { cover } = limits();
-      minScale.current = VISTA === "cenital" ? Math.min(cover, 0.3) : cover;
+      minScale.current = cover;
       maxScale.current = Math.max(cover * 2, 1.2);
       if (interacted.current) {
         setView(view.current);
@@ -275,6 +274,51 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       observer?.disconnect();
     };
   }, [limits, setView, welcomeView, portrait]);
+
+  // Flechas y WASD: el mapa se mueve de forma continua mientras la tecla está apretada.
+  useEffect(() => {
+    const down = new Set<string>();
+    let raf: number | null = null;
+    let last = 0;
+    const map: Record<string, [number, number]> = {
+      ArrowLeft: [1, 0], a: [1, 0], A: [1, 0],
+      ArrowRight: [-1, 0], d: [-1, 0], D: [-1, 0],
+      ArrowUp: [0, 1], w: [0, 1], W: [0, 1],
+      ArrowDown: [0, -1], s: [0, -1], S: [0, -1],
+    };
+    const tick = (t: number) => {
+      const dt = Math.min(48, t - last || 16);
+      last = t;
+      let dx = 0, dy = 0;
+      down.forEach((k) => { const v = map[k]; if (v) { dx += v[0]; dy += v[1]; } });
+      if (dx || dy) {
+        const cur = view.current;
+        const sp = 0.65 * dt;
+        interacted.current = true;
+        setView({ s: cur.s, x: cur.x + dx * sp, y: cur.y + dy * sp });
+      }
+      raf = down.size ? requestAnimationFrame(tick) : null;
+    };
+    const onDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || !(e.key in map)) return;
+      const tg = e.target as HTMLElement | null;
+      if (tg && (tg.tagName === "INPUT" || tg.tagName === "TEXTAREA" || tg.tagName === "SELECT" || tg.isContentEditable)) return;
+      e.preventDefault();
+      down.add(e.key);
+      if (raf === null) { last = performance.now(); raf = requestAnimationFrame(tick); }
+    };
+    const up = (e: KeyboardEvent) => { down.delete(e.key); };
+    const clear = () => down.clear();
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("keyup", up);
+    window.addEventListener("blur", clear);
+    return () => {
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("keyup", up);
+      window.removeEventListener("blur", clear);
+      if (raf !== null) cancelAnimationFrame(raf);
+    };
+  }, [setView]);
 
   // Wheel zoom, registered by hand so the page never scrolls behind the map.
   useEffect(() => {

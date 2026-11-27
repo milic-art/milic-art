@@ -5,9 +5,9 @@ export type Pt = { x: number; y: number };
 type Seg = { a: Pt; b: Pt };
 
 /** Velocidad de Clocky en px lógicos por segundo y límites de duración. */
-const SPEED = 190;
-const MIN_MS = 900;
-const MAX_MS = 3600;
+const SPEED = 320;
+const MIN_MS = 700;
+const MAX_MS = 1800;
 
 export function walkMs(len: number) {
   return Math.round(Math.min(MAX_MS, Math.max(MIN_MS, (len / SPEED) * 1000)));

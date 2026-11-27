@@ -58,7 +58,15 @@ export default function App() {
     (id: PlaceId) => {
       setListOpen(false);
       const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-      if (walkTimer.current !== null) window.clearTimeout(walkTimer.current);
+      // Si Clocky todavía camina, tocar de nuevo salta el paseo y abre directo.
+      const skip = walkTimer.current !== null;
+      if (walkTimer.current !== null) { window.clearTimeout(walkTimer.current); walkTimer.current = null; }
+      if (skip) {
+        setWalking(false);
+        setClockyAt(id);
+        setActiveId(id);
+        return;
+      }
       if (activeId !== null || reduce || clockyAt === id) {
         setClockyAt(id);
         setActiveId(id);
