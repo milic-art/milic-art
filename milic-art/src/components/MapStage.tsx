@@ -21,6 +21,7 @@ type MapStageProps = {
   clockyAt: PlaceId | null;
   clockyState: ClockyState;
   walking: boolean;
+  visited?: PlaceId[];
   onPokeClocky: () => void;
 };
 
@@ -28,7 +29,7 @@ type MapStageProps = {
  * The illustrated map. Custom pan and zoom: pointer drag, wheel, two finger
  * pinch, and the round zoom pegs for people who would rather not drag.
  */
-export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, onPokeClocky }: MapStageProps) {
+export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt, clockyState, walking, visited, onPokeClocky }: MapStageProps) {
   const layout = useMemo(() => islaLayout(portrait), [portrait]);
   // Clocky camina por los caminitos: posición en px lógicos, animada a mano a lo largo de la ruta
   const walkerRef = useRef<HTMLButtonElement | null>(null);
@@ -224,6 +225,25 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
       paint();
     },
     [clamp, limits, paint, layout],
+  );
+
+  /** Mueve la vista para que el punto (en % del mundo) quede cerca del centro de la pantalla. */
+  const centerOn = useCallback(
+    (xPct: number, yPct: number) => {
+      const stage = stageRef.current;
+      if (!stage) return;
+      const w = stage.clientWidth, h = stage.clientHeight;
+      const s = view.current.s;
+      const px = (xPct / 100) * WORLD_W, py = (yPct / 100) * WORLD_H - 60;
+      if (layerRef.current) {
+        layerRef.current.style.transition = "transform 360ms cubic-bezier(0.22, 1, 0.36, 1)";
+        window.setTimeout(() => { if (layerRef.current) layerRef.current.style.transition = ""; }, 400);
+      }
+      interacted.current = true;
+      view.current = clamp({ s, x: w / 2 - px * s, y: h / 2 - py * s });
+      paint();
+    },
+    [WORLD_W, WORLD_H, clamp, paint],
   );
 
   /** Alterna entre el encuadre cercano y la isla completa. */
@@ -453,17 +473,14 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
         style={{ width: WORLD_W, height: WORLD_H, willChange: "transform", opacity: 0 }}
       >
         {(() => {
-          const Isla = VISTA === "cenital" ? TopIsland : IsoIsland;
-          return (
-            <Isla
-              portrait={portrait}
-              mode={mode}
-              hoverId={hoveredId ?? activeId}
-              onReady={(api) => {
-                isla.current = api;
-                schedule();
-              }}
-            />
+          const onReady = (api: IslaControl) => {
+            isla.current = api;
+            schedule();
+          };
+          return VISTA === "cenital" ? (
+            <TopIsland portrait={portrait} mode={mode} hoverId={hoveredId ?? activeId} visited={visited} onReady={onReady} />
+          ) : (
+            <IsoIsland portrait={portrait} mode={mode} hoverId={hoveredId ?? activeId} onReady={onReady} />
           );
         })()}
 
@@ -495,9 +512,11 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
                 setHoveredId(null);
                 onHover(null);
               }}
-              onFocus={() => {
+              onFocus={(event) => {
                 setHoveredId(place.id);
                 onHover(place.id);
+                // Con teclado, el mapa se mueve solo hasta el lugar enfocado.
+                if (event.currentTarget.matches(":focus-visible")) centerOn(place.x, place.y);
               }}
               onBlur={() => {
                 setHoveredId(null);

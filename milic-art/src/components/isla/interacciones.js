@@ -330,6 +330,7 @@
     curDy = home.dy;
     try {
       await R[kind](tok, t);
+      if (!tok.dead) { try { window.dispatchEvent(new CustomEvent("milicenda-secreto", { detail: { id: kind } })); } catch (e) {} }
       w.removeAttribute("data-mil");
       await walk(tok, { x: home.x, y: home.y }, home.dy);
     } catch (e) {

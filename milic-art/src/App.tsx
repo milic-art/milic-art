@@ -36,6 +36,11 @@ export default function App() {
   const [idleIndex, setIdleIndex] = useState(0);
   const clocky = useClocky();
   const [visited, setVisited] = useState<PlaceId[]>([]);
+  const [secrets, setSecrets] = useState<string[]>(() => {
+    try { const v = JSON.parse(window.localStorage.getItem("milicenda-secretos") || "[]"); return Array.isArray(v) ? v.filter((x) => typeof x === "string") : []; } catch { return []; }
+  });
+  const [secretFlash, setSecretFlash] = useState(false);
+  const pokes = useRef(0);
   const [clockyAt, setClockyAt] = useState<PlaceId | null>(null);
   const [walking, setWalking] = useState(false);
   const [listOpen, setListOpen] = useState(false);
@@ -123,6 +128,32 @@ export default function App() {
   }, [activeId]);
 
   const places = site.map.places;
+
+  /** Secretos: frutal, flor, estanque, tronco, puerta del jueguito y tocar 5 veces a Clocky. */
+  const SECRET_TOTAL = 6;
+  const foundSecret = useCallback((id: string) => {
+    setSecrets((list) => {
+      if (list.includes(id)) return list;
+      const next = [...list, id];
+      try { window.localStorage.setItem("milicenda-secretos", JSON.stringify(next)); } catch { /* sin almacenamiento */ }
+      setSecretFlash(true);
+      window.setTimeout(() => setSecretFlash(false), 2600);
+      return next;
+    });
+  }, []);
+  useEffect(() => {
+    const onSecret = (e: Event) => {
+      const id = (e as CustomEvent<{ id?: string }>).detail?.id;
+      if (id) foundSecret(id);
+    };
+    window.addEventListener("milicenda-secreto", onSecret);
+    return () => window.removeEventListener("milicenda-secreto", onSecret);
+  }, [foundSecret]);
+  const pokeClocky = useCallback(() => {
+    clocky.poke();
+    pokes.current += 1;
+    if (pokes.current === 5) foundSecret("clocky");
+  }, [clocky, foundSecret]);
   const idleLines = useMemo(() => [site.mascot.greeting, ...site.mascot.idle], []);
 
   useEffect(() => {
@@ -172,7 +203,8 @@ export default function App() {
         clockyAt={clockyAt}
         clockyState={clocky.state}
         walking={walking}
-        onPokeClocky={clocky.poke}
+        visited={visited}
+        onPokeClocky={pokeClocky}
       />
 
       <SiteHeader
@@ -182,16 +214,23 @@ export default function App() {
         onWrite={() => openContact()}
       />
 
-      <GuideCompanion line={line} dimmed={activeId !== null} onPoke={clocky.poke} />
+      <GuideCompanion line={line} dimmed={activeId !== null} onPoke={pokeClocky} />
 
-      <p
-        className="pointer-events-none absolute right-3 top-[76px] z-20 hidden rounded-full border-2 border-ink/20 bg-chalk/90 px-3 py-1 font-display text-[12px] font-bold text-ink-soft sm:block"
-        aria-live="polite"
-      >
-        {visited.length === places.length
-          ? hints.allDiscovered
-          : hints.discovered(visited.length, places.length)}
-      </p>
+      <div className="pointer-events-none absolute right-3 top-[76px] z-20 flex flex-col items-end gap-1.5" aria-live="polite">
+        <p className="hidden rounded-full border-2 border-ink/20 bg-chalk/90 px-3 py-1 font-display text-[12px] font-bold text-ink-soft sm:block">
+          {visited.length === places.length
+            ? hints.allDiscovered
+            : hints.discovered(visited.length, places.length)}
+        </p>
+        <p
+          className={`rounded-full border-2 px-3 py-1 font-display text-[12px] font-bold transition-colors ${
+            secretFlash ? "border-ink bg-orange-deep text-chalk" : "border-ink/20 bg-chalk/90 text-ink-soft"
+          }`}
+        >
+          {secretFlash && secrets.length < SECRET_TOTAL ? `${hints.newSecret} ` : ""}
+          {secrets.length >= SECRET_TOTAL ? hints.allSecrets : hints.secrets(secrets.length, SECRET_TOTAL)}
+        </p>
+      </div>
 
       <MobileDock activeId={activeId} onOpen={openPlace} />
 

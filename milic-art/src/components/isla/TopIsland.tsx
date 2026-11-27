@@ -60,6 +60,7 @@ type Props = {
   portrait: boolean;
   mode: IslaMode;
   hoverId: PlaceId | null;
+  visited?: PlaceId[];
   onReady?: (api: IslaControl) => void;
 };
 
@@ -68,6 +69,7 @@ type Draw = { y: number; x: number; fn: (g: CanvasRenderingContext2D, st: State)
 type Engine = {
   setMode: (m: IslaMode) => void;
   setHover: (id: PlaceId | null) => void;
+  setVisited: (ids: PlaceId[]) => void;
   setParallax: (x: number, y: number) => void;
   stop: () => void;
 };
@@ -126,6 +128,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   let nTarget = nightFactorFromClock();
   let n = nTarget;
   let hover: PlaceId | null = initial.hover;
+  let visitedSet = new Set<PlaceId>();
   let par = { x: 0, y: 0 };
   const setMode = (m: IslaMode) => {
     nTarget = m === "day" ? 0 : m === "night" ? 1 : nightFactorFromClock();
@@ -244,13 +247,34 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
     if (!f) continue;
     if (d.k === "farolito") {
       const hl = aD3.meta["farolito_halo"];
-      objects.push({ x: d.x, y: d.y + 40, fn: (_g, st) => { if (st.n > 0.05) put(aD3.spr, hl.x, hl.y, hl.w, hl.h, d.x - hl.w / 2, d.y - 22 - hl.h / 2, st, st.n); } });
+      objects.push({ x: d.x, y: d.y + 40, fn: (_g, st) => { if (st.n > 0.05) put(aD3.spr, hl.x, hl.y, hl.w, hl.h, d.x - hl.w / 2, d.y - 22 - hl.h / 2, st, st.n * 0.6); } });
     }
     const isBridge = d.k === "puente";
     objects.push({ x: d.x, y: isBridge ? -1 : d.y, fn: (_g, st) => {
       const alt = d.k === "pozo_balde_arriba" && !still && Math.floor(st.t / 2.2) % 2 === 1 ? aDeco.meta["pozo_balde_abajo"] : f[1];
       drawM(f[0], alt, alt.frames && !still ? frameAt(alt, st.t) : 0, d.x, d.y, st);
     } });
+  }
+  // puente de tablones donde el caminito cruza el arroyo (compu); dibujado a mano, con versión de noche
+  if (!portrait) {
+    const BW = 26, BH = 16, bc = document.createElement("canvas");
+    bc.width = BW; bc.height = BH;
+    const b = bc.getContext("2d")!;
+    const px = (c: string, x: number, y: number, w = 1, h = 1) => { b.fillStyle = c; b.fillRect(x, y, w, h); };
+    px("#2e1b14", 0, 0, BW, BH);
+    for (let x = 0; x < BW; x++) {
+      px(x % 3 === 2 ? "#8a4e2a" : (Math.floor(x / 3) % 2 === 0 ? "#e0b070" : "#bf8444"), x, 1, 1, BH - 2);
+    }
+    px("#b96d32", 0, 1, BW, 1); px("#8a4e2a", 0, 2, BW, 1);          // baranda de arriba
+    px("#b96d32", 0, BH - 4, BW, 1); px("#8a4e2a", 0, BH - 3, BW, 1); // baranda de abajo
+    for (const [qx, qy] of [[1, 1], [BW - 3, 1], [1, BH - 4], [BW - 3, BH - 4]]) { px("#2e1b14", qx - 1, qy - 1, 4, 4); px("#5a3322", qx, qy, 2, 2); px("#bf8444", qx, qy, 1, 1); }
+    // los extremos quedan abiertos: las tablas siguen el caminito
+    px("#8a4e2a", 0, 3, 1, BH - 7); px("#8a4e2a", BW - 1, 3, 1, BH - 7);
+    const bspr = toSpr(bc as unknown as HTMLImageElement);
+    const bx = 493, by = 385;
+    objects.push({ x: bx, y: by + BH, fn: (_g, st) => put(bspr, 0, 0, BW, BH, bx, by, st) });
+    // sombra del puente sobre el agua
+    objects.push({ x: bx, y: by + BH, fn: (gg, st) => { gg.globalAlpha = 0.35; gg.fillStyle = st.n > 0.5 ? "#10284a" : "#1b5f66"; gg.fillRect(bx + 3, by + BH, BW - 6, 2); gg.globalAlpha = 1; } });
   }
   // rayos de luz entre copas (solo de día), sobre algunos árboles grandes
   (D.props as { k: string; x: number; y: number }[]).filter((q) => q.k.startsWith("bq_") && !q.k.endsWith("_chico")).filter((_, i) => i % 9 === 4).forEach((q, i) => {
@@ -283,9 +307,11 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
       const fr = Math.floor((st.t * 1000) / h.c.ms) % h.c.frames;
       const hov = st.hover === h.id;
       const bounce = hov ? -(Math.floor(st.t * 5) % 2) : 0;
-      // luz de la puerta sobre el pasto (noche)
-      if (st.n > 0.05) {
-        gg.globalAlpha = 0.22 * st.n;
+      // luz de la puerta sobre el pasto: de noche, al pasar el mouse y en los lugares ya visitados
+      const vis = visitedSet.has(h.id);
+      const lightA = Math.max(0.22 * st.n, hov ? 0.2 : 0, vis ? 0.12 : 0);
+      if (lightA > 0.02) {
+        gg.globalAlpha = lightA;
         gg.fillStyle = "#ffd36b";
         for (let r = -5; r <= 5; r++) {
           const w = Math.round(14 * Math.sqrt(1 - (r / 6) * (r / 6)));
@@ -298,6 +324,27 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
         for (const [ddx, ddy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) gg.drawImage(sil, x0 + ddx, y0 + ddy + bounce);
       }
       put(h.spr, fr * h.c.fw, 0, h.c.fw, h.c.fh, x0, y0 + bounce, st);
+      if (hov && !st.still) {
+        // destellitos que titilan sobre el techo
+        gg.fillStyle = "#fff1a8";
+        [[0.2, 8], [0.5, 0], [0.8, 10]].forEach(([fx, fy], i) => {
+          const ph = (st.t * 2.2 + i * 0.7) % 2;
+          if (ph > 1) return;
+          const sx = Math.round(x0 + h.c.fw * fx), sy = Math.round(y0 + fy + bounce), a = ph < 0.5 ? 1 : 0;
+          gg.fillRect(sx, sy, 1, 1);
+          if (a) { gg.fillRect(sx - 1, sy, 3, 1); gg.fillRect(sx, sy - 1, 1, 3); }
+        });
+      }
+      if (vis) {
+        // sello de "visitado": chapita verde con tilde, junto a la puerta
+        const cx = Math.round(x0 + h.c.puerta + 24), cy = by - 6;
+        gg.fillStyle = "#2e1b14";
+        gg.fillRect(cx - 4, cy - 3, 9, 7); gg.fillRect(cx - 3, cy - 4, 7, 9);
+        gg.fillStyle = "#587a35";
+        gg.fillRect(cx - 3, cy - 2, 7, 5); gg.fillRect(cx - 2, cy - 3, 5, 7);
+        gg.fillStyle = "#fffdf7";
+        for (const [qx, qy] of [[-2, 0], [-1, 1], [0, 0], [1, -1], [2, -2]]) gg.fillRect(cx + qx, cy + qy, 1, 1);
+      }
       const puffs = h.c.humo ? (hov ? 6 : 4) : 0;
       for (let p = 0; p < puffs; p++) {
         const life = ((st.t * (hov ? 7 : 4.5) + p * (10 / puffs)) % 10) / 10;
@@ -512,6 +559,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   return {
     setMode,
     setHover: (id) => { hover = id; request(); },
+    setVisited: (ids) => { visitedSet = new Set(ids); request(); },
     setParallax: (x, y) => { par = { x: Math.max(-1, Math.min(1, x)) * 6, y: Math.max(-1, Math.min(1, y)) * 4 }; request(); },
     stop: () => { stopped = true; cancelAnimationFrame(raf); },
   };
@@ -519,11 +567,11 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
 
 /* ------------------------------------------------------------------ componente */
 
-export function TopIsland({ portrait, mode, hoverId, onReady }: Props) {
+export function TopIsland({ portrait, mode, hoverId, visited, onReady }: Props) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const engine = useRef<Engine | null>(null);
-  const live = useRef({ mode, hoverId });
-  live.current = { mode, hoverId };
+  const live = useRef({ mode, hoverId, visited });
+  live.current = { mode, hoverId, visited };
 
   useEffect(() => {
     const canvas = ref.current;
@@ -534,6 +582,7 @@ export function TopIsland({ portrait, mode, hoverId, onReady }: Props) {
       engine.current = e;
       e.setMode(live.current.mode);
       e.setHover(live.current.hoverId);
+      e.setVisited(live.current.visited ?? []);
       onReady?.({ setParallax: e.setParallax });
     });
     return () => {
@@ -546,6 +595,7 @@ export function TopIsland({ portrait, mode, hoverId, onReady }: Props) {
 
   useEffect(() => { engine.current?.setMode(mode); }, [mode]);
   useEffect(() => { engine.current?.setHover(hoverId); }, [hoverId]);
+  useEffect(() => { engine.current?.setVisited(visited ?? []); }, [visited]);
 
   const L = topLayout(portrait);
   return (
