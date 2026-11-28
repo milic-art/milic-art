@@ -1,0 +1,173 @@
+{
+ "frame": {
+  "fw": 66,
+  "fh": 128,
+  "base": 120,
+  "puerta": 38,
+  "frames": 4,
+  "ms": 250
+ },
+ "capas_noche": {
+  "luz_ventanas": {
+   "archivo": "luz_ventanas.png",
+   "x": 0,
+   "y": 0,
+   "frames": 1
+  },
+  "luz_reloj": {
+   "archivo": "luz_reloj.png",
+   "x": 0,
+   "y": 0,
+   "frames": 1,
+   "nota": "las agujas van encima"
+  },
+  "luz_puerta": {
+   "archivo": "luz_puerta.png",
+   "x": 0,
+   "y": 0,
+   "frames": 1,
+   "nota": "halo en 3 niveles: vidrio opaco, 50 % y 25 %; entra en el cuadro"
+  },
+  "luz_escritorio": {
+   "archivo": "luz_escritorio.png",
+   "x": 0,
+   "y": 0,
+   "frames": 1
+  },
+  "luz_engranajes": {
+   "archivo": "luz_engranajes.png",
+   "x": 0,
+   "y": 0,
+   "frames": 4,
+   "ms": 250,
+   "nota": "tira de 4 cuadros de 66x128, sincronizada con el sprite"
+  }
+ },
+ "orden_de_dibujo_noche": [
+  "sprite oscurecido",
+  "luz_engranajes",
+  "luz_ventanas",
+  "luz_escritorio",
+  "luz_reloj",
+  "agujas",
+  "luz_puerta",
+  "luciérnagas"
+ ],
+ "bandera": {
+  "archivo": "bandera_v3.png",
+  "x": 8,
+  "y": 77,
+  "w": 9,
+  "h": 6,
+  "frames": 2,
+  "ms": 1000,
+  "nota": "la tela salió del sprite (queda el mástil); 1 px de diferencia entre cuadros"
+ },
+ "humo": {
+  "archivo": "humo.png",
+  "w": 9,
+  "h": 16,
+  "frames": 4,
+  "ms": 450,
+  "x": 17,
+  "y": 64,
+  "salida": [
+   21,
+   79
+  ]
+ },
+ "luciernagas": {
+  "sprites": [
+   "luciernaga_1x1.png",
+   "luciernaga_2x2.png"
+  ],
+  "solo_noche": true,
+  "recorrido_rel_puerta": [
+   [
+    -16,
+    -6
+   ],
+   [
+    -11,
+    -14
+   ],
+   [
+    -3,
+    -19
+   ],
+   [
+    6,
+    -16
+   ],
+   [
+    14,
+    -10
+   ],
+   [
+    17,
+    -2
+   ],
+   [
+    9,
+    2
+   ],
+   [
+    -6,
+    1
+   ]
+  ],
+  "puerta": [
+   38,
+   120
+  ],
+  "ms_por_tramo": 1400,
+  "nota": "x,y relativos a la puerta (38,120); moverse lento y titilar suave"
+ },
+ "colores_luz": [
+  "#ffd36b",
+  "#fff1a8",
+  "#fff6d6",
+  "#fff3c4"
+ ],
+ "colores_sprite": [
+  "#1b5f66",
+  "#2c9488",
+  "#2e1b14",
+  "#35563a",
+  "#463f4a",
+  "#4a2c1f",
+  "#587a35",
+  "#58cc9f",
+  "#5a3322",
+  "#77707c",
+  "#7a2e26",
+  "#8a4e2a",
+  "#8aa23a",
+  "#8fd2d2",
+  "#a8a08e",
+  "#b84a2c",
+  "#b96d32",
+  "#bcc046",
+  "#c8ecdc",
+  "#c94b64",
+  "#d6cbb0",
+  "#d99a1c",
+  "#e8874a",
+  "#effbe6",
+  "#f092a4",
+  "#f2c230",
+  "#f9e07a",
+  "#fbf3e4",
+  "#fffdf7"
+ ],
+ "colores_pulido": [
+  "#7a2e26",
+  "#b84a2c",
+  "#e8874a",
+  "#77707c",
+  "#a8a08e",
+  "#d6cbb0",
+  "#2e1b14"
+ ],
+ "todo_quieto": "con ?sin-movimiento o reducción de movimiento: bandera cuadro 0, humo cuadro 0, sin luciérnagas"
+}

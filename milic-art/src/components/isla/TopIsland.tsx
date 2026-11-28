@@ -105,7 +105,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
   const aSombra = { spr: toSpr(A.arbolSombra), meta: {} as Record<string, Meta> };
   void aSombra;
   const suelo = await Promise.all(Array.from({ length: D.nf as number }, (_, f) => loadImage(`generados/isla_${key}_${f}.png`)));
-  const [redSombra, redVentana, redPajaros, redGlobitos] = await Promise.all([REDACCION.files.sombra, REDACCION.files.ventanaOn, REDACCION.files.pajaros, REDACCION.files.globitos].map((f) => loadImage(f)));
+  const [redSombra, redVentana, redPajaros, redGlobitos, rLuzVen, rLuzEsc, rLuzRel, rLuzPue, rLuzEng, rBandera, rHumo, rLuc1, rLuc2] = await Promise.all([REDACCION.files.sombra, REDACCION.files.ventanaOn, REDACCION.files.pajaros, REDACCION.files.globitos, REDACCION.files.luzVentanas, REDACCION.files.luzEscritorio, REDACCION.files.luzReloj, REDACCION.files.luzPuerta, REDACCION.files.luzEngranajes, REDACCION.files.bandera, REDACCION.files.humo, REDACCION.files.luc1, REDACCION.files.luc2].map((f) => loadImage(f)));
   const casaImgs = await Promise.all(ids.flatMap((id) => [loadImage(CASITAS_TOP[id].file), loadImage(CASITAS_TOP[id].fileNoche)]));
 
   const S = {
@@ -378,6 +378,17 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
       }
       put(h.spr, fr * h.c.fw, 0, h.c.fw, h.c.fh, x0, y0 + bounce, st);
       if (h.id === "periodismo") {
+        // capas de luz de noche (colores que no se oscurecen): engranajes, ventanas, escritorio, reloj
+        if (st.n > 0.02) {
+          const a = Math.min(1, st.n * 1.4);
+          gg.globalAlpha = a;
+          const ox = Math.round(x0), oy = Math.round(y0 + bounce);
+          gg.drawImage(rLuzEng, (still ? 0 : fr) * h.c.fw, 0, h.c.fw, h.c.fh, ox, oy, h.c.fw, h.c.fh);
+          gg.drawImage(rLuzVen, ox, oy);
+          gg.drawImage(rLuzEsc, ox, oy);
+          gg.drawImage(rLuzRel, ox, oy);
+          gg.globalAlpha = 1;
+        }
         // reloj con la hora real del visitante
         const now = new Date(), mi = now.getMinutes() + now.getSeconds() / 60, ho = (now.getHours() % 12) + mi / 60;
         const hand = (ang: number, len: number, col: string) => {
@@ -419,6 +430,34 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
           }
         }
       }
+      if (h.id === "periodismo") {
+        const ox = Math.round(x0), oy = Math.round(y0 + bounce);
+        // bandera: solo el mastil esta en el sprite; la tela ondea muy suave
+        gg.drawImage(rBandera, (st.still ? 0 : Math.floor((st.t * 1000) / REDACCION.bandera.ms) % 2) * REDACCION.bandera.w, 0, REDACCION.bandera.w, REDACCION.bandera.h, ox + REDACCION.bandera.x, oy + REDACCION.bandera.y, REDACCION.bandera.w, REDACCION.bandera.h);
+        // humo de la chimenea (sprite de 4 cuadros)
+        const hs = REDACCION.humoSpr, hf = st.still ? 0 : Math.floor((st.t * 1000) / hs.ms) % 4;
+        gg.globalAlpha = st.n > 0.5 ? 0.8 : 1;
+        gg.drawImage(rHumo, hf * hs.w, 0, hs.w, hs.h, ox + hs.x, oy + hs.y, hs.w, hs.h);
+        gg.globalAlpha = 1;
+        if (st.n > 0.02) {
+          gg.globalAlpha = Math.min(1, st.n * 1.4);
+          gg.drawImage(rLuzPue, ox, oy);
+          gg.globalAlpha = 1;
+        }
+        // luciernagas (solo de noche y con movimiento): recorrido lento alrededor de la puerta
+        if (!st.still && st.n > 0.5) {
+          const L = REDACCION.luciernagas, R = L.ruta, T = (st.t * 1000) / L.ms;
+          for (let k = 0; k < 2; k++) {
+            const u = T + k * (R.length / 2), i0 = Math.floor(u) % R.length, i1 = (i0 + 1) % R.length, f = u - Math.floor(u);
+            const e = f * f * (3 - 2 * f);
+            const lx = x0 + L.puerta[0] + R[i0][0] + (R[i1][0] - R[i0][0]) * e + (k ? 14 : 0);
+            const ly = y0 + L.puerta[1] + R[i0][1] + (R[i1][1] - R[i0][1]) * e + bounce;
+            gg.globalAlpha = (0.55 + 0.45 * Math.sin(st.t * 2.2 + k * 2)) * Math.min(1, (st.n - 0.5) * 2);
+            gg.drawImage(k ? rLuc2 : rLuc1, Math.round(lx), Math.round(ly));
+            gg.globalAlpha = 1;
+          }
+        }
+      }
       if (hov && !st.still) {
         // destellitos que titilan sobre el techo
         gg.fillStyle = "#fff1a8";
@@ -440,7 +479,7 @@ async function createEngine(canvas: HTMLCanvasElement, portrait: boolean, initia
         gg.fillStyle = "#fffdf7";
         for (const [qx, qy] of [[-2, 0], [-1, 1], [0, 0], [1, -1], [2, -2]]) gg.fillRect(cx + qx, cy + qy, 1, 1);
       }
-      const puffs = h.c.humo ? (hov ? 6 : 4) : 0;
+      const puffs = h.c.humo && h.id !== "periodismo" ? (hov ? 6 : 4) : 0;
       for (let p = 0; p < puffs; p++) {
         const life = ((st.t * (hov ? 7 : 4.5) + p * (10 / puffs)) % 10) / 10;
         const px = x0 + (h.c.humo?.[0] ?? 0) + Math.round(life * 7 + Math.sin(life * 6 + p) * 1.5);

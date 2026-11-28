@@ -534,7 +534,7 @@ export function MapStage({ places, activeId, onOpen, onHover, portrait, clockyAt
                 }}
                 style={{ transformOrigin: "top center", willChange: "transform" }}
                 data-on={isActive || isHovered}
-                className={`place-label absolute left-1/2 ${clockyAt === place.id ? "top-[calc(100%+44px)]" : "top-[calc(100%+6px)]"} z-10 inline-flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
+                className={`place-label absolute left-1/2 ${clockyAt === place.id ? "top-[calc(100%+44px)]" : place.id === "periodismo" ? "top-[calc(100%+14px)]" : "top-[calc(100%+6px)]"} z-10 inline-flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink px-3 py-1 font-display text-[15px] font-bold leading-none shadow-[0_3px_0_rgba(75,58,42,0.8)] transition-colors duration-200 ${
                   isActive || isHovered ? "bg-orange-deep text-chalk" : "bg-chalk text-ink"
                 } group-focus-visible:ring-4 group-focus-visible:ring-orange/60`}
               >
